@@ -14,18 +14,16 @@ async function fetchGithub(token: string, runId: number) {
 
   core.info(`Get workflow run for ${runId}`);
   const workflowRun = await getWorkflowRun(context, octokit, runId);
-  core.info(`Workflow run: ${JSON.stringify(workflowRun)}`);
 
   core.info("Get jobs");
   const jobs = await listJobsForWorkflowRun(context, octokit, runId);
-  core.info(`Jobs: ${JSON.stringify(jobs)}`);
 
   core.info("Get job annotations");
   const jobsId = (jobs ?? []).map((job) => job.id);
   let jobAnnotations = {};
+  
   try {
     jobAnnotations = await getJobsAnnotations(context, octokit, jobsId);
-    core.info(`Job annotations: ${JSON.stringify(jobAnnotations)}`);
   } catch (error) {
     if (error instanceof RequestError) {
       core.info(`Failed to get job annotations: ${error.message}}`);
@@ -63,11 +61,9 @@ export async function RunCiCdOtelExport() {
     core.info("Use Github API to fetch workflow data");
     const { workflowRun, jobs, jobAnnotations, prLabels } = await fetchGithub(ghToken, runId);
 
-    core.info(`Workflow run: ${JSON.stringify(workflowRun)}`);
+    
     core.info(`Jobs: ${JSON.stringify(jobs)}`);
-    core.info(`Job annotations: ${JSON.stringify(jobAnnotations)}`);
-    core.info(`PR labels: ${JSON.stringify(prLabels)}`);
-
+    
     core.info(`Create tracer provider for ${otlpEndpoint}`);
     const attributes: ResourceAttributes = {
       [ATTR_SERVICE_NAME]: otelServiceName || workflowRun.name || `${workflowRun.workflow_id}`,

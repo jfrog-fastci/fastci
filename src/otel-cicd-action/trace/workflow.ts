@@ -2,7 +2,7 @@ import type { components } from "@octokit/openapi-types";
 import { type Attributes, SpanStatusCode, context, trace } from "@opentelemetry/api";
 import { ATTR_CICD_PIPELINE_NAME, ATTR_CICD_PIPELINE_RUN_ID } from "@opentelemetry/semantic-conventions/incubating";
 import { traceJob } from "./job";
-
+import * as core from "@actions/core";
 async function traceWorkflowRun(
   workflowRun: components["schemas"]["workflow-run"],
   jobs: components["schemas"]["job"][],
@@ -29,6 +29,7 @@ async function traceWorkflowRun(
       }
 
       for (const job of jobs) {
+        core.info(`Tracing job ${job.name}`);
         await traceJob(job, jobAnnotations[job.id]);
       }
 
