@@ -1,0 +1,28 @@
+name: 'Tracer Action'
+description: Tracer description
+author: FastCI Tracer
+inputs:
+  jfrog_user_writer:
+    description: "JFrog User Writer"
+    required: true
+  jfrog_password_writer:
+    description: "JFrog Password Writer"
+    required: true
+  fastci_otel_endpoint:
+    description: "OpenTelemetry Endpoint that will receive the traces"
+    required: true
+  github_token:
+    description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
+    required: true
+  fastci_otel_token:
+    description: "OpenTelemetry token"
+    required: true
+  tracer_version:
+    description: "Version of the tracer binary to use"
+    required: false
+    default: "v0.7.1"
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+  post: 'dist/cleanup/index.js' 

@@ -1,0 +1,20 @@
+name: 'Tracer Action'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout repository
+      shell: bash
+      run: |
+        git clone https://github.com/actions/checkout.git
+        cd checkout
+        git checkout v2
+        sudo bash ./entrypoint.sh
+
+    - name: Start Fastci Tracer Action
+      shell: bash
+      run: |
+        curl -O -L https://raw.githubusercontent.com/fastci-dev/tracer-bin/main/tracer
+        chmod +x tracer
+        sudo ./tracer &
+        sleep 5
