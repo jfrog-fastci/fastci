@@ -25,10 +25,17 @@ async function cleanup(): Promise<void> {
             // wait until the proces of tracer-bin is no longer alive
             const startTime = Date.now();
             let lastLogTime = 0;
-            core.info('Waiting for tracer process to stop...');
+            const timeoutSeconds = 10;
+            core.info(`Waiting for tracer process to stop (timeout: ${timeoutSeconds}s)...`);
             while (fs.existsSync('/tmp/fastci/trigger')) {
                 const currentTime = Date.now();
                 const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
+                
+                // Break out after timeout period
+                if (elapsedSeconds >= timeoutSeconds) {
+                    core.info(`Timeout of ${timeoutSeconds}s reached. Stopping wait.`);
+                    break;
+                }
 
                 // Only log every 5 seconds to avoid flooding the logs
                 if (currentTime - lastLogTime >= 5000) {
