@@ -20,7 +20,7 @@ inputs:
   tracer_version:
     description: "Version of the tracer binary to use"
     required: false
-    default: "v0.3.0"
+    default: "v0.3.1"
 
   extra_attributes:
     description: "Extra attributes to add to the trace"
