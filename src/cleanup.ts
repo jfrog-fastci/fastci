@@ -20,14 +20,18 @@ async function cleanup(): Promise<void> {
             fs.mkdirSync('/tmp/fastci', { recursive: true });
 
             // write the trigger file
-            fs.writeFileSync('/tmp/fastci/trigger', 'stop');
+            fs.writeFileSync('/tmp/fastci/trigger', '');
 
             // wait until the proces of tracer-bin is no longer alive
             const startTime = Date.now();
             let lastLogTime = 0;
             const timeoutSeconds = 10;
             core.info(`Waiting for tracer process to stop (timeout: ${timeoutSeconds}s)...`);
-            while (fs.existsSync('/tmp/fastci/trigger')) {
+            
+            // Check if process_trees.json exists and has content
+            const processTreesPath = '/tmp/fastci/process_trees.json';
+            
+            while (true) {
                 const currentTime = Date.now();
                 const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
                 
@@ -36,18 +40,35 @@ async function cleanup(): Promise<void> {
                     core.info(`Timeout of ${timeoutSeconds}s reached. Stopping wait.`);
                     break;
                 }
-
+                
+                // Check if the file exists and has content
+                if (fs.existsSync(processTreesPath)) {
+                    try {
+                        const stats = fs.statSync(processTreesPath);
+                        if (stats.size > 0) {
+                            core.info('process_trees.json file has content, continuing...');
+                            break;
+                        }
+                    } catch (error) {
+                        core.info(`Error checking file: ${error}`);
+                    }
+                }
+                
                 // Only log every 5 seconds to avoid flooding the logs
                 if (currentTime - lastLogTime >= 5000) {
-                    core.info(`Still waiting for tracer process to stop... (${elapsedSeconds}s elapsed)`);
+                    core.info(`Still waiting for process_trees.json to have content... (${elapsedSeconds}s elapsed)`);
                     lastLogTime = currentTime;
                 }
 
                 await new Promise(resolve => setTimeout(resolve, 200));
             }
-            await exec('cat /tmp/fastci/process_trees.json');
-
-            core.info('Tracer process stopped successfully');
+            
+            if (fs.existsSync(processTreesPath)) {
+                await exec(`cat ${processTreesPath}`);
+                core.info('Tracer process stopped successfully');
+            } else {
+                core.info('process_trees.json file does not exist after waiting');
+            }
         } catch (error) {
             core.info(error as any);
             core.info('No tracer process found or unable to stop it');
