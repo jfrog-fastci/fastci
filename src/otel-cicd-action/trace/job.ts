@@ -1,4 +1,3 @@
-import * as core from "@actions/core";
 import type { components } from "@octokit/openapi-types";
 import { type Attributes, SpanStatusCode, trace } from "@opentelemetry/api";
 import {
@@ -16,8 +15,9 @@ async function traceJob(job: components["schemas"]["job"], annotations?: compone
   const tracer = trace.getTracer("otel-cicd-action");
 
   if (!job.completed_at) {
-    core.info(`Job ${job.id} is not completed yet`);
-    return;
+    job.completed_at = new Date().toISOString();
+    //core.info(`Job ${job.id} is not completed yet`);
+    //return;
   }
 
   const startTime = new Date(job.started_at);
