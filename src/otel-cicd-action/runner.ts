@@ -63,6 +63,11 @@ export async function RunCiCdOtelExport() {
     core.info("Use Github API to fetch workflow data");
     const { workflowRun, jobs, jobAnnotations, prLabels } = await fetchGithub(ghToken, runId);
 
+    core.info(`Workflow run: ${JSON.stringify(workflowRun)}`);
+    core.info(`Jobs: ${JSON.stringify(jobs)}`);
+    core.info(`Job annotations: ${JSON.stringify(jobAnnotations)}`);
+    core.info(`PR labels: ${JSON.stringify(prLabels)}`);
+
     core.info(`Create tracer provider for ${otlpEndpoint}`);
     const attributes: ResourceAttributes = {
       [ATTR_SERVICE_NAME]: otelServiceName || workflowRun.name || `${workflowRun.workflow_id}`,

@@ -15,7 +15,7 @@ async function run(): Promise<void> {
         const tracerVersion = core.getInput('tracer_version');
 
         // Download tracer binary
-        const tracerUrl = `https://github.com/fastci-dev/tracer-bin/releases/download/${tracerVersion}/tracer`;
+        const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
         core.info('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
 
