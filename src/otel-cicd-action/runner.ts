@@ -54,7 +54,7 @@ export async function RunCiCdOtelExport() {
     const otlpHeaders = `Authorization=Bearer ${otlpToken}`;
     const otelServiceName = core.getInput("otelServiceName") || process.env["OTEL_SERVICE_NAME"] || "";
     const runId = Number.parseInt(core.getInput("runId") || `${context.runId}`);
-    const extraAttributes = stringToRecord(core.getInput("extraAttributes"));
+    const extraAttributes = stringToRecord(core.getInput("extra_attributes"));
     const ghToken = core.getInput("github_token") || process.env["GITHUB_TOKEN"] || "";
 
     core.info("Use Github API to fetch workflow data");
