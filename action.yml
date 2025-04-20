@@ -20,11 +20,13 @@ inputs:
   tracer_version:
     description: "Version of the tracer binary to use"
     required: false
-    default: "v0.7.1"
+    default: "v0.2.0"
+
   extra_attributes:
     description: "Extra attributes to add to the trace"
     required: false
     default: "cx.subsystem.name=fastci-test,cx.application.name=fastci-test"
+
 
 runs:
   using: 'node20'
