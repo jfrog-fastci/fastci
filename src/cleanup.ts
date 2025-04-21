@@ -1,5 +1,4 @@
 import * as core from '@actions/core';
-import { exec } from '@actions/exec';
 import * as fs from 'fs';
 import { RunCiCdOtelExport } from './otel-cicd-action/runner';
 import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/constants';
@@ -57,14 +56,14 @@ async function waitForProcessTreesFile(timeoutSeconds: number): Promise<boolean>
     }
 }
 
-async function displayProcessTreesFile(): Promise<void> {
-    if (fs.existsSync(PROCESS_TREES_PATH)) {
-        await exec(`cat ${PROCESS_TREES_PATH}`);
-        core.info('Tracer process stopped successfully');
-    } else {
-        core.info('process_trees.json file does not exist after waiting');
-    }
-}
+// async function displayProcessTreesFile(): Promise<void> {
+//     if (fs.existsSync(PROCESS_TREES_PATH)) {
+//         await exec(`cat ${PROCESS_TREES_PATH}`);
+//         core.info('Tracer process stopped successfully');
+//     } else {
+//         core.info('process_trees.json file does not exist after waiting');
+//     }
+// }
 
 async function verifyProcessTreesExists(): Promise<void> {
     if (fs.existsSync(PROCESS_TREES_PATH)) {
@@ -82,7 +81,7 @@ async function stopTracerProcess(): Promise<void> {
         const timeoutSeconds = 2;
         await waitForProcessTreesFile(timeoutSeconds);
         
-        await displayProcessTreesFile();
+        // await displayProcessTreesFile();
     } catch (error) {
         core.info(error as any);
         core.info('No tracer process found or unable to stop it');
