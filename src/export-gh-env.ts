@@ -4,7 +4,6 @@ export async function exposeRuntime() {
   
   Object.keys(process.env).forEach(function (key) {
     if (key.startsWith('GITHUB_')) {
-      core.info(`${key}=${process.env[key]}`);
       core.exportVariable(key, process.env[key]);
     }
   });

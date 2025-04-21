@@ -28240,7 +28240,6 @@ const core = __importStar(__nccwpck_require__(2186));
 async function exposeRuntime() {
     Object.keys(process.env).forEach(function (key) {
         if (key.startsWith('GITHUB_')) {
-            core.info(`${key}=${process.env[key]}`);
             core.exportVariable(key, process.env[key]);
         }
     });
