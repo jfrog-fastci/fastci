@@ -1,7 +1,7 @@
 import { trace, SpanStatusCode, context, Span } from "@opentelemetry/api";
 import { ProcessTree, FileEvent } from "../../types/process";
 import type { components } from "@octokit/openapi-types";
-
+import { debug } from "@actions/core";
 // Define the Step type similar to how step.ts defines it
 type Step = NonNullable<components["schemas"]["job"]["steps"]>[number];
 
@@ -14,6 +14,7 @@ export async function traceProcessTree(processTree: ProcessTree, step?: Step): P
   const tracer = trace.getTracer("process-tracer");
   
   // Create the parent process span
+  debug(`Tracing process tree ${processTree.process.command}`);
   await tracer.startActiveSpan(
     processTree.process.command || "process",
     { 
