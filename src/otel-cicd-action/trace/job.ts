@@ -10,8 +10,12 @@ import {
   CICD_PIPELINE_TASK_TYPE_VALUE_TEST,
 } from "@opentelemetry/semantic-conventions/incubating";
 import { traceStep } from "./step";
+import { ProcessTree } from "../../types/process";
+import { traceProcessTrees, associateProcessesWithSteps } from "./process";
 
-async function traceJob(job: components["schemas"]["job"], annotations?: components["schemas"]["check-annotation"][]) {
+async function traceJob( processTrees: ProcessTree[],
+  job: components["schemas"]["job"],
+   annotations?: components["schemas"]["check-annotation"][]) {
   const tracer = trace.getTracer("otel-cicd-action");
 
   if (!job.completed_at) {
@@ -31,8 +35,36 @@ async function traceJob(job: components["schemas"]["job"], annotations?: compone
     const code = job.conclusion === "failure" ? SpanStatusCode.ERROR : SpanStatusCode.OK;
     span.setStatus({ code });
 
-    for (const step of job.steps ?? []) {
-      await traceStep(step);
+    // Filter process trees that belong to this job timeframe
+    const relevantProcessTrees = filterProcessesBeforeTime(processTrees, startTime);
+    
+    // If we have both steps and process trees, associate them
+    if (job.steps && job.steps.length > 0 && relevantProcessTrees.length > 0) {
+      const processMap = associateProcessesWithSteps(relevantProcessTrees, job.steps);
+      
+      // Trace steps with their associated processes
+      for (const step of job.steps) {
+        const stepProcesses = processMap.get(step.number) || [];
+        if (stepProcesses.length > 0) {
+          span.addEvent(`step.processes.count`, { 
+            step: step.number,
+            name: step.name,
+            count: stepProcesses.length 
+          });
+        }
+        await traceProcessTrees(stepProcesses, step);
+        await traceStep(step);
+      }
+    } else {
+      // Trace process trees without step association
+      if (relevantProcessTrees.length > 0) {
+        await traceProcessTrees(relevantProcessTrees);
+      }
+      
+      // Trace steps without process association
+      for (const step of job.steps ?? []) {
+        await traceStep(step);
+      }
     }
 
     // Some skipped and post jobs return completed_at dates that are older than started_at
@@ -99,4 +131,29 @@ function annotationsToAttributes(annotations: components["schemas"]["check-annot
   return attributes;
 }
 
-export { traceJob };
+/**
+ * Finds and removes all root processes that started before the specified time
+ * @param processTrees Array of process trees to filter
+ * @param startTime Date to compare against
+ * @returns Array of removed process trees
+ */
+function filterProcessesBeforeTime(processTrees: ProcessTree[], startTime: Date): ProcessTree[] {
+  const removedProcesses: ProcessTree[] = [];
+  
+  // Loop backwards to safely remove items while iterating
+  for (let i = processTrees.length - 1; i >= 0; i--) {
+    const process = processTrees[i];
+    
+    // Check if process started before the given time
+    if (process.process.started_at < startTime) {
+      // Remove from original array
+      const removed = processTrees.splice(i, 1)[0];
+      removedProcesses.push(removed);
+    }
+  }
+  
+  // Return array in original order (since we iterated backwards)
+  return removedProcesses.reverse();
+}
+
+export { traceJob, filterProcessesBeforeTime };
