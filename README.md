@@ -1,69 +1,73 @@
-# Tracer Action
+# FastCI OpenTelemetry GitHub Actions Tracing
 
-A GitHub Action for FastCI Tracer that collects and sends OpenTelemetry traces.
+A toolkit for tracing GitHub Actions workflows to OpenTelemetry.
 
-## Inputs
+## Features
 
-| Name | Description | Required | Default |
-|------|-------------|----------|---------|
-| `jfrog_user_writer` | JFrog User Writer | Yes | - |
-| `jfrog_password_writer` | JFrog Password Writer | Yes | - |
-| `fastci_otel_endpoint` | OpenTelemetry Endpoint that will receive the traces | Yes | - |
-| `fastci_otel_token` | OpenTelemetry token | Yes | - |
-| `tracer_version` | Version of the tracer binary to use | No | latest |
-
-## Usage
-
-```yaml
-name: FastCI Tracer Workflow
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  trace:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Run FastCI Tracer
-        uses: fastci-dev/tracer-action@v1
-        with:
-          jfrog_user_writer: ${{ secrets.JFROG_USER_WRITER }}
-          jfrog_password_writer: ${{ secrets.JFROG_PASSWORD_WRITER }}
-          fastci_otel_endpoint: ${{ secrets.FASTCI_OTEL_ENDPOINT }}
-          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
-          # Optional: specify a different version
-          # tracer_version: v1.0.0
-```
+- Trace GitHub Actions workflow runs with detailed span information
+- Capture job and step execution details
+- Associate process execution data with workflow spans
+- Export traces to OpenTelemetry collectors
+- Support for PR and commit metadata
 
 ## Development
 
 ### Prerequisites
 
-- Node.js 20.x or later
-- npm 9.x or later
+- Node.js 14 or higher
+- npm or yarn
 
 ### Setup
 
-1. Clone the repository
+1. Clone this repository
 2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-### Build
 
 ```bash
-npm run build
+npm install
 ```
 
-### Package for distribution
+### Running Tests
+
+The project uses Jest for testing. To run the tests:
 
 ```bash
-npm run package
-``` 
+npm test
+```
+
+To run tests with coverage:
+
+```bash
+npm test -- --coverage
+```
+
+To run a specific test file:
+
+```bash
+npm test -- src/otel-cicd-action/runner.test.ts
+```
+
+### Components
+
+The project consists of the following main components:
+
+- `runner.ts`: Main entry point for the GitHub Action
+- `trace/`: Contains the tracing logic for workflows, jobs, and steps
+- `github/`: GitHub API interaction functions
+- `tracer/`: OpenTelemetry configuration
+
+## Tests Overview
+
+The test suite includes tests for:
+
+- `runner.ts`: Tests for the main runner functionality and process tree loading
+- `workflow.test.ts`: Tests for workflow tracing functionality
+- `job.test.ts`: Tests for job tracing and process filtering
+- `step.test.ts`: Tests for step tracing
+
+### Mock Dependencies
+
+Tests use Jest mocks to simulate:
+- GitHub API responses
+- OpenTelemetry tracing functions
+- Process tree data
+- Filesystem operations 
