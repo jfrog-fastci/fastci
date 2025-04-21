@@ -4,6 +4,7 @@ import * as io from '@actions/io';
 import * as tc from '@actions/tool-cache';
 import * as path from 'path';
 import * as fs from 'fs';
+import { exposeRuntime } from './export-gh-env';
 
 async function run(): Promise<void> {
     try {
@@ -25,6 +26,10 @@ async function run(): Promise<void> {
         await fs.promises.chmod(tracerBinPath, '755');
         process.env["OTEL.ENDPOINT"] = otelEndpoint
         process.env["OTEL.TOKEN"] = otelToken
+        
+        // expose github actions env variables
+        await exposeRuntime();
+        
         // Start tracer
         core.info('Starting tracer...');
         core.info(otelEndpoint);
