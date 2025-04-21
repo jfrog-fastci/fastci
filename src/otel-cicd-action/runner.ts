@@ -84,7 +84,7 @@ export async function RunCiCdOtelExport() {
 
     const processTrees = loadProcessTrees();
 
-    core.info(`Process trees: ${JSON.stringify(processTrees, null, 2)}`);
+    // core.info(`Process trees: ${JSON.stringify(processTrees, null, 2)}`);
 
 
     core.info(`Trace workflow run for ${runId} and export to ${otlpEndpoint}`);
