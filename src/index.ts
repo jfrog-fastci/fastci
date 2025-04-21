@@ -28,6 +28,7 @@ async function run(): Promise<void> {
         process.env["OTEL.TOKEN"] = otelToken
         
         // expose github actions env variables
+        core.info('Exposing runtime environment variables starting with GITHUB_');
         await exposeRuntime();
         
         // Start tracer
