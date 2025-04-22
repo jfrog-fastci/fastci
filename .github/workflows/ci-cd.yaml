@@ -33,13 +33,3 @@ jobs:
 
     - name: Package
       run: npm run package
-      
-    - name: Commit updated dist folder
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add dist/
-        git diff --quiet && git diff --staged --quiet || {
-          git commit -m "Update dist folder [skip ci]"
-          git push origin HEAD:${GITHUB_REF#refs/heads/}
-        } 
