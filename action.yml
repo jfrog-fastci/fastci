@@ -4,19 +4,27 @@ author: FastCI Tracer
 inputs:
   jfrog_user_writer:
     description: "JFrog User Writer"
-    required: true
+    required: false
+    
   jfrog_password_writer:
     description: "JFrog Password Writer"
-    required: true
+    required: false
+    default: ${{ secrets.JFROG_PASSWORD_WRITER }}
+
   fastci_otel_endpoint:
     description: "OpenTelemetry Endpoint that will receive the traces"
-    required: true
+    required: false
+    default: "ingress.coralogix.us"
+
   github_token:
     description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
-    required: true
+    required: false
+    default: ${{ secrets.GITHUB_TOKEN }}
+
   fastci_otel_token:
     description: "OpenTelemetry token"
     required: true
+
   tracer_version:
     description: "Version of the tracer binary to use"
     required: false
@@ -25,7 +33,7 @@ inputs:
   extra_attributes:
     description: "Extra attributes to add to the trace"
     required: false
-    default: "cx.subsystem.name=fastci-test,cx.application.name=fastci-test"
+    default: "cx.subsystem.name=${{github.repository}},cx.application.name=${{github.repository_owner}},ci.pipeline.name=${{github.workflow}},ci.pipeline.run_id=${{github.run_id}}"
 
 
 runs:
