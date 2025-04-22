@@ -14,13 +14,12 @@ import { ProcessTree } from "../../types/process";
 import { debug } from "@actions/core";
 
 async function traceJob(processTrees: ProcessTree[], job: components["schemas"]["job"], annotations?: components["schemas"]["check-annotation"][]) {
+  debug(`Tracing job ${job.name}`);
   const tracer = trace.getTracer("otel-cicd-action");
 
   if (!job.completed_at) {
     job.completed_at = new Date().toISOString();
   }
-
-  debug(JSON.stringify(job, null, 2));
 
   const startTime = new Date(job.started_at);
   const completedTime = new Date(job.completed_at);
