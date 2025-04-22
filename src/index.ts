@@ -17,7 +17,7 @@ async function run(): Promise<void> {
 
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
-        core.info('Downloading tracer binary.. ' + tracerUrl);
+        core.debug('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
 
         // Move to tracer-bin and make executable
@@ -28,13 +28,11 @@ async function run(): Promise<void> {
         process.env["OTEL.TOKEN"] = otelToken
         
         // expose github actions env variables
-        core.info('Exposing runtime environment variables starting with GITHUB_');
+        core.debug('Exposing runtime environment variables starting with GITHUB_');
         await exposeRuntime();
         
         // Start tracer
-        core.info('Starting tracer...');
-        core.info(otelEndpoint);
-        core.info(otelToken);
+        core.debug('Starting tracer...');
         const child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
             detached: true,
             stdio: 'ignore',
@@ -47,7 +45,7 @@ async function run(): Promise<void> {
         // Unref the child to allow the parent process to exit independently
         child.unref();
 
-        core.info('Tracer started successfully in background');
+        core.debug('Tracer started successfully in background');
     } catch (error) {
         if (error instanceof Error) {
             core.setFailed(error.message);

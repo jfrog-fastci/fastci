@@ -201,6 +201,6 @@ describe('workflow.ts', () => {
       mockPrLabels
     );
     
-    expect(core.info).toHaveBeenCalledWith(`Tracing job ${mockJobs[0].name}`);
+    expect(core.debug).toHaveBeenCalledWith(`Tracing job ${mockJobs[0].name}`);
   });
 }); 

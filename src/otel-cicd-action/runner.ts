@@ -15,13 +15,13 @@ import { traceWorkflowRun } from "./trace/workflow";
 async function fetchGithub(token: string, runId: number) {
   const octokit = getOctokit(token);
 
-  core.info(`Get workflow run for ${runId}`);
+  core.debug(`Get workflow run for ${runId}`);
   const workflowRun = await getWorkflowRun(context, octokit, runId);
 
-  core.info("Get jobs");
+  core.debug("Get jobs");
   const jobs = await listJobsForWorkflowRun(context, octokit, runId);
 
-  core.info("Get job annotations");
+  core.debug("Get job annotations");
   const jobsId = (jobs ?? []).map((job) => job.id);
   let jobAnnotations = {};
   
@@ -29,20 +29,20 @@ async function fetchGithub(token: string, runId: number) {
     jobAnnotations = await getJobsAnnotations(context, octokit, jobsId);
   } catch (error) {
     if (error instanceof RequestError) {
-      core.info(`Failed to get job annotations: ${error.message}}`);
+      core.debug(`Failed to get job annotations: ${error.message}}`);
     } else {
       throw error;
     }
   }
 
-  core.info("Get PRs labels");
+  core.debug("Get PRs labels");
   const prNumbers = (workflowRun.pull_requests ?? []).map((pr) => pr.number);
   let prLabels = {};
   try {
     prLabels = await getPRsLabels(context, octokit, prNumbers);
   } catch (error) {
     if (error instanceof RequestError) {
-      core.info(`Failed to get PRs labels: ${error.message}}`);
+      core.debug(`Failed to get PRs labels: ${error.message}}`);
     } else {
       throw error;
     }
@@ -61,13 +61,13 @@ export async function RunCiCdOtelExport() {
     const extraAttributes = stringToRecord(core.getInput("extra_attributes"));
     const ghToken = core.getInput("github_token") || process.env["GITHUB_TOKEN"] || "";
 
-    core.info("Use Github API to fetch workflow data");
+    core.debug("Use Github API to fetch workflow data");
     const { workflowRun, jobs, jobAnnotations, prLabels } = await fetchGithub(ghToken, runId);
 
     
     // core.info(`Jobs: ${JSON.stringify(jobs)}`);
     
-    core.info(`Create tracer provider for ${otlpEndpoint}`);
+    core.debug(`Create tracer provider for ${otlpEndpoint}`);
     const attributes: ResourceAttributes = {
       [ATTR_SERVICE_NAME]: otelServiceName || workflowRun.name || `${workflowRun.workflow_id}`,
       [ATTR_SERVICE_INSTANCE_ID]: [
@@ -87,16 +87,16 @@ export async function RunCiCdOtelExport() {
     // core.info(`Process trees: ${JSON.stringify(processTrees, null, 2)}`);
 
 
-    core.info(`Trace workflow run for ${runId} and export to ${otlpEndpoint}`);
+    core.debug(`Trace workflow run for ${runId} and export to ${otlpEndpoint}`);
     const traceId = await traceWorkflowRun(processTrees, workflowRun, jobs, jobAnnotations, prLabels);
 
     core.setOutput("traceId", traceId);
-    core.info(`traceId: ${traceId}`);
+    core.debug(`traceId: ${traceId}`);
 
-    core.info("Flush and shutdown tracer provider");
+    core.debug("Flush and shutdown tracer provider");
     await provider.forceFlush();
     await provider.shutdown();
-    core.info("Provider shutdown");
+    core.debug("Provider shutdown");
   } catch (error) {
     const message = error instanceof Error ? error : JSON.stringify(error);
     core.setFailed(message);
@@ -107,25 +107,25 @@ export function loadProcessTrees(): ProcessTree[] {
   const startTime = Date.now();
   try {
     if (!fs.existsSync(PROCESS_TREES_PATH)) {
-      core.info(`Process trees file does not exist at ${PROCESS_TREES_PATH}`);
+      core.debug(`Process trees file does not exist at ${PROCESS_TREES_PATH}`);
       return [];
     }
     
     const fileContent = fs.readFileSync(PROCESS_TREES_PATH, 'utf-8');
     if (!fileContent || fileContent.trim() === '') {
-      core.info('Process trees file is empty');
+      core.debug('Process trees file is empty');
       return [];
     }
     
     const processTrees = JSON.parse(fileContent) as ProcessTree[];
     const duration = Date.now() - startTime;
-    core.info(`Loaded ${processTrees.length} process trees in ${duration}ms`);
+    core.debug(`Loaded ${processTrees.length} process trees in ${duration}ms`);
     return processTrees;
   } catch (error) {
     core.error(`Failed to load process trees: ${error instanceof Error ? error.message : String(error)}`);
     return [];
   } finally {
     const totalDuration = Date.now() - startTime;
-    core.info(`Total time to process and load trees: ${totalDuration}ms`);
+    core.debug(`Total time to process and load trees: ${totalDuration}ms`);
   }
 }

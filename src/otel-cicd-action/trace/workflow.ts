@@ -31,7 +31,7 @@ async function traceWorkflowRun(
       }
 
       for (const job of jobs) {
-        core.info(`Tracing job ${job.name}`);
+        core.debug(`Tracing job ${job.name}`);
         await traceJob(processTrees, job, jobAnnotations[job.id]);
       }
 

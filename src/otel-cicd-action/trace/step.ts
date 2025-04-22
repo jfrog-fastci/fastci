@@ -11,13 +11,13 @@ async function traceStep(step: Step, processTree: ProcessTree[]) {
 
   if (!step.completed_at || !step.started_at) {
     step.completed_at = new Date().toISOString();
-    //core.info(`Step ${step.name} is not completed yet.`);
+    //core.debug(`Step ${step.name} is not completed yet.`);
     //return;
   }
 
   if (step.conclusion === "cancelled" || step.conclusion === "skipped") {
     step.completed_at = step.started_at ? new Date(step.started_at).toISOString() : "";
-    //core.info(`Step ${step.name} did not run.`);
+    //core.debug(`Step ${step.name} did not run.`);
     //return;
   }
 

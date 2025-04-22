@@ -114,7 +114,7 @@ describe('step.ts', () => {
     jest.spyOn(mockProcessTrees, 'filter').mockRestore();
     
     // Mock the info function to capture the actual output
-    (core.info as jest.MockedFunction<typeof core.info>).mockImplementation((message) => {
+    (core.debug as jest.MockedFunction<typeof core.debug>).mockImplementation((message) => {
       if (message.startsWith('Found')) {
         expect(message).toBe(`Found 1 root processes related to step ${mockStep.name}`);
       }
@@ -208,24 +208,6 @@ describe('step.ts', () => {
     // But then it still uses both startTime and completedTime
   });
 
-  it('should log the number of root processes found related to the step', async () => {
-    // Override the filter method to simulate finding exactly one process
-    jest.spyOn(Array.prototype, 'filter').mockReturnValue([mockProcessTrees[0]]);
-    
-    // Create an expect for the specific message we want
-    (core.info as jest.Mock).mockImplementation((message: any) => {
-      if (message && typeof message === 'string' && message.includes('Found')) {
-        // This is the message we want to verify
-        expect(message).toBe(`Found 1 root processes related to step ${mockStep.name}`);
-      }
-      // Let other info calls pass through
-    });
-    
-    await traceStep(mockStep as any, mockProcessTrees);
-    
-    // We verify through the mock implementation above
-    expect(core.info).toHaveBeenCalled();
-  });
   
   it('should trace child processes and file events correctly', async () => {
     // Create a more complex process tree with child processes

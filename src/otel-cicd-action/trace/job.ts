@@ -17,8 +17,6 @@ async function traceJob(processTrees: ProcessTree[], job: components["schemas"][
 
   if (!job.completed_at) {
     job.completed_at = new Date().toISOString();
-    //core.info(`Job ${job.id} is not completed yet`);
-    //return;
   }
 
   const startTime = new Date(job.started_at);

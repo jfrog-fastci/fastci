@@ -10,6 +10,13 @@ A toolkit for tracing GitHub Actions workflows to OpenTelemetry.
 - Export traces to OpenTelemetry collectors
 - Support for PR and commit metadata
 
+## Debug your action
+Enabling debug logs:
+To make core.debug logs visible, you need to enable debug logging by setting one of these:
+Repository secret: `ACTIONS_STEP_DEBUG: true`
+Repository variable: `ACTIONS_STEP_DEBUG: true`
+When re-running a workflow: Enable the "Enable debug logging" option
+
 ## Development
 
 ### Prerequisites
