@@ -13,6 +13,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
     - name: Setup Node.js
       uses: actions/setup-node@v3
@@ -37,4 +39,7 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add dist/
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Update dist folder [skip ci]" && git push) 
+        git diff --quiet && git diff --staged --quiet || {
+          git commit -m "Update dist folder [skip ci]"
+          git push origin HEAD:${GITHUB_REF#refs/heads/}
+        } 
