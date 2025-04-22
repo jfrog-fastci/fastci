@@ -1,7 +1,7 @@
 import { trace, SpanStatusCode, context, Span } from "@opentelemetry/api";
 import { ProcessTree, FileEvent } from "../../types/process";
 import type { components } from "@octokit/openapi-types";
-import { debug } from "@actions/core";
+import { info } from "@actions/core";
 // Define the Step type similar to how step.ts defines it
 type Step = NonNullable<components["schemas"]["job"]["steps"]>[number];
 
@@ -11,10 +11,10 @@ type Step = NonNullable<components["schemas"]["job"]["steps"]>[number];
  * @param step Optional GitHub workflow step for context
  */
 export async function traceProcessTree(processTree: ProcessTree, step?: Step): Promise<void> {
-  const tracer = trace.getTracer("process-tracer");
+  const tracer = trace.getTracer("otel-cicd-action");
   
   // Create the parent process span
-  debug(`Tracing process tree ${processTree.process.command}`);
+  info(`Tracing process tree ${processTree.process.command}`);
   await tracer.startActiveSpan(
     processTree.process.command || "process",
     { 
@@ -62,7 +62,7 @@ export async function traceProcessTree(processTree: ProcessTree, step?: Step): P
  * @param step Optional GitHub workflow step for context
  */
 async function traceChildProcess(childProcess: ProcessTree, parentSpan: Span, step?: Step): Promise<void> {
-  const tracer = trace.getTracer("process-tracer");
+  const tracer = trace.getTracer("otel-cicd-action");
   
   return context.with(trace.setSpan(context.active(), parentSpan), async () => {
     await tracer.startActiveSpan(
@@ -114,7 +114,7 @@ async function traceChildProcess(childProcess: ProcessTree, parentSpan: Span, st
 function addFileEventsToSpan(span: Span, fileEvents: FileEvent[]): void {
   for (const event of fileEvents) {
     span.addEvent(
-      `file.${event.mode}`, 
+      `${event.mode}:${event.file_path}`, 
       {
         "file.path": event.file_path,
         "file.sha256": event.sha256,
