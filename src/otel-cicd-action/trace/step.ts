@@ -8,7 +8,6 @@ type Step = NonNullable<components["schemas"]["job"]["steps"]>[number];
 
 async function traceStep(step: Step, processTree: ProcessTree[]) {
   debug(`Tracing step ${step.name}`);
-  debug(JSON.stringify(step, null, 2));
   const tracer = trace.getTracer("otel-cicd-action");
 
   if (!step.completed_at || !step.started_at) {
@@ -59,9 +58,8 @@ function findRootProcessesRelatedToStep(step: Step, processTree: ProcessTree[]):
   const stepStartedAt = step.started_at ? new Date(step.started_at) : new Date();
   const stepCompletedAt = step.completed_at ? new Date(step.completed_at) : new Date();
   return processTree.filter(process => {
-    const pStartedAt = process.process.started_at ? new Date(process.process.started_at) : new Date();
-    const pStoppedAt = process.process.stopped_at ? new Date(process.process.stopped_at) : new Date();
-    info(`Checking process ${process.process.command} started at ${pStartedAt} and completed at ${pStoppedAt}, step started at ${stepStartedAt} and completed at ${stepCompletedAt}`);
+    debug(`Checking process ${process.process.command} started at ${process?.process?.started_at} and completed at ${process?.process?.stopped_at}, step started at ${stepStartedAt} and completed at ${stepCompletedAt}`);
+    const pStartedAt = process?.process?.started_at ? new Date(process.process.started_at) : new Date();
     return(stepStartedAt < pStartedAt) && (pStartedAt < stepCompletedAt)
   });
 }
