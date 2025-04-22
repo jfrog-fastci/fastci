@@ -56,7 +56,10 @@ function stepToAttributes(step: Step): Attributes {
 function findRootProcessesRelatedToStep(step: Step, processTree: ProcessTree[]): ProcessTree[] {
   const stepStartedAt = step.started_at ? new Date(step.started_at) : new Date();
   const stepCompletedAt = step.completed_at ? new Date(step.completed_at) : new Date();
-  return processTree.filter(process => (stepStartedAt < process.process.started_at) && (process.process.started_at < stepCompletedAt));
+  return processTree.filter(process => {
+    info(`Checking process ${process.process.command} started at ${process.process.started_at} and completed at ${process.process.stopped_at}, step started at ${stepStartedAt} and completed at ${stepCompletedAt}`);
+    return(stepStartedAt < process.process.started_at) && (process.process.started_at < stepCompletedAt)
+  });
 }
 
 export { traceStep };
