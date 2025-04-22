@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1745305380369" clover="3.2.0">
+  <project timestamp="1745305380369" name="All files">
+    <metrics statements="193" coveredstatements="108" conditionals="131" coveredconditionals="67" methods="28" coveredmethods="14" elements="352" coveredelements="189" complexity="0" loc="193" ncloc="193" packages="1" files="4" classes="4"/>
+    <file name="job.ts" path="/Users/shayd/workspace/FastCI/fastci/src/otel-cicd-action/trace/job.ts">
+      <metrics statements="49" coveredstatements="44" conditionals="50" coveredconditionals="36" methods="5" coveredmethods="5"/>
+      <line num="2" count="2" type="stmt"/>
+      <line num="3" count="2" type="stmt"/>
+      <line num="12" count="2" type="stmt"/>
+      <line num="14" count="2" type="stmt"/>
+      <line num="19" count="4" type="stmt"/>
+      <line num="21" count="4" type="cond" truecount="0" falsecount="1"/>
+      <line num="22" count="0" type="stmt"/>
+      <line num="27" count="4" type="stmt"/>
+      <line num="28" count="4" type="stmt"/>
+      <line num="29" count="4" type="stmt"/>
+      <line num="34" count="4" type="stmt"/>
+      <line num="35" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="36" count="4" type="stmt"/>
+      <line num="39" count="4" type="stmt"/>
+      <line num="42" count="3" type="cond" truecount="5" falsecount="0"/>
+      <line num="43" count="1" type="stmt"/>
+      <line num="46" count="1" type="stmt"/>
+      <line num="47" count="2" type="cond" truecount="1" falsecount="1"/>
+      <line num="48" count="2" type="cond" truecount="1" falsecount="0"/>
+      <line num="49" count="2" type="stmt"/>
+      <line num="55" count="2" type="stmt"/>
+      <line num="56" count="2" type="stmt"/>
+      <line num="60" count="2" type="cond" truecount="0" falsecount="1"/>
+      <line num="61" count="0" type="stmt"/>
+      <line num="65" count="2" type="cond" truecount="1" falsecount="1"/>
+      <line num="66" count="4" type="stmt"/>
+      <line num="71" count="3" type="stmt"/>
+      <line num="78" count="4" type="cond" truecount="1" falsecount="1"/>
+      <line num="79" count="0" type="stmt"/>
+      <line num="80" count="4" type="cond" truecount="1" falsecount="1"/>
+      <line num="81" count="4" type="stmt"/>
+      <line num="82" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="83" count="0" type="stmt"/>
+      <line num="86" count="4" type="stmt"/>
+      <line num="121" count="4" type="stmt"/>
+      <line num="123" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="124" count="4" type="stmt"/>
+      <line num="125" count="4" type="stmt"/>
+      <line num="127" count="4" type="cond" truecount="1" falsecount="1"/>
+      <line num="128" count="4" type="cond" truecount="1" falsecount="1"/>
+      <line num="131" count="4" type="stmt"/>
+      <line num="141" count="7" type="stmt"/>
+      <line num="144" count="7" type="stmt"/>
+      <line num="145" count="8" type="stmt"/>
+      <line num="148" count="8" type="cond" truecount="1" falsecount="0"/>
+      <line num="150" count="2" type="stmt"/>
+      <line num="151" count="2" type="stmt"/>
+      <line num="156" count="6" type="stmt"/>
+      <line num="159" count="2" type="stmt"/>
+    </file>
+    <file name="process.ts" path="/Users/shayd/workspace/FastCI/fastci/src/otel-cicd-action/trace/process.ts">
+      <metrics statements="81" coveredstatements="6" conditionals="38" coveredconditionals="0" methods="14" coveredmethods="0"/>
+      <line num="1" count="2" type="stmt"/>
+      <line num="4" count="2" type="stmt"/>
+      <line num="13" count="2" type="stmt"/>
+      <line num="14" count="0" type="stmt"/>
+      <line num="17" count="0" type="stmt"/>
+      <line num="18" count="0" type="stmt"/>
+      <line num="26" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="27" count="0" type="stmt"/>
+      <line num="31" count="0" type="stmt"/>
+      <line num="34" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="35" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="36" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="37" count="0" type="stmt"/>
+      <line num="38" count="0" type="stmt"/>
+      <line num="39" count="0" type="stmt"/>
+      <line num="41" count="0" type="stmt"/>
+      <line num="46" count="0" type="stmt"/>
+      <line num="47" count="0" type="stmt"/>
+      <line num="50" count="0" type="stmt"/>
+      <line num="53" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="65" count="0" type="stmt"/>
+      <line num="67" count="0" type="stmt"/>
+      <line num="68" count="0" type="stmt"/>
+      <line num="76" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="77" count="0" type="stmt"/>
+      <line num="81" count="0" type="stmt"/>
+      <line num="84" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="85" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="86" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="87" count="0" type="stmt"/>
+      <line num="88" count="0" type="stmt"/>
+      <line num="89" count="0" type="stmt"/>
+      <line num="91" count="0" type="stmt"/>
+      <line num="96" count="0" type="stmt"/>
+      <line num="97" count="0" type="stmt"/>
+      <line num="100" count="0" type="stmt"/>
+      <line num="103" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="115" count="0" type="stmt"/>
+      <line num="116" count="0" type="stmt"/>
+      <line num="139" count="0" type="stmt"/>
+      <line num="141" count="0" type="stmt"/>
+      <line num="166" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="167" count="0" type="stmt"/>
+      <line num="168" count="0" type="stmt"/>
+      <line num="171" count="0" type="stmt"/>
+      <line num="179" count="2" type="stmt"/>
+      <line num="180" count="0" type="stmt"/>
+      <line num="181" count="0" type="stmt"/>
+      <line num="190" count="2" type="stmt"/>
+      <line num="194" count="0" type="stmt"/>
+      <line num="197" count="0" type="stmt"/>
+      <line num="198" count="0" type="stmt"/>
+      <line num="202" count="0" type="stmt"/>
+      <line num="203" count="0" type="stmt"/>
+      <line num="207" count="0" type="stmt"/>
+      <line num="209" count="0" type="stmt"/>
+      <line num="210" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="212" count="0" type="stmt"/>
+      <line num="214" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="215" count="0" type="stmt"/>
+      <line num="216" count="0" type="cond" truecount="0" falsecount="3"/>
+      <line num="217" count="0" type="stmt"/>
+      <line num="218" count="0" type="stmt"/>
+      <line num="223" count="0" type="stmt"/>
+      <line num="224" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="225" count="0" type="stmt"/>
+      <line num="226" count="0" type="stmt"/>
+      <line num="231" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="232" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="233" count="0" type="stmt"/>
+      <line num="234" count="0" type="stmt"/>
+      <line num="238" count="0" type="stmt"/>
+      <line num="246" count="2" type="stmt"/>
+      <line num="247" count="0" type="stmt"/>
+      <line num="248" count="0" type="stmt"/>
+      <line num="249" count="0" type="stmt"/>
+      <line num="250" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="252" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="253" count="0" type="stmt"/>
+      <line num="256" count="0" type="cond" truecount="0" falsecount="1"/>
+      <line num="257" count="0" type="stmt"/>
+    </file>
+    <file name="step.ts" path="/Users/shayd/workspace/FastCI/fastci/src/otel-cicd-action/trace/step.ts">
+      <metrics statements="15" coveredstatements="15" conditionals="18" coveredconditionals="14" methods="3" coveredmethods="3"/>
+      <line num="2" count="3" type="stmt"/>
+      <line num="7" count="5" type="stmt"/>
+      <line num="9" count="5" type="cond" truecount="3" falsecount="0"/>
+      <line num="10" count="3" type="stmt"/>
+      <line num="15" count="5" type="cond" truecount="3" falsecount="0"/>
+      <line num="16" count="2" type="cond" truecount="1" falsecount="1"/>
+      <line num="21" count="5" type="cond" truecount="1" falsecount="1"/>
+      <line num="22" count="5" type="stmt"/>
+      <line num="23" count="5" type="stmt"/>
+      <line num="25" count="5" type="stmt"/>
+      <line num="26" count="5" type="cond" truecount="2" falsecount="0"/>
+      <line num="27" count="5" type="stmt"/>
+      <line num="30" count="5" type="stmt"/>
+      <line num="35" count="5" type="stmt"/>
+      <line num="46" count="3" type="stmt"/>
+    </file>
+    <file name="workflow.ts" path="/Users/shayd/workspace/FastCI/fastci/src/otel-cicd-action/trace/workflow.ts">
+      <metrics statements="48" coveredstatements="43" conditionals="25" coveredconditionals="17" methods="6" coveredmethods="6"/>
+      <line num="2" count="1" type="stmt"/>
+      <line num="3" count="1" type="stmt"/>
+      <line num="4" count="1" type="stmt"/>
+      <line num="5" count="1" type="stmt"/>
+      <line num="14" count="4" type="stmt"/>
+      <line num="16" count="4" type="cond" truecount="1" falsecount="1"/>
+      <line num="17" count="4" type="stmt"/>
+      <line num="19" count="4" type="stmt"/>
+      <line num="23" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="24" count="4" type="stmt"/>
+      <line num="26" count="4" type="cond" truecount="1" falsecount="0"/>
+      <line num="29" count="4" type="stmt"/>
+      <line num="30" count="4" type="stmt"/>
+      <line num="33" count="4" type="stmt"/>
+      <line num="34" count="4" type="stmt"/>
+      <line num="35" count="4" type="stmt"/>
+      <line num="38" count="4" type="stmt"/>
+      <line num="39" count="4" type="stmt"/>
+      <line num="48" count="4" type="stmt"/>
+      <line num="89" count="4" type="stmt"/>
+      <line num="91" count="4" type="cond" truecount="1" falsecount="1"/>
+      <line num="92" count="0" type="stmt"/>
+      <line num="93" count="0" type="stmt"/>
+      <line num="95" count="0" type="stmt"/>
+      <line num="96" count="0" type="stmt"/>
+      <line num="97" count="0" type="stmt"/>
+      <line num="100" count="4" type="stmt"/>
+      <line num="104" count="4" type="stmt"/>
+      <line num="120" count="4" type="stmt"/>
+      <line num="126" count="4" type="cond" truecount="2" falsecount="0"/>
+      <line num="127" count="4" type="stmt"/>
+      <line num="128" count="4" type="stmt"/>
+      <line num="130" count="4" type="stmt"/>
+      <line num="131" count="4" type="stmt"/>
+      <line num="132" count="4" type="stmt"/>
+      <line num="133" count="4" type="stmt"/>
+      <line num="134" count="4" type="stmt"/>
+      <line num="135" count="4" type="stmt"/>
+      <line num="136" count="4" type="stmt"/>
+      <line num="137" count="4" type="stmt"/>
+      <line num="138" count="4" type="stmt"/>
+      <line num="139" count="4" type="stmt"/>
+      <line num="140" count="4" type="stmt"/>
+      <line num="141" count="4" type="stmt"/>
+      <line num="142" count="4" type="stmt"/>
+      <line num="143" count="4" type="stmt"/>
+      <line num="146" count="4" type="stmt"/>
+      <line num="149" count="1" type="stmt"/>
+    </file>
+  </project>
+</coverage>

@@ -53,7 +53,7 @@ async function traceJob( processTrees: ProcessTree[],
           });
         }
         await traceProcessTrees(stepProcesses, step);
-        await traceStep(step);
+          await traceStep(step);
       }
     } else {
       // Trace process trees without step association

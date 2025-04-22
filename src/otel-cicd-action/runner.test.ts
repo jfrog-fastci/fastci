@@ -1,3 +1,47 @@
+// Import Jest first
+import { describe, expect, it, jest, beforeEach } from '@jest/globals';
+
+// Mock all dependencies before importing them
+jest.mock('@actions/core', () => ({
+  getInput: jest.fn(),
+  setOutput: jest.fn(),
+  setFailed: jest.fn(),
+  info: jest.fn(),
+  error: jest.fn()
+}));
+
+jest.mock('@actions/github', () => ({
+  context: {
+    runId: 12345,
+    repo: { owner: 'test', repo: 'repo' }
+  },
+  getOctokit: jest.fn()
+}));
+
+jest.mock('@octokit/request-error');
+
+jest.mock('fs', () => ({
+  existsSync: jest.fn(),
+  readFileSync: jest.fn()
+}));
+
+// Mock other dependencies
+jest.mock('./tracer', () => ({
+  createTracerProvider: jest.fn()
+}));
+
+jest.mock('./trace/workflow', () => ({
+  traceWorkflowRun: jest.fn()
+}));
+
+jest.mock('./github', () => ({
+  getWorkflowRun: jest.fn(),
+  listJobsForWorkflowRun: jest.fn(),
+  getJobsAnnotations: jest.fn(),
+  getPRsLabels: jest.fn()
+}));
+
+// Import dependencies after mocking
 import * as core from '@actions/core';
 import { context, getOctokit } from '@actions/github';
 import { RequestError } from '@octokit/request-error';
@@ -8,18 +52,6 @@ import { RunCiCdOtelExport, loadProcessTrees } from './runner';
 import { createTracerProvider } from './tracer';
 import { traceWorkflowRun } from './trace/workflow';
 import { getJobsAnnotations, getPRsLabels, getWorkflowRun, listJobsForWorkflowRun } from './github';
-
-// Import Jest
-import { describe, expect, it, jest, beforeEach } from '@jest/globals';
-
-// Mock dependencies
-jest.mock('@actions/core');
-jest.mock('@actions/github');
-jest.mock('@octokit/request-error');
-jest.mock('fs');
-jest.mock('./tracer');
-jest.mock('./trace/workflow');
-jest.mock('./github');
 
 describe('runner.ts', () => {
   const mockTraceId = '1234567890abcdef';
@@ -92,8 +124,8 @@ describe('runner.ts', () => {
     jest.clearAllMocks();
     
     // Setup core mocks
-    (core.getInput as jest.MockedFunction<typeof core.getInput>).mockImplementation((name) => {
-      const inputs = {
+    (core.getInput as jest.Mock).mockImplementation((name) => {
+      const inputs: Record<string, string> = {
         'fastci_otel_endpoint': 'http://otel.example.com',
         'fastci_otel_token': 'token123',
         'otelServiceName': 'test-service',
@@ -104,26 +136,19 @@ describe('runner.ts', () => {
       return inputs[name] || '';
     });
     
-    // Setup context mock
-    (context as any).runId = 12345;
-    (context as any).repo = { owner: 'test', repo: 'repo' };
-    
-    // Setup octokit mock
-    (getOctokit as jest.MockedFunction<typeof getOctokit>).mockReturnValue({} as any);
-    
     // Setup GitHub API mocks
-    (getWorkflowRun as jest.MockedFunction<typeof getWorkflowRun>).mockResolvedValue(mockWorkflowRun as any);
-    (listJobsForWorkflowRun as jest.MockedFunction<typeof listJobsForWorkflowRun>).mockResolvedValue(mockJobs as any);
-    (getJobsAnnotations as jest.MockedFunction<typeof getJobsAnnotations>).mockResolvedValue(mockJobAnnotations as any);
-    (getPRsLabels as jest.MockedFunction<typeof getPRsLabels>).mockResolvedValue(mockPrLabels as any);
+    (getWorkflowRun as jest.Mock).mockResolvedValue(mockWorkflowRun);
+    (listJobsForWorkflowRun as jest.Mock).mockResolvedValue(mockJobs);
+    (getJobsAnnotations as jest.Mock).mockResolvedValue(mockJobAnnotations);
+    (getPRsLabels as jest.Mock).mockResolvedValue(mockPrLabels);
     
     // Setup tracer mocks
-    (createTracerProvider as jest.MockedFunction<typeof createTracerProvider>).mockReturnValue(mockProvider as any);
-    (traceWorkflowRun as jest.MockedFunction<typeof traceWorkflowRun>).mockResolvedValue(mockTraceId);
+    (createTracerProvider as jest.Mock).mockReturnValue(mockProvider);
+    (traceWorkflowRun as jest.Mock).mockResolvedValue(mockTraceId);
     
     // Setup fs mocks
-    (fs.existsSync as jest.MockedFunction<typeof fs.existsSync>).mockReturnValue(true);
-    (fs.readFileSync as jest.MockedFunction<typeof fs.readFileSync>).mockReturnValue(JSON.stringify(mockProcessTrees));
+    (fs.existsSync as jest.Mock).mockReturnValue(true);
+    (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockProcessTrees));
   });
 
   describe('loadProcessTrees', () => {
@@ -136,7 +161,7 @@ describe('runner.ts', () => {
     });
 
     it('should return empty array when file does not exist', () => {
-      (fs.existsSync as jest.MockedFunction<typeof fs.existsSync>).mockReturnValue(false);
+      (fs.existsSync as jest.Mock).mockReturnValue(false);
       
       const result = loadProcessTrees();
       
@@ -145,7 +170,7 @@ describe('runner.ts', () => {
     });
 
     it('should return empty array when file is empty', () => {
-      (fs.readFileSync as jest.MockedFunction<typeof fs.readFileSync>).mockReturnValue('');
+      (fs.readFileSync as jest.Mock).mockReturnValue('');
       
       const result = loadProcessTrees();
       
@@ -154,7 +179,7 @@ describe('runner.ts', () => {
     });
 
     it('should return empty array and log error when JSON parsing fails', () => {
-      (fs.readFileSync as jest.MockedFunction<typeof fs.readFileSync>).mockReturnValue('invalid json');
+      (fs.readFileSync as jest.Mock).mockReturnValue('invalid json');
       
       const result = loadProcessTrees();
       
@@ -207,7 +232,7 @@ describe('runner.ts', () => {
 
     it('should handle errors gracefully', async () => {
       const mockError = new Error('Test error');
-      (getWorkflowRun as jest.MockedFunction<typeof getWorkflowRun>).mockRejectedValue(mockError);
+      (getWorkflowRun as jest.Mock).mockRejectedValue(mockError);
       
       await RunCiCdOtelExport();
       
@@ -215,11 +240,18 @@ describe('runner.ts', () => {
     });
 
     it('should handle RequestError for job annotations', async () => {
-      const mockRequestError = new RequestError('API rate limit exceeded', 403, {
-        headers: {},
-        request: { method: 'GET', url: 'https://api.github.com/test' }
-      });
-      (getJobsAnnotations as jest.MockedFunction<typeof getJobsAnnotations>).mockRejectedValue(mockRequestError);
+      // Create a RequestError
+      const mockRequestOptions = {
+        headers: { 'x-ratelimit-remaining': '0' },
+        request: { 
+          method: 'GET', 
+          url: 'https://api.github.com/test', 
+          headers: { 'accept': 'application/vnd.github.v3+json' } 
+        }
+      };
+      const mockRequestError = new RequestError('API rate limit exceeded', 403, mockRequestOptions as any);
+      
+      (getJobsAnnotations as jest.Mock).mockRejectedValue(mockRequestError);
       
       await RunCiCdOtelExport();
       
@@ -228,11 +260,18 @@ describe('runner.ts', () => {
     });
 
     it('should handle RequestError for PR labels', async () => {
-      const mockRequestError = new RequestError('API rate limit exceeded', 403, {
-        headers: {},
-        request: { method: 'GET', url: 'https://api.github.com/test' }
-      });
-      (getPRsLabels as jest.MockedFunction<typeof getPRsLabels>).mockRejectedValue(mockRequestError);
+      // Create a RequestError
+      const mockRequestOptions = {
+        headers: { 'x-ratelimit-remaining': '0' },
+        request: { 
+          method: 'GET', 
+          url: 'https://api.github.com/test', 
+          headers: { 'accept': 'application/vnd.github.v3+json' } 
+        }
+      };
+      const mockRequestError = new RequestError('API rate limit exceeded', 403, mockRequestOptions as any);
+      
+      (getPRsLabels as jest.Mock).mockRejectedValue(mockRequestError);
       
       await RunCiCdOtelExport();
       
