@@ -32,7 +32,7 @@ inputs:
   extra_attributes:
     description: "Extra attributes to add to the trace"
     required: false
-    default: "cx.subsystem.name=${{github.repository}},cx.application.name=${{github.repository_owner}},ci.pipeline.name=${{github.workflow}},ci.pipeline.run_id=${{github.run_id}}"
+    default: "cx.subsystem.name=${{github.repository}},cx.application.name=${{github.repository_owner}},cicd.pipeline.name=${{github.workflow}},cicd.pipeline.run_id=${{github.run_id}},cicd.pipeline.repository=${{github.repository}},cicd.pipeline.repository_owner=${{github.repository_owner}}"
 
 
 runs:
