@@ -2,11 +2,13 @@ import type { components } from "@octokit/openapi-types";
 import { type Attributes, SpanStatusCode, trace } from "@opentelemetry/api";
 import { ProcessTree } from "../../types/process";
 import { traceProcessTree } from "./process";
-import { info } from "@actions/core";
+import { debug, info } from "@actions/core";
 
 type Step = NonNullable<components["schemas"]["job"]["steps"]>[number];
 
 async function traceStep(step: Step, processTree: ProcessTree[]) {
+  debug(`Tracing step ${step.name}`);
+  debug(JSON.stringify(step, null, 2));
   const tracer = trace.getTracer("otel-cicd-action");
 
   if (!step.completed_at || !step.started_at) {

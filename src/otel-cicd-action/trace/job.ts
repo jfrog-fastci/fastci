@@ -77,7 +77,7 @@ function jobToAttributes(job: components["schemas"]["job"]): Attributes {
     "github.job.conclusion": job.conclusion ?? undefined,
     "github.job.labels": job.labels.join(", "),
     "github.job.created_at": (job as any).created_at,
-    "github.job.started_at": job.started_at,
+    "github.job.started_at": job?.started_at,
     "github.job.completed_at": job.completed_at ?? undefined,
     "github.conclusion": job.conclusion ?? undefined, // FIXME: it overrides the workflow conclusion
     "github.job.check_run_url": job.check_run_url,
