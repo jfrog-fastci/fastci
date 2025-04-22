@@ -1,4 +1,4 @@
-import * as grpc from "@grpc/grpc-js";
+import {credentials, Metadata} from "@grpc/grpc-js";
 import { context } from "@opentelemetry/api";
 import { AsyncHooksContextManager } from "@opentelemetry/context-async-hooks";
 import { OTLPTraceExporter as GrpcOTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
@@ -48,8 +48,8 @@ function createTracerProvider(endpoint: string, headers: string, attributes: Res
     } else {
       exporter = new GrpcOTLPTraceExporter({
         url: endpoint,
-        credentials: grpc.credentials.createSsl(),
-        metadata: grpc.Metadata.fromHttp2Headers(stringToRecord(headers)),
+        credentials: credentials.createSsl(),
+        metadata: Metadata.fromHttp2Headers(stringToRecord(headers)),
       });
     }
   }

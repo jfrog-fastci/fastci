@@ -1,11 +1,7 @@
 import * as core from '@actions/core';
-import { exec } from '@actions/exec';
 import * as fs from 'fs';
 import { RunCiCdOtelExport } from './otel-cicd-action/runner';
-
-const FASTCI_TEMP_DIR = '/tmp/fastci';
-const PROCESS_TREES_PATH = `${FASTCI_TEMP_DIR}/process_trees.json`;
-const TRIGGER_FILE_PATH = `${FASTCI_TEMP_DIR}/trigger`;
+import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/constants';
 
 async function runOtelExport(): Promise<void> {
     try {
@@ -51,7 +47,7 @@ async function waitForProcessTreesFile(timeoutSeconds: number): Promise<boolean>
         }
         
         // Only log every 5 seconds to avoid flooding the logs
-        if (currentTime - lastLogTime >= 5000) {
+        if (currentTime - lastLogTime >= 1000) {
             core.info(`Still waiting for process_trees.json to have content... (${elapsedSeconds}s elapsed)`);
             lastLogTime = currentTime;
         }
@@ -60,14 +56,14 @@ async function waitForProcessTreesFile(timeoutSeconds: number): Promise<boolean>
     }
 }
 
-async function displayProcessTreesFile(): Promise<void> {
-    if (fs.existsSync(PROCESS_TREES_PATH)) {
-        await exec(`cat ${PROCESS_TREES_PATH}`);
-        core.info('Tracer process stopped successfully');
-    } else {
-        core.info('process_trees.json file does not exist after waiting');
-    }
-}
+// async function displayProcessTreesFile(): Promise<void> {
+//     if (fs.existsSync(PROCESS_TREES_PATH)) {
+//         await exec(`cat ${PROCESS_TREES_PATH}`);
+//         core.info('Tracer process stopped successfully');
+//     } else {
+//         core.info('process_trees.json file does not exist after waiting');
+//     }
+// }
 
 async function verifyProcessTreesExists(): Promise<void> {
     if (fs.existsSync(PROCESS_TREES_PATH)) {
@@ -82,10 +78,10 @@ async function stopTracerProcess(): Promise<void> {
         core.info('Stopping tracer process...');
         await createTriggerFile();
         
-        const timeoutSeconds = 10;
+        const timeoutSeconds = 2;
         await waitForProcessTreesFile(timeoutSeconds);
         
-        await displayProcessTreesFile();
+        // await displayProcessTreesFile();
     } catch (error) {
         core.info(error as any);
         core.info('No tracer process found or unable to stop it');
@@ -94,9 +90,9 @@ async function stopTracerProcess(): Promise<void> {
 
 async function cleanup(): Promise<void> {
     try {
-        await runOtelExport();
         await stopTracerProcess();
         await verifyProcessTreesExists();
+        await runOtelExport();
         
         core.info('Cleanup completed');
     } catch (error) {

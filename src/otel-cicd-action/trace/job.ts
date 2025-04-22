@@ -10,8 +10,9 @@ import {
   CICD_PIPELINE_TASK_TYPE_VALUE_TEST,
 } from "@opentelemetry/semantic-conventions/incubating";
 import { traceStep } from "./step";
+import { ProcessTree } from "../../types/process";
 
-async function traceJob(job: components["schemas"]["job"], annotations?: components["schemas"]["check-annotation"][]) {
+async function traceJob(processTrees: ProcessTree[], job: components["schemas"]["job"], annotations?: components["schemas"]["check-annotation"][]) {
   const tracer = trace.getTracer("otel-cicd-action");
 
   if (!job.completed_at) {
@@ -32,7 +33,7 @@ async function traceJob(job: components["schemas"]["job"], annotations?: compone
     span.setStatus({ code });
 
     for (const step of job.steps ?? []) {
-      await traceStep(step);
+      await traceStep(step, processTrees);
     }
 
     // Some skipped and post jobs return completed_at dates that are older than started_at

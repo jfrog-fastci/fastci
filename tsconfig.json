@@ -4,7 +4,7 @@
     "module": "Node16",
     "moduleResolution": "node16",
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -15,5 +15,6 @@
     "noUnusedParameters": true,
     "skipLibCheck": true
   },
+  "include": ["src/**/*", "jest.config.ts"],
   "exclude": ["node_modules", "**/*.test.ts"]
 } 

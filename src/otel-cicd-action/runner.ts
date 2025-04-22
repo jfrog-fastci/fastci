@@ -5,6 +5,9 @@ import  { ResourceAttributes } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAMESPACE } from "@opentelemetry/semantic-conventions/incubating";
 import { getJobsAnnotations, getPRsLabels, getWorkflowRun, listJobsForWorkflowRun } from "./github";
+import { PROCESS_TREES_PATH } from "../types/constants";
+import { ProcessTree } from "../types/process";
+import * as fs from "fs";
 
 import { createTracerProvider, stringToRecord } from "./tracer";
 import { traceWorkflowRun } from "./trace/workflow";
@@ -62,7 +65,7 @@ export async function RunCiCdOtelExport() {
     const { workflowRun, jobs, jobAnnotations, prLabels } = await fetchGithub(ghToken, runId);
 
     
-    core.info(`Jobs: ${JSON.stringify(jobs)}`);
+    // core.info(`Jobs: ${JSON.stringify(jobs)}`);
     
     core.info(`Create tracer provider for ${otlpEndpoint}`);
     const attributes: ResourceAttributes = {
@@ -79,8 +82,13 @@ export async function RunCiCdOtelExport() {
     };
     const provider = createTracerProvider(otlpEndpoint, otlpHeaders, attributes);
 
+    const processTrees = loadProcessTrees();
+
+    // core.info(`Process trees: ${JSON.stringify(processTrees, null, 2)}`);
+
+
     core.info(`Trace workflow run for ${runId} and export to ${otlpEndpoint}`);
-    const traceId = await traceWorkflowRun(workflowRun, jobs, jobAnnotations, prLabels);
+    const traceId = await traceWorkflowRun(processTrees, workflowRun, jobs, jobAnnotations, prLabels);
 
     core.setOutput("traceId", traceId);
     core.info(`traceId: ${traceId}`);
@@ -92,5 +100,32 @@ export async function RunCiCdOtelExport() {
   } catch (error) {
     const message = error instanceof Error ? error : JSON.stringify(error);
     core.setFailed(message);
+  }
+}
+
+export function loadProcessTrees(): ProcessTree[] {
+  const startTime = Date.now();
+  try {
+    if (!fs.existsSync(PROCESS_TREES_PATH)) {
+      core.info(`Process trees file does not exist at ${PROCESS_TREES_PATH}`);
+      return [];
+    }
+    
+    const fileContent = fs.readFileSync(PROCESS_TREES_PATH, 'utf-8');
+    if (!fileContent || fileContent.trim() === '') {
+      core.info('Process trees file is empty');
+      return [];
+    }
+    
+    const processTrees = JSON.parse(fileContent) as ProcessTree[];
+    const duration = Date.now() - startTime;
+    core.info(`Loaded ${processTrees.length} process trees in ${duration}ms`);
+    return processTrees;
+  } catch (error) {
+    core.error(`Failed to load process trees: ${error instanceof Error ? error.message : String(error)}`);
+    return [];
+  } finally {
+    const totalDuration = Date.now() - startTime;
+    core.info(`Total time to process and load trees: ${totalDuration}ms`);
   }
 }

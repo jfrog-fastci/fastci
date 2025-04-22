@@ -26,3 +26,5 @@ lib/
 .idea/
 .DS_Store
 Thumbs.db 
+coverage/*
+coverage/clover.xml

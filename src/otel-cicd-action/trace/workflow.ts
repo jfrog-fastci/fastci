@@ -3,7 +3,9 @@ import { type Attributes, SpanStatusCode, context, trace } from "@opentelemetry/
 import { ATTR_CICD_PIPELINE_NAME, ATTR_CICD_PIPELINE_RUN_ID } from "@opentelemetry/semantic-conventions/incubating";
 import { traceJob } from "./job";
 import * as core from "@actions/core";
+import { ProcessTree } from "../../types/process";
 async function traceWorkflowRun(
+  processTrees: ProcessTree[],
   workflowRun: components["schemas"]["workflow-run"],
   jobs: components["schemas"]["job"][],
   jobAnnotations: Record<number, components["schemas"]["check-annotation"][]>,
@@ -30,7 +32,7 @@ async function traceWorkflowRun(
 
       for (const job of jobs) {
         core.info(`Tracing job ${job.name}`);
-        await traceJob(job, jobAnnotations[job.id]);
+        await traceJob(processTrees, job, jobAnnotations[job.id]);
       }
 
       rootSpan.end(new Date(workflowRun.updated_at));
