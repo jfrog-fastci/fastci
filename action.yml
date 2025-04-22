@@ -9,7 +9,7 @@ inputs:
   jfrog_password_writer:
     description: "JFrog Password Writer"
     required: false
-    default: ${{ secrets.JFROG_PASSWORD_WRITER }}
+    
 
   fastci_otel_endpoint:
     description: "OpenTelemetry Endpoint that will receive the traces"
@@ -18,8 +18,7 @@ inputs:
 
   github_token:
     description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
-    required: false
-    default: ${{ secrets.GITHUB_TOKEN }}
+    required: true
 
   fastci_otel_token:
     description: "OpenTelemetry token"
