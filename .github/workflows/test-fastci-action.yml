@@ -1,0 +1,50 @@
+name: Test FastCI Action
+
+on:
+  push:
+    branches:
+      - feature/test-workflow-for-github-action
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-fastci-action:
+    name: Test FastCI Action
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build
+        
+      - name: Package
+        run: npm run package
+        
+      - name: Run FastCI Action
+        uses: ./
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+          # Optional parameters
+          fastci_otel_endpoint: "ingress.coralogix.us"
+          tracer_version: "v0.4.0"
+          extra_attributes: "test_run=true,test_workflow=github_action"
+          
+      - name: Verify Action Output
+        run: |
+          echo "FastCI Action test completed"
+          # Add additional verification steps as needed 
