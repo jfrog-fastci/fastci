@@ -34,8 +34,3 @@ jobs:
     - name: Package
       run: npm run package
       
-    - name: Run FastCI Action
-      uses: ./
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}

@@ -28331,10 +28331,10 @@ async function run() {
     }
     catch (error) {
         if (error instanceof Error) {
-            core.setFailed(error.message);
+            core.warning(error.message);
         }
         else {
-            core.setFailed('An unknown error occurred');
+            core.warning('An unknown error occurred');
         }
     }
 }
