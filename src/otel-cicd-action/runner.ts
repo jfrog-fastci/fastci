@@ -99,7 +99,7 @@ export async function RunCiCdOtelExport() {
     core.debug("Provider shutdown");
   } catch (error) {
     const message = error instanceof Error ? error : JSON.stringify(error);
-    core.setFailed(message);
+    core.warning(message);
   }
 }
 
