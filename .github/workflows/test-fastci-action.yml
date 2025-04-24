@@ -3,7 +3,7 @@ name: Test FastCI Action
 on:
   push:
     branches:
-      - feature/test-workflow-for-github-action
+      - main
   pull_request:
     branches:
       - main
@@ -39,12 +39,3 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
-          # Optional parameters
-          fastci_otel_endpoint: "ingress.coralogix.us"
-          tracer_version: "v0.4.0"
-          extra_attributes: "test_run=true,test_workflow=github_action"
-          
-      - name: Verify Action Output
-        run: |
-          echo "FastCI Action test completed"
-          # Add additional verification steps as needed 
