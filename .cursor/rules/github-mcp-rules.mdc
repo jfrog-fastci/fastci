@@ -1,0 +1,48 @@
+---
+description: Rules for how to use the GitHub MCP tools and how to manage our tasks via GitHub Projects and Issues
+globs: 
+alwaysApply: false
+---
+# FastCI Task Manager
+
+A task management system for the FastCI repository that helps with GitHub issues and projects integration.
+
+Use the github mcp tool!!!
+
+
+## Features
+
+- Enforces branch naming conventions: `[feature/bugfix/refactor/other]/fast-000-task-title`
+- Lists tasks in current iteration at the start of a new session
+- Manages task assignment, including support for AI agent tasks
+- Automates branch creation from issues
+- Tracks task status across GitHub Projects
+
+## Settings
+Project URL: https://github.com/orgs/jfrog-fastci/projects/1
+Project ID: 1
+
+
+## How to use the Github MCP tools
+1. Always get the full context of: 
+    a. Issues in TODO, In Progress
+2. Make sure every issues that you create have:
+    a. Repo that is related to.
+    b. Assignee: list the available user options or tag as "For AI Agent" if the task is marked as good for AI developement.
+    c. Effort estimation.
+    d. Priotiry
+    e. Labels 
+    f. Type: feature, bug, task
+    g. Relation ship: if the task is related to other issue/task make sure it is linked properly on task creation.
+
+Scope is always!
+{
+  "owner": "jfrog-fastci",
+}
+
+## Handeling Errors
+If you encounter any errors or issues, please notify me immediately with specific details. Don't attempt to work around them on your own.
+Please be explicit about:
+
+What exactly went wrong
+What I need to do to fix the problem
