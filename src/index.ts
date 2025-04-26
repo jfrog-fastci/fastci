@@ -25,7 +25,7 @@ async function run(): Promise<void> {
         );
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
-        core.debug('Downloading tracer binary.. ' + tracerUrl);
+        core.info('Downloading tracer binary.. ' + tracerUrl);
         logger.debug('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
 
@@ -33,7 +33,6 @@ async function run(): Promise<void> {
         const tracerBinPath = path.join(process.cwd(), 'tracer-bin');
         await io.cp(tracerPath, tracerBinPath);
         await fs.promises.chmod(tracerBinPath, '755');
-        process.env["OTEL.ENDPOINT"] = otelEndpoint
         process.env["OTEL.ENDPOINT"] = otelEndpoint
         process.env["OTEL.TOKEN"] = otelToken
         

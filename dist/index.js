@@ -43171,14 +43171,13 @@ async function run() {
         });
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
-        core.debug('Downloading tracer binary.. ' + tracerUrl);
+        core.info('Downloading tracer binary.. ' + tracerUrl);
         logger.debug('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
         // Move to tracer-bin and make executable
         const tracerBinPath = path.join(process.cwd(), 'tracer-bin');
         await io.cp(tracerPath, tracerBinPath);
         await fs.promises.chmod(tracerBinPath, '755');
-        process.env["OTEL.ENDPOINT"] = otelEndpoint;
         process.env["OTEL.ENDPOINT"] = otelEndpoint;
         process.env["OTEL.TOKEN"] = otelToken;
         // expose github actions env variables
@@ -43240,58 +43239,7 @@ function createSharedLogger({ applicationName = "fastci-github-action", privateK
     });
     Coralogix.CoralogixLogger.configure(config);
     // create a new logger with category 
-    const logger = new Coralogix.CoralogixLogger(category);
-    // Add helper methods for common log levels
-    return {
-        log: (text, className = "className", methodName = "methodName") => {
-            const log = new Coralogix.Log({
-                severity: Coralogix.Severity.info,
-                className,
-                methodName,
-                text
-            });
-            logger.addLog(log);
-        },
-        info: (text, className = "className", methodName = "methodName") => {
-            const log = new Coralogix.Log({
-                severity: Coralogix.Severity.info,
-                className,
-                methodName,
-                text
-            });
-            logger.addLog(log);
-        },
-        debug: (text, className = "className", methodName = "methodName") => {
-            const log = new Coralogix.Log({
-                severity: Coralogix.Severity.debug,
-                className,
-                methodName,
-                text
-            });
-            logger.addLog(log);
-        },
-        warning: (text, className = "className", methodName = "methodName") => {
-            const log = new Coralogix.Log({
-                severity: Coralogix.Severity.warning,
-                className,
-                methodName,
-                text
-            });
-            logger.addLog(log);
-        },
-        error: (text, className = "className", methodName = "methodName") => {
-            const log = new Coralogix.Log({
-                severity: Coralogix.Severity.error,
-                className,
-                methodName,
-                text
-            });
-            logger.addLog(log);
-        },
-        addLog: (log) => {
-            logger.addLog(log);
-        }
-    };
+    return new Coralogix.CoralogixLogger(category);
 }
 // Example usage:
 // const logger = createSharedLogger({
