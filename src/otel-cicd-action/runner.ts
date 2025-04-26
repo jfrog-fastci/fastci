@@ -119,7 +119,7 @@ export function loadProcessTrees(): ProcessTree[] {
     
     const processTrees = JSON.parse(fileContent) as ProcessTree[];
     const duration = Date.now() - startTime;
-    core.debug(`Loaded ${processTrees.length} process trees in ${duration}ms`);
+    core.debug(`Loaded ${processTrees?.length} process trees in ${duration}ms`);
     return processTrees;
   } catch (error) {
     core.error(`Failed to load process trees: ${error instanceof Error ? error.message : String(error)}`);

@@ -31,7 +31,7 @@ async function traceStep(step: Step, processTree: ProcessTree[]) {
     span.setStatus({ code });
 
     const stepRootProcesses = findRootProcessesRelatedToStep(step, processTree);
-    info(`Found ${stepRootProcesses.length} root processes related to step ${step.name}`);
+    info(`Found ${stepRootProcesses?.length} root processes related to step ${step.name}`);
     for (const process of stepRootProcesses) {
       await traceProcessTree(process, step);
     }

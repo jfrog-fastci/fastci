@@ -1,7 +1,7 @@
 import { trace, SpanStatusCode, context, Span } from "@opentelemetry/api";
 import { ProcessTree, FileEvent } from "../../types/process";
 import type { components } from "@octokit/openapi-types";
-import { info } from "@actions/core";
+import { debug } from "@actions/core";
 // Define the Step type similar to how step.ts defines it
 type Step = NonNullable<components["schemas"]["job"]["steps"]>[number];
 
@@ -14,7 +14,7 @@ export async function traceProcessTree(processTree: ProcessTree, step?: Step): P
   const tracer = trace.getTracer("otel-cicd-action");
   
   // Create the parent process span
-  info(`Tracing process tree ${processTree.process.command}`);
+  debug(`Tracing process tree ${processTree.process.command}`);
   await tracer.startActiveSpan(
     processTree.process.command || "process",
     { 
@@ -152,8 +152,8 @@ function processToAttributes(processTree: ProcessTree, step?: Step): Record<stri
     "process.cpu_time": process.cpu_time,
     "process.memory_usage": process.memory_usage,
     "process.is_root_ci_step": process.is_root_ci_step,
-    "process.child_count": processTree.children.length,
-    "process.file_event_count": processTree.file_events.length,
+    "process.child_count": processTree?.children?.length,
+    "process.file_event_count": processTree?.file_events?.length,
     // Some custom process-specific attributes to help with analysis
     "is_shell": /sh$|bash$|zsh$|fish$|cmd.exe$|powershell.exe$/i.test(process.binary_path),
     "is_package_manager": /npm|yarn|pnpm|pip|composer|gem|mvn|gradle|nuget/i.test(process.command),

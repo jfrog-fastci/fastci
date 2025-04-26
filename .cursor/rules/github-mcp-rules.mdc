@@ -1,5 +1,5 @@
 ---
-description: Rules for how to use the GitHub MCP tools and how to manage our tasks via GitHub Projects and Issues
+description: Rules for how to use the GitHub cli and how to manage our tasks via GitHub Projects and Issues
 globs: 
 alwaysApply: false
 ---
@@ -7,7 +7,7 @@ alwaysApply: false
 
 A task management system for the FastCI repository that helps with GitHub issues and projects integration.
 
-Use the github mcp tool!!!
+Use the gh cli in terminal for all of your commands!!!
 
 
 ## Features
@@ -35,10 +35,43 @@ Project ID: 1
     f. Type: feature, bug, task
     g. Relation ship: if the task is related to other issue/task make sure it is linked properly on task creation.
 
+## Commands for Listing Tasks
+To list all tasks in the project:
+```
+gh project item-list <item-number> --owner jfrog-fastci --format json
+```
+
+To add assignee to task:
+```
+gh issue edit <item-number> --repo <repo_name> --add-assignee <assignee_name>
+```
+
 Scope is always!
 {
   "owner": "jfrog-fastci",
 }
+
+## Creating Branches for Tasks
+To create a branch for a task and check it out:
+
+1. Get the issue number from the project:
+```
+gh project item-list 1 --owner jfrog-fastci --format json | jq '.[] | select(.content.title=="Your Task Title")'
+```
+
+2. Create a branch from the issue and check it out in one step:
+```
+gh issue develop <issue-number> --repo <repo-name> --branch-name "[feature/bugfix/refactor/other]/fast-<issue-number>-task-title" --checkout
+```
+
+This will automatically create the branch following the naming convention, pull it, and check it out locally.
+
+If you need to do it manually:
+```
+gh issue develop <issue-number> --repo <repo-name> --branch-name "[feature/bugfix/refactor/other]/fast-<issue-number>-task-title"
+git fetch
+git checkout <branch-name>
+```
 
 ## Handeling Errors
 If you encounter any errors or issues, please notify me immediately with specific details. Don't attempt to work around them on your own.

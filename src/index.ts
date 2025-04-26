@@ -4,7 +4,7 @@ import * as io from '@actions/io';
 import * as tc from '@actions/tool-cache';
 import * as path from 'path';
 import * as fs from 'fs';
-import { exposeRuntime } from './export-gh-env';
+
 
 async function run(): Promise<void> {
     try {
@@ -14,10 +14,10 @@ async function run(): Promise<void> {
         const otelEndpoint = core.getInput('fastci_otel_endpoint', { required: true });
         const otelToken = core.getInput('fastci_otel_token', { required: true });
         const tracerVersion = core.getInput('tracer_version');
-
+       
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
-        core.debug('Downloading tracer binary.. ' + tracerUrl);
+        core.info('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
 
         // Move to tracer-bin and make executable
@@ -26,10 +26,6 @@ async function run(): Promise<void> {
         await fs.promises.chmod(tracerBinPath, '755');
         process.env["OTEL.ENDPOINT"] = otelEndpoint
         process.env["OTEL.TOKEN"] = otelToken
-        
-        // expose github actions env variables
-        core.debug('Exposing runtime environment variables starting with GITHUB_');
-        await exposeRuntime();
         
         // Start tracer
         core.debug('Starting tracer...');
