@@ -3,10 +3,10 @@
 var Coralogix = require("coralogix-logger");
 
 interface LoggerOptions {
-    applicationName?: string;
-    privateKey?: string;
-    subsystemName?: string;
-    category?: string;
+  applicationName?: string;
+  privateKey?: string;
+  subsystemName?: string;
+  category?: string;
 }
 
 /**
@@ -19,23 +19,74 @@ interface LoggerOptions {
  * @returns {Object} - Configured logger instance
  */
 export function createSharedLogger({
-    applicationName = "fastci-github-action",
-    privateKey = "your-private-key",
-    subsystemName = "[repo]/[workflow]",
-    category = "CI"
+  applicationName = "fastci-github-action",
+  privateKey = "your-private-key",
+  subsystemName = "[repo]/[workflow]",
+  category = "CI"
 }: LoggerOptions = {}) {
-    // global config for application name, private key, subsystem name 
-    const config = new Coralogix.LoggerConfig({
-        applicationName,
-        privateKey,
-        subsystemName,
-    });
+  // global config for application name, private key, subsystem name 
+  const config = new Coralogix.LoggerConfig({
+    applicationName,
+    privateKey,
+    subsystemName,
+  });
 
-    Coralogix.CoralogixLogger.configure(config);
+  Coralogix.CoralogixLogger.configure(config);
 
-    // create a new logger with category 
-    return new Coralogix.CoralogixLogger(category);
-
+  // create a new logger with category 
+  const logger = new Coralogix.CoralogixLogger(category);
+  
+  // Add helper methods for common log levels
+  return {
+    log: (text: string, className: string = "className", methodName: string = "methodName") => {
+      const log = new Coralogix.Log({
+        severity: Coralogix.Severity.info,
+        className,
+        methodName,
+        text
+      });
+      logger.addLog(log);
+    },
+    info: (text: string, className: string = "className", methodName: string = "methodName") => {
+      const log = new Coralogix.Log({
+        severity: Coralogix.Severity.info,
+        className,
+        methodName,
+        text
+      });
+      logger.addLog(log);
+    },
+    debug: (text: string, className: string = "className", methodName: string = "methodName") => {
+      const log = new Coralogix.Log({
+        severity: Coralogix.Severity.debug,
+        className,
+        methodName,
+        text
+      });
+      logger.addLog(log);
+    },
+    warning: (text: string, className: string = "className", methodName: string = "methodName") => {
+      const log = new Coralogix.Log({
+        severity: Coralogix.Severity.warning,
+        className,
+        methodName,
+        text
+      });
+      logger.addLog(log);
+    },
+    error: (text: string, className: string = "className", methodName: string = "methodName") => {
+      const log = new Coralogix.Log({
+        severity: Coralogix.Severity.error,
+        className,
+        methodName,
+        text
+      });
+      logger.addLog(log);
+    },
+    addLog: (log: any) => {
+      logger.addLog(log);
+    }
+  };
 }
 
 // Example usage:

@@ -43240,7 +43240,58 @@ function createSharedLogger({ applicationName = "fastci-github-action", privateK
     });
     Coralogix.CoralogixLogger.configure(config);
     // create a new logger with category 
-    return new Coralogix.CoralogixLogger(category);
+    const logger = new Coralogix.CoralogixLogger(category);
+    // Add helper methods for common log levels
+    return {
+        log: (text, className = "className", methodName = "methodName") => {
+            const log = new Coralogix.Log({
+                severity: Coralogix.Severity.info,
+                className,
+                methodName,
+                text
+            });
+            logger.addLog(log);
+        },
+        info: (text, className = "className", methodName = "methodName") => {
+            const log = new Coralogix.Log({
+                severity: Coralogix.Severity.info,
+                className,
+                methodName,
+                text
+            });
+            logger.addLog(log);
+        },
+        debug: (text, className = "className", methodName = "methodName") => {
+            const log = new Coralogix.Log({
+                severity: Coralogix.Severity.debug,
+                className,
+                methodName,
+                text
+            });
+            logger.addLog(log);
+        },
+        warning: (text, className = "className", methodName = "methodName") => {
+            const log = new Coralogix.Log({
+                severity: Coralogix.Severity.warning,
+                className,
+                methodName,
+                text
+            });
+            logger.addLog(log);
+        },
+        error: (text, className = "className", methodName = "methodName") => {
+            const log = new Coralogix.Log({
+                severity: Coralogix.Severity.error,
+                className,
+                methodName,
+                text
+            });
+            logger.addLog(log);
+        },
+        addLog: (log) => {
+            logger.addLog(log);
+        }
+    };
 }
 // Example usage:
 // const logger = createSharedLogger({
