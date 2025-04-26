@@ -35,7 +35,6 @@ export function createSharedLogger({
 
   // create a new logger with category 
   const logger = new Coralogix.CoralogixLogger(category);
-  
   // Add helper methods for common log levels
   return {
     log: (text: string, className: string = "className", methodName: string = "methodName") => {
