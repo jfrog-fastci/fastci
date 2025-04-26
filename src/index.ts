@@ -15,6 +15,7 @@ async function run(): Promise<void> {
         const otelEndpoint = core.getInput('fastci_otel_endpoint', { required: true });
         const otelToken = core.getInput('fastci_otel_token', { required: true });
         const tracerVersion = core.getInput('tracer_version');
+        core.info('Creating logger');
         const logger = createSharedLogger(
             {
                 applicationName: "fastci-github-action",
