@@ -28196,58 +28196,6 @@ module.exports = {
 
 /***/ }),
 
-/***/ 1499:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.exposeRuntime = exposeRuntime;
-const core = __importStar(__nccwpck_require__(2186));
-async function exposeRuntime() {
-    Object.keys(process.env).forEach(function (key) {
-        if (key.startsWith('GITHUB_')) {
-            core.exportVariable(key, process.env[key]);
-        }
-    });
-}
-
-
-/***/ }),
-
 /***/ 6144:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -28293,7 +28241,6 @@ const io = __importStar(__nccwpck_require__(7436));
 const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
-const export_gh_env_1 = __nccwpck_require__(1499);
 async function run() {
     try {
         // Get inputs
@@ -28312,9 +28259,6 @@ async function run() {
         await fs.promises.chmod(tracerBinPath, '755');
         process.env["OTEL.ENDPOINT"] = otelEndpoint;
         process.env["OTEL.TOKEN"] = otelToken;
-        // expose github actions env variables
-        core.debug('Exposing runtime environment variables starting with GITHUB_');
-        await (0, export_gh_env_1.exposeRuntime)();
         // Start tracer
         core.debug('Starting tracer...');
         const child = (0, child_process_1.spawn)('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
