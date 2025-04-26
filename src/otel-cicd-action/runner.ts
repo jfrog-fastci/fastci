@@ -55,7 +55,7 @@ export async function RunCiCdOtelExport() {
   try {
     const otlpEndpoint = core.getInput("fastci_otel_endpoint");
     const otlpToken = core.getInput("fastci_otel_token");
-    const otlpHeaders = `Authorization=Bearer ${otlpToken},x-api-key=${otlpToken}`;
+    const otlpHeaders = `Authorization=Bearer ${otlpToken},api-key=${otlpToken}`;
     const otelServiceName = core.getInput("otelServiceName") || process.env["OTEL_SERVICE_NAME"] || "";
     const runId = Number.parseInt(core.getInput("runId") || `${context.runId}`);
     const extraAttributes = stringToRecord(core.getInput("extra_attributes"));
