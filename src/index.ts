@@ -5,6 +5,7 @@ import * as tc from '@actions/tool-cache';
 import * as path from 'path';
 import * as fs from 'fs';
 import { exposeRuntime } from './export-gh-env';
+import { createSharedLogger } from './logger';
 
 async function run(): Promise<void> {
     try {
@@ -14,16 +15,25 @@ async function run(): Promise<void> {
         const otelEndpoint = core.getInput('fastci_otel_endpoint', { required: true });
         const otelToken = core.getInput('fastci_otel_token', { required: true });
         const tracerVersion = core.getInput('tracer_version');
-
+        const logger = createSharedLogger(
+            {
+                applicationName: "fastci-github-action",
+                privateKey: otelToken,
+                subsystemName: "tracer",
+                category: "CI"
+            }
+        );
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
         core.debug('Downloading tracer binary.. ' + tracerUrl);
+        logger.debug('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
 
         // Move to tracer-bin and make executable
         const tracerBinPath = path.join(process.cwd(), 'tracer-bin');
         await io.cp(tracerPath, tracerBinPath);
         await fs.promises.chmod(tracerBinPath, '755');
+        process.env["OTEL.ENDPOINT"] = otelEndpoint
         process.env["OTEL.ENDPOINT"] = otelEndpoint
         process.env["OTEL.TOKEN"] = otelToken
         
