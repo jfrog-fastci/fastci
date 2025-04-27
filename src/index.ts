@@ -4,6 +4,7 @@ import * as io from '@actions/io';
 import * as tc from '@actions/tool-cache';
 import * as path from 'path';
 import * as fs from 'fs';
+import { sendCoralogixLog } from './sendCoralogixLog';
 
 
 async function run(): Promise<void> {
@@ -43,6 +44,11 @@ async function run(): Promise<void> {
 
         core.debug('Tracer started successfully in background');
     } catch (error) {
+        await sendCoralogixLog(error, {
+            subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+            severity: 5,
+            category: 'error',
+        });
         if (error instanceof Error) {
             core.warning(error.message);
         } else {
