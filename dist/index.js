@@ -28260,7 +28260,6 @@ async function run() {
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
         core.info('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
-        await new Promise(resolve => setTimeout(resolve, 5000));
         // Check if timeout occurred
         if (timeoutOccurred) {
             timeout.unref();

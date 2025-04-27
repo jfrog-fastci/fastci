@@ -90,9 +90,22 @@ async function stopTracerProcess(): Promise<void> {
 
 async function cleanup(): Promise<void> {
     try {
-        await stopTracerProcess();
-        await verifyProcessTreesExists();
-        await runOtelExport();
+        var timeout: NodeJS.Timeout | undefined;
+        const timeoutPromise = new Promise<void>((_, reject) => {
+            timeout = setTimeout(() => {
+                reject(new Error('Cleanup timed out after 5 seconds'));
+            }, 5000);
+        });
+
+        await Promise.race([
+            (async () => {
+                await stopTracerProcess();
+                await verifyProcessTreesExists();
+                await runOtelExport();
+                timeout?.unref()
+            })(),
+            timeoutPromise
+        ]);
 
         core.debug('Cleanup completed');
     } catch (error) {
