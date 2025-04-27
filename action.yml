@@ -1,0 +1,41 @@
+name: 'Tracer Action'
+description: Tracer description
+author: FastCI Tracer
+inputs:
+  jfrog_user_writer:
+    description: "JFrog User Writer"
+    required: false
+    
+  jfrog_password_writer:
+    description: "JFrog Password Writer"
+    required: false
+    
+
+  fastci_otel_endpoint:
+    description: "OpenTelemetry Endpoint that will receive the traces"
+    required: false
+    default: "ingress.coralogix.us"
+
+  github_token:
+    description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
+    required: true
+
+  fastci_otel_token:
+    description: "OpenTelemetry token"
+    required: true
+
+  tracer_version:
+    description: "Version of the tracer binary to use"
+    required: false
+    default: "v0.4.0"
+
+  extra_attributes:
+    description: "Extra attributes to add to the trace"
+    required: false
+    default: "cx.subsystem.name=${{github.repository}},cx.application.name=${{github.repository_owner}},cicd.pipeline.name=${{github.workflow}},cicd.pipeline.run_id=${{github.run_id}},cicd.pipeline.repository=${{github.repository}},cicd.pipeline.repository_owner=${{github.repository_owner}}"
+
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+  post: 'dist/cleanup/index.js' 
