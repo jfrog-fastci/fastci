@@ -16,7 +16,7 @@ async function run(): Promise<void> {
         const tracerVersion = core.getInput('tracer_version');
 
         // Set a 5-second timeout
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
             throw new Error('Timeout exceeded');
         }, 5000);
 
@@ -45,6 +45,8 @@ async function run(): Promise<void> {
 
         // Unref the child to allow the parent process to exit independently
         child.unref();
+        
+        timeout.close()
 
         core.debug('Tracer started successfully in background');
     } catch (error) {

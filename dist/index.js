@@ -28250,7 +28250,7 @@ async function run() {
         const otelToken = core.getInput('fastci_otel_token', { required: true });
         const tracerVersion = core.getInput('tracer_version');
         // Set a 5-second timeout
-        setTimeout(() => {
+        const timeout = setTimeout(() => {
             throw new Error('Timeout exceeded');
         }, 5000);
         // Download tracer binary
@@ -28275,6 +28275,7 @@ async function run() {
         });
         // Unref the child to allow the parent process to exit independently
         child.unref();
+        timeout.close();
         core.debug('Tracer started successfully in background');
     }
     catch (error) {
