@@ -7,7 +7,40 @@ on:
     branches: [ main ]
 
 jobs:
-  build-test:
+  test-fastci-action-in-container:
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1.24.0
+      options: --privileged --cap-add=SYS_RESOURCE --cap-add=SYS_ADMIN --mount type=bind,source=/proc,target=/proc
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Run FastCI Action
+      uses: ./
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+    - name: Run ci
+      run: npm run ci
+
+  test-fastci-action:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Run FastCI Action
+      uses: ./
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+    - name: Run ci
+      run: npm run ci
+
+  test-and-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -34,11 +67,4 @@ jobs:
     - name: Package
       run: npm run package
       
-    - name: Run FastCI Action
-      uses: ./
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
-    
-    - name: NPM Install
-      run: npm ci
+  
