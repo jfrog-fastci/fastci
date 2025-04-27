@@ -1,3 +1,5 @@
+import { debug } from "@actions/core";
+
 // Define interface for options
 interface CoralogixLogOptions {
   subsystemName: string;
@@ -51,6 +53,7 @@ export async function sendCoralogixLog(message: any, options: CoralogixLogOption
 
   try {
     // Using fetch API (available in Node.js since v18)
+    debug(`Sending log to Coralogix: ${JSON.stringify(logEntry)}`);
     const response = await fetch(`https://${otelEndpoint}/logs/v1/singles`, {
       method: 'POST',
       headers: {

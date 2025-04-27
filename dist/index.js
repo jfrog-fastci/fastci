@@ -28298,12 +28298,13 @@ run();
 /***/ }),
 
 /***/ 1740:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.sendCoralogixLog = sendCoralogixLog;
+const core_1 = __nccwpck_require__(2186);
 /**
  * Send logs to Coralogix Singles API using OTEL token and endpoint
  * @param {string | object} message - The log message text or object
@@ -28347,6 +28348,7 @@ async function sendCoralogixLog(message, options) {
         logEntry.hiResTimestamp = options.hiResTimestamp;
     try {
         // Using fetch API (available in Node.js since v18)
+        (0, core_1.debug)(`Sending log to Coralogix: ${JSON.stringify(logEntry)}`);
         const response = await fetch(`https://${otelEndpoint}/logs/v1/singles`, {
             method: 'POST',
             headers: {
