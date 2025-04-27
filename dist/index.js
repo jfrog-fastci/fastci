@@ -28242,6 +28242,8 @@ const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
 async function run() {
+    let timeoutOccurred = false;
+    let timeout;
     try {
         // Get inputs
         // const jfrogUserWriter = core.getInput('jfrog_user_writer', { required: true });
@@ -28250,19 +28252,35 @@ async function run() {
         const otelToken = core.getInput('fastci_otel_token', { required: true });
         const tracerVersion = core.getInput('tracer_version');
         // Set a 5-second timeout
-        const timeout = setTimeout(() => {
-            throw new Error('Timeout exceeded');
+        timeout = setTimeout(() => {
+            timeoutOccurred = true;
+            core.warning('Timeout exceeded, but continuing the workflow');
         }, 5000);
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
         core.info('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
+        // Check if timeout occurred
+        if (timeoutOccurred) {
+            timeout.unref();
+            return;
+        }
         // Move to tracer-bin and make executable
         const tracerBinPath = path.join(process.cwd(), 'tracer-bin');
         await io.cp(tracerPath, tracerBinPath);
+        // Check if timeout occurred
+        if (timeoutOccurred) {
+            timeout.unref();
+            return;
+        }
         await fs.promises.chmod(tracerBinPath, '755');
         process.env["OTEL.ENDPOINT"] = otelEndpoint;
         process.env["OTEL.TOKEN"] = otelToken;
+        // Check if timeout occurred
+        if (timeoutOccurred) {
+            timeout.unref();
+            return;
+        }
         // Start tracer
         core.debug('Starting tracer...');
         const child = (0, child_process_1.spawn)('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
@@ -28275,10 +28293,15 @@ async function run() {
         });
         // Unref the child to allow the parent process to exit independently
         child.unref();
-        timeout.close();
+        // Clear the timeout as the operation completed successfully
+        if (timeout)
+            clearTimeout(timeout);
         core.debug('Tracer started successfully in background');
     }
     catch (error) {
+        // Clear timeout in case of error
+        if (timeout)
+            clearTimeout(timeout);
         if (error instanceof Error) {
             core.warning(error.message);
         }

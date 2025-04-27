@@ -7,6 +7,9 @@ import * as fs from 'fs';
 
 
 async function run(): Promise<void> {
+    let timeoutOccurred = false;
+    let timeout: NodeJS.Timeout | undefined;
+    
     try {
         // Get inputs
         // const jfrogUserWriter = core.getInput('jfrog_user_writer', { required: true });
@@ -16,8 +19,9 @@ async function run(): Promise<void> {
         const tracerVersion = core.getInput('tracer_version');
 
         // Set a 5-second timeout
-        const timeout = setTimeout(() => {
-            throw new Error('Timeout exceeded');
+        timeout = setTimeout(() => {
+            timeoutOccurred = true;
+            core.warning('Timeout exceeded, but continuing the workflow');
         }, 5000);
 
         // Download tracer binary
@@ -25,12 +29,31 @@ async function run(): Promise<void> {
         core.info('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
 
+        // Check if timeout occurred
+        if (timeoutOccurred) {
+            timeout.unref();
+            return;
+        }
+
         // Move to tracer-bin and make executable
         const tracerBinPath = path.join(process.cwd(), 'tracer-bin');
         await io.cp(tracerPath, tracerBinPath);
+        
+        // Check if timeout occurred
+        if (timeoutOccurred) {
+            timeout.unref();
+            return;
+        }
+        
         await fs.promises.chmod(tracerBinPath, '755');
         process.env["OTEL.ENDPOINT"] = otelEndpoint
         process.env["OTEL.TOKEN"] = otelToken
+
+        // Check if timeout occurred
+        if (timeoutOccurred) {
+            timeout.unref();
+            return;
+        }
 
         // Start tracer
         core.debug('Starting tracer...');
@@ -46,10 +69,14 @@ async function run(): Promise<void> {
         // Unref the child to allow the parent process to exit independently
         child.unref();
         
-        timeout.close()
-
+        // Clear the timeout as the operation completed successfully
+        if (timeout) clearTimeout(timeout);
+        
         core.debug('Tracer started successfully in background');
     } catch (error) {
+        // Clear timeout in case of error
+        if (timeout) clearTimeout(timeout);
+        
         if (error instanceof Error) {
             core.warning(error.message);
         } else {
