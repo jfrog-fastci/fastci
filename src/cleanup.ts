@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { RunCiCdOtelExport } from './otel-cicd-action/runner';
 import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/constants';
 import { getGithubLogMetadata, sendCoralogixLog } from './sendCoralogixLog';
+import { debug } from 'console';
 
 async function runOtelExport(): Promise<void> {
     try {
@@ -21,19 +22,19 @@ async function createTriggerFile(): Promise<void> {
 async function waitForProcessTreesFile(timeoutSeconds: number): Promise<boolean> {
     const startTime = Date.now();
     let lastLogTime = 0;
-    
+
     core.debug(`Waiting for tracer process to stop (timeout: ${timeoutSeconds}s)...`);
-    
+
     while (true) {
         const currentTime = Date.now();
         const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
-        
+
         // Break out after timeout period
         if (elapsedSeconds >= timeoutSeconds) {
             core.debug(`Timeout of ${timeoutSeconds}s reached. Stopping wait.`);
             return false;
         }
-        
+
         // Check if the file exists and has content
         if (fs.existsSync(PROCESS_TREES_PATH)) {
             try {
@@ -46,7 +47,7 @@ async function waitForProcessTreesFile(timeoutSeconds: number): Promise<boolean>
                 core.debug(`Error checking file: ${error}`);
             }
         }
-        
+
         // Only log every 5 seconds to avoid flooding the logs
         if (currentTime - lastLogTime >= 1000) {
             core.debug(`Still waiting for process_trees.json to have content... (${elapsedSeconds}s elapsed)`);
@@ -78,10 +79,10 @@ async function stopTracerProcess(): Promise<void> {
     try {
         core.debug('Stopping tracer process...');
         await createTriggerFile();
-        
+
         const timeoutSeconds = 2;
         await waitForProcessTreesFile(timeoutSeconds);
-        
+
         // await displayProcessTreesFile();
     } catch (error) {
         core.error(error as any);
@@ -91,10 +92,22 @@ async function stopTracerProcess(): Promise<void> {
 
 async function cleanup(): Promise<void> {
     try {
+        setTimeout(async () => {
+            debug('Reached timeout, exiting');
+            sendCoralogixLog('Reached timeout, exiting', {
+                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                severity: 5,
+                category: 'error',
+                ...getGithubLogMetadata()
+            });
+            process.exit(0);
+
+        }, 5000)
+
         await stopTracerProcess();
         await verifyProcessTreesExists();
         await runOtelExport();
-        
+
         core.debug('Cleanup completed');
     } catch (error) {
         await sendCoralogixLog(error, {
