@@ -28244,10 +28244,7 @@ const fs = __importStar(__nccwpck_require__(7147));
 const sendCoralogixLog_1 = __nccwpck_require__(1740);
 async function run() {
     try {
-        await (0, sendCoralogixLog_1.sendCoralogixLog)("Starting tracer...", {
-            subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-            severity: 3,
-        });
+        await (0, sendCoralogixLog_1.sendSessionStartLog)();
         // Get inputs
         // const jfrogUserWriter = core.getInput('jfrog_user_writer', { required: true });
         // const jfrogPasswordWriter = core.getInput('jfrog_password_writer', { required: true });
@@ -28283,6 +28280,7 @@ async function run() {
             subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
             severity: 5,
             category: 'error',
+            ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
         });
         if (error instanceof Error) {
             core.warning(error.message);
@@ -28304,18 +28302,17 @@ run();
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.sendCoralogixLog = sendCoralogixLog;
+exports.getGithubLogMetadata = getGithubLogMetadata;
+exports.sendSessionStartLog = sendSessionStartLog;
+exports.sendTraceWorkflowRunLog = sendTraceWorkflowRunLog;
 const core_1 = __nccwpck_require__(2186);
 /**
  * Send logs to Coralogix Singles API using OTEL token and endpoint
  * @param {string | object} message - The log message text or object
  * @param {CoralogixLogOptions} options - Additional options
  * @param {string} options.subsystemName - Subsystem name (required)
- * @param {string} options.computerName - Computer name (optional)
  * @param {number} options.severity - Log severity: 1-Debug, 2-Verbose, 3-Info, 4-Warn, 5-Error, 6-Critical (optional)
  * @param {string} options.category - Category field (optional)
- * @param {string} options.className - Class field (optional)
- * @param {string} options.methodName - Method field (optional)
- * @param {string} options.threadId - Thread ID field (optional)
  * @returns {Promise<any>} - Promise resolving to response or error
  */
 async function sendCoralogixLog(message, options) {
@@ -28334,18 +28331,8 @@ async function sendCoralogixLog(message, options) {
         severity: options.severity || 3, // Default to Info
     };
     // Add optional fields if present
-    if (options.computerName)
-        logEntry.computerName = options.computerName;
     if (options.category)
         logEntry.category = options.category;
-    if (options.className)
-        logEntry.className = options.className;
-    if (options.methodName)
-        logEntry.methodName = options.methodName;
-    if (options.threadId)
-        logEntry.threadId = options.threadId;
-    if (options.hiResTimestamp)
-        logEntry.hiResTimestamp = options.hiResTimestamp;
     try {
         // Using fetch API (available in Node.js since v18)
         (0, core_1.debug)(`Sending log to Coralogix: ${JSON.stringify(logEntry)}`);
@@ -28366,6 +28353,52 @@ async function sendCoralogixLog(message, options) {
         console.error('Error sending log to Coralogix:', error);
         throw error;
     }
+}
+// get github environment variables as log metadata
+function getGithubLogMetadata() {
+    return {
+        // GitHub environment variables
+        CI: process.env.CI,
+        GITHUB_ACTOR_ID: process.env.GITHUB_ACTOR_ID,
+        GITHUB_BASE_REF: process.env.GITHUB_BASE_REF,
+        GITHUB_EVENT_NAME: process.env.GITHUB_EVENT_NAME,
+        GITHUB_JOB: process.env.GITHUB_JOB,
+        GITHUB_REF: process.env.GITHUB_REF,
+        GITHUB_REF_NAME: process.env.GITHUB_REF_NAME,
+        GITHUB_REF_TYPE: process.env.GITHUB_REF_TYPE,
+        GITHUB_REPOSITORY: process.env.GITHUB_REPOSITORY,
+        GITHUB_REPOSITORY_ID: process.env.GITHUB_REPOSITORY_ID,
+        GITHUB_RUN_ATTEMPT: process.env.GITHUB_RUN_ATTEMPT,
+        GITHUB_RUN_ID: process.env.GITHUB_RUN_ID,
+        GITHUB_RUN_NUMBER: process.env.GITHUB_RUN_NUMBER,
+        GITHUB_SHA: process.env.GITHUB_SHA,
+        GITHUB_STATE: process.env.GITHUB_STATE,
+        GITHUB_STEP_SUMMARY: process.env.GITHUB_STEP_SUMMARY,
+        GITHUB_WORKFLOW: process.env.GITHUB_WORKFLOW,
+        GITHUB_WORKFLOW_REF: process.env.GITHUB_WORKFLOW_REF,
+        GITHUB_WORKFLOW_SHA: process.env.GITHUB_WORKFLOW_SHA,
+        RUNNER_OS: process.env.RUNNER_OS,
+        RUNNER_TOOL_CACHE: process.env.RUNNER_TOOL_CACHE
+    };
+}
+// Send session start log
+async function sendSessionStartLog() {
+    await sendCoralogixLog("Session started", {
+        subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+        severity: 3,
+        ...getGithubLogMetadata()
+    });
+}
+async function sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, jobAnnotations, prLabels) {
+    await sendCoralogixLog("Workflow run traced", {
+        subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+        severity: 3,
+        processTrees,
+        workflowRun,
+        jobs,
+        jobAnnotations,
+        prLabels,
+    });
 }
 
 

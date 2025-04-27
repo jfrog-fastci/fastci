@@ -4,6 +4,7 @@ import { ATTR_CICD_PIPELINE_NAME, ATTR_CICD_PIPELINE_RUN_ID } from "@opentelemet
 import { traceJob } from "./job";
 import * as core from "@actions/core";
 import { ProcessTree } from "../../types/process";
+import { sendTraceWorkflowRunLog } from "../../sendCoralogixLog";
 async function traceWorkflowRun(
   processTrees: ProcessTree[],
   workflowRun: components["schemas"]["workflow-run"],
@@ -11,8 +12,12 @@ async function traceWorkflowRun(
   jobAnnotations: Record<number, components["schemas"]["check-annotation"][]>,
   prLabels: Record<number, string[]>,
 ) {
+  const now = new Date();
+  await sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, jobAnnotations, prLabels);
+  const duration = Date.now() - now.getTime();
+  core.debug(`Sent trace workflow run log in ${duration}ms`);
+  
   const tracer = trace.getTracer("otel-cicd-action");
-
   const startTime = new Date(workflowRun.run_started_at ?? workflowRun.created_at);
   const attributes = workflowRunToAttributes(workflowRun, prLabels);
 

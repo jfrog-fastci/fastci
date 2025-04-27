@@ -2,6 +2,7 @@ import * as core from '@actions/core';
 import * as fs from 'fs';
 import { RunCiCdOtelExport } from './otel-cicd-action/runner';
 import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/constants';
+import { getGithubLogMetadata, sendCoralogixLog } from './sendCoralogixLog';
 
 async function runOtelExport(): Promise<void> {
     try {
@@ -96,6 +97,12 @@ async function cleanup(): Promise<void> {
         
         core.debug('Cleanup completed');
     } catch (error) {
+        await sendCoralogixLog(error, {
+            subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+            severity: 5,
+            category: 'error',
+            ...getGithubLogMetadata()
+        });
         if (error instanceof Error) {
             core.warning(`Cleanup failed: ${error.message}`);
         } else {

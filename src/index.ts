@@ -4,22 +4,19 @@ import * as io from '@actions/io';
 import * as tc from '@actions/tool-cache';
 import * as path from 'path';
 import * as fs from 'fs';
-import { sendCoralogixLog } from './sendCoralogixLog';
+import { getGithubLogMetadata, sendCoralogixLog, sendSessionStartLog } from './sendCoralogixLog';
 
 
 async function run(): Promise<void> {
     try {
-         await sendCoralogixLog("Starting tracer...", {
-            subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-            severity: 3,
-        });
+        await sendSessionStartLog();
         // Get inputs
         // const jfrogUserWriter = core.getInput('jfrog_user_writer', { required: true });
         // const jfrogPasswordWriter = core.getInput('jfrog_password_writer', { required: true });
         const otelEndpoint = core.getInput('fastci_otel_endpoint', { required: true });
         const otelToken = core.getInput('fastci_otel_token', { required: true });
         const tracerVersion = core.getInput('tracer_version');
-       
+
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
         core.info('Downloading tracer binary.. ' + tracerUrl);
@@ -31,7 +28,7 @@ async function run(): Promise<void> {
         await fs.promises.chmod(tracerBinPath, '755');
         process.env["OTEL.ENDPOINT"] = otelEndpoint
         process.env["OTEL.TOKEN"] = otelToken
-        
+
         // Start tracer
         core.debug('Starting tracer...');
         const child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
@@ -52,6 +49,7 @@ async function run(): Promise<void> {
             subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
             severity: 5,
             category: 'error',
+            ...getGithubLogMetadata()
         });
         if (error instanceof Error) {
             core.warning(error.message);
@@ -61,4 +59,4 @@ async function run(): Promise<void> {
     }
 }
 
-run(); 
+run();
