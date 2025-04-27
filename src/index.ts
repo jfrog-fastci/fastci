@@ -6,6 +6,15 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { getGithubLogMetadata, sendCoralogixLog, sendSessionStartLog } from './sendCoralogixLog';
 
+// Check if a command exists by trying to access it
+async function commandExists(command: string): Promise<boolean> {
+    try {
+        await io.which(command, true);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
 
 async function run(): Promise<void> {
     try {
@@ -42,20 +51,61 @@ async function run(): Promise<void> {
 
         // Start tracer
         core.debug('Starting tracer...');
-        const child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
-            detached: true,
-            stdio: 'ignore',
-            env: {
-                OTEL_ENDPOINT: otelEndpoint,
-                OTEL_TOKEN: otelToken
-            }
-        });
-
-        // Unref the child to allow the parent process to exit independently
+        
+        // Check if sudo is available
+        const sudoAvailable = await commandExists('sudo');
+        let child;
+        
+        if (sudoAvailable) {
+            child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
+                detached: true,
+                stdio: 'ignore',
+                env: {
+                    OTEL_ENDPOINT: otelEndpoint,
+                    OTEL_TOKEN: otelToken
+                }
+            });
+            
+            // Handle the error properly instead of just unref-ing
+            child.on('error', (err) => {
+                core.warning(`Failed to start tracer: ${err.message}`);
+                sendCoralogixLog(`Failed to start tracer: ${err.message}`, {
+                    subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                    severity: 4,
+                    category: 'error',
+                    ...getGithubLogMetadata()
+                });
+            });
+            
+            core.debug('Tracer started successfully with sudo in background');
+        } else {
+            // Try to run without sudo if it's not available
+            core.warning('sudo is not available, trying to run tracer without sudo');
+            child = spawn('./tracer-bin', [], {
+                detached: true,
+                stdio: 'ignore',
+                env: {
+                    OTEL_ENDPOINT: otelEndpoint,
+                    OTEL_TOKEN: otelToken
+                }
+            });
+            
+            child.on('error', (err) => {
+                core.warning(`Failed to start tracer: ${err.message}`);
+                sendCoralogixLog(`Failed to start tracer: ${err.message}`, {
+                    subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                    severity: 4,
+                    category: 'error',
+                    ...getGithubLogMetadata()
+                });
+            });
+            core.debug('Tracer started successfully without sudo in background');
+        }
         child.unref();
-        timeout.close();
+        
+        clearTimeout(timeout);
 
-        core.debug('Tracer started successfully in background');
+        core.debug('Tracer setup completed');
     } catch (error) {
         await sendCoralogixLog(error, {
             subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',

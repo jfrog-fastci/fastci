@@ -28242,6 +28242,16 @@ const tc = __importStar(__nccwpck_require__(7784));
 const path = __importStar(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
 const sendCoralogixLog_1 = __nccwpck_require__(1740);
+// Check if a command exists by trying to access it
+async function commandExists(command) {
+    try {
+        await io.which(command, true);
+        return true;
+    }
+    catch (error) {
+        return false;
+    }
+}
 async function run() {
     try {
         const timeout = setTimeout(async () => {
@@ -28273,18 +28283,55 @@ async function run() {
         process.env["OTEL.TOKEN"] = otelToken;
         // Start tracer
         core.debug('Starting tracer...');
-        const child = (0, child_process_1.spawn)('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
-            detached: true,
-            stdio: 'ignore',
-            env: {
-                OTEL_ENDPOINT: otelEndpoint,
-                OTEL_TOKEN: otelToken
-            }
-        });
-        // Unref the child to allow the parent process to exit independently
+        // Check if sudo is available
+        const sudoAvailable = await commandExists('sudo');
+        let child;
+        if (sudoAvailable) {
+            child = (0, child_process_1.spawn)('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
+                detached: true,
+                stdio: 'ignore',
+                env: {
+                    OTEL_ENDPOINT: otelEndpoint,
+                    OTEL_TOKEN: otelToken
+                }
+            });
+            // Handle the error properly instead of just unref-ing
+            child.on('error', (err) => {
+                core.warning(`Failed to start tracer: ${err.message}`);
+                (0, sendCoralogixLog_1.sendCoralogixLog)(`Failed to start tracer: ${err.message}`, {
+                    subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                    severity: 4,
+                    category: 'error',
+                    ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
+                });
+            });
+            core.debug('Tracer started successfully with sudo in background');
+        }
+        else {
+            // Try to run without sudo if it's not available
+            core.warning('sudo is not available, trying to run tracer without sudo');
+            child = (0, child_process_1.spawn)('./tracer-bin', [], {
+                detached: true,
+                stdio: 'ignore',
+                env: {
+                    OTEL_ENDPOINT: otelEndpoint,
+                    OTEL_TOKEN: otelToken
+                }
+            });
+            child.on('error', (err) => {
+                core.warning(`Failed to start tracer: ${err.message}`);
+                (0, sendCoralogixLog_1.sendCoralogixLog)(`Failed to start tracer: ${err.message}`, {
+                    subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                    severity: 4,
+                    category: 'error',
+                    ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
+                });
+            });
+            core.debug('Tracer started successfully without sudo in background');
+        }
         child.unref();
-        timeout.close();
-        core.debug('Tracer started successfully in background');
+        clearTimeout(timeout);
+        core.debug('Tracer setup completed');
     }
     catch (error) {
         await (0, sendCoralogixLog_1.sendCoralogixLog)(error, {
