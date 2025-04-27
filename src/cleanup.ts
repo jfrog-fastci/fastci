@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import { RunCiCdOtelExport } from './otel-cicd-action/runner';
 import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/constants';
 import { getGithubLogMetadata, sendCoralogixLog } from './sendCoralogixLog';
-import { debug } from 'console';
 
 async function runOtelExport(): Promise<void> {
     try {
@@ -93,8 +92,8 @@ async function stopTracerProcess(): Promise<void> {
 async function cleanup(): Promise<void> {
     try {
         const timeout = setTimeout(async () => {
-            debug('Reached timeout, exiting');
-            sendCoralogixLog('Reached timeout, exiting', {
+            core.debug('Reached timeout during cleanup, exiting');
+            sendCoralogixLog('Reached timeout during cleanup, exiting', {
                 subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
                 severity: 5,
                 category: 'error',
@@ -103,8 +102,6 @@ async function cleanup(): Promise<void> {
             process.exit(0);
 
         }, 5000)
-        await new Promise(resolve => setTimeout(resolve, 5000));
-
         await stopTracerProcess();
         await verifyProcessTreesExists();
         await runOtelExport();

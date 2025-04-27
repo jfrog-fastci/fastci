@@ -28244,6 +28244,16 @@ const fs = __importStar(__nccwpck_require__(7147));
 const sendCoralogixLog_1 = __nccwpck_require__(1740);
 async function run() {
     try {
+        const timeout = setTimeout(async () => {
+            core.debug('Reached timeout duraing setup, exiting');
+            (0, sendCoralogixLog_1.sendCoralogixLog)('Reached timeout duraing setup, exiting', {
+                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                severity: 5,
+                category: 'error',
+                ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
+            });
+            process.exit(0);
+        }, 5000);
         await (0, sendCoralogixLog_1.sendSessionStartLog)();
         // Get inputs
         // const jfrogUserWriter = core.getInput('jfrog_user_writer', { required: true });
@@ -28273,6 +28283,7 @@ async function run() {
         });
         // Unref the child to allow the parent process to exit independently
         child.unref();
+        timeout.close();
         core.debug('Tracer started successfully in background');
     }
     catch (error) {
