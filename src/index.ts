@@ -9,6 +9,10 @@ import { sendCoralogixLog } from './sendCoralogixLog';
 
 async function run(): Promise<void> {
     try {
+         await sendCoralogixLog("Starting tracer...", {
+            subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+            severity: 3,
+        });
         // Get inputs
         // const jfrogUserWriter = core.getInput('jfrog_user_writer', { required: true });
         // const jfrogPasswordWriter = core.getInput('jfrog_password_writer', { required: true });

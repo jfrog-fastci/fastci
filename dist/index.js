@@ -28244,6 +28244,10 @@ const fs = __importStar(__nccwpck_require__(7147));
 const sendCoralogixLog_1 = __nccwpck_require__(1740);
 async function run() {
     try {
+        await (0, sendCoralogixLog_1.sendCoralogixLog)("Starting tracer...", {
+            subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+            severity: 3,
+        });
         // Get inputs
         // const jfrogUserWriter = core.getInput('jfrog_user_writer', { required: true });
         // const jfrogPasswordWriter = core.getInput('jfrog_password_writer', { required: true });
