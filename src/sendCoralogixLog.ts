@@ -19,14 +19,11 @@ export async function sendCoralogixLog(message: any, options: any) {
   // Prepare log entry
   const logEntry: any = {
     applicationName: "fastci-github-action",
-    subsystemName: options.subsystemName,
     text: typeof message === 'object' ? JSON.stringify(message) : message,
     timestamp: Date.now(),
     severity: options.severity || 3, // Default to Info
+    ...options
   };
-
-  // Add optional fields if present
-  if (options.category) logEntry.category = options.category;
 
 
   try {

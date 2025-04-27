@@ -28322,14 +28322,11 @@ async function sendCoralogixLog(message, options) {
     // Prepare log entry
     const logEntry = {
         applicationName: "fastci-github-action",
-        subsystemName: options.subsystemName,
         text: typeof message === 'object' ? JSON.stringify(message) : message,
         timestamp: Date.now(),
         severity: options.severity || 3, // Default to Info
+        ...options
     };
-    // Add optional fields if present
-    if (options.category)
-        logEntry.category = options.category;
     try {
         // Using fetch API (available in Node.js since v18)
         (0, core_1.debug)(`Sending log to Coralogix: ${JSON.stringify(logEntry)}`);
