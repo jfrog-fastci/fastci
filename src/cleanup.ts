@@ -7,7 +7,7 @@ async function runOtelExport(): Promise<void> {
     try {
         const timeout = setTimeout(() => {
             core.warning('Timeout exceeded, but continuing the workflow');
-            throw new Error('Timeout exceeded');
+            return
         }, 5000);
         // wait for 5 seconds
         await new Promise(resolve => setTimeout(resolve, 5000));
