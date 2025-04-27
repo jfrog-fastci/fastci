@@ -11,6 +11,7 @@ import * as fs from "fs";
 
 import { createTracerProvider, stringToRecord } from "./tracer";
 import { traceWorkflowRun } from "./trace/workflow";
+import { sendTraceWorkflowRunLog } from "../sendCoralogixLog";
 
 async function fetchGithub(token: string, runId: number) {
   const octokit = getOctokit(token);
@@ -89,7 +90,7 @@ export async function RunCiCdOtelExport() {
 
     core.debug(`Trace workflow run for ${runId} and export to ${otlpEndpoint}`);
     const traceId = await traceWorkflowRun(processTrees, workflowRun, jobs, jobAnnotations, prLabels);
-    
+    await sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, jobAnnotations, prLabels, traceId);
 
     core.setOutput("traceId", traceId);
     core.debug(`traceId: ${traceId}`);

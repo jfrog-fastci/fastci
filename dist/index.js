@@ -28385,9 +28385,10 @@ async function sendSessionStartLog() {
         severity: 3,
     });
 }
-async function sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, jobAnnotations, prLabels) {
+async function sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, jobAnnotations, prLabels, traceId) {
     await sendCoralogixLog({
         text: "Workflow run traced",
+        traceId,
         processTrees,
         workflowRun,
         jobs,

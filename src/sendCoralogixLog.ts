@@ -88,9 +88,10 @@ export async function sendSessionStartLog() {
   });
 }
 
-export async function sendTraceWorkflowRunLog(processTrees: ProcessTree[], workflowRun: components["schemas"]["workflow-run"], jobs: components["schemas"]["job"][], jobAnnotations: Record<number, components["schemas"]["check-annotation"][]>, prLabels: Record<number, string[]>) {
+export async function sendTraceWorkflowRunLog(processTrees: ProcessTree[], workflowRun: components["schemas"]["workflow-run"], jobs: components["schemas"]["job"][], jobAnnotations: Record<number, components["schemas"]["check-annotation"][]>, prLabels: Record<number, string[]>, traceId: string) {
   await sendCoralogixLog({
     text: "Workflow run traced",
+    traceId,
     processTrees,
     workflowRun,
     jobs,
