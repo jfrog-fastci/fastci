@@ -90,7 +90,7 @@ export async function RunCiCdOtelExport() {
 
     core.debug(`Trace workflow run for ${runId} and export to ${otlpEndpoint}`);
     const traceId = await traceWorkflowRun(processTrees, workflowRun, jobs, jobAnnotations, prLabels);
-    await sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, jobAnnotations, traceId);
+    await sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, traceId);
 
     core.setOutput("traceId", traceId);
     core.debug(`traceId: ${traceId}`);

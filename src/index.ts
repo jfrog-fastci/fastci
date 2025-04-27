@@ -9,6 +9,17 @@ import { getGithubLogMetadata, sendCoralogixLog, sendSessionStartLog } from './s
 
 async function run(): Promise<void> {
     try {
+        const timeout = setTimeout(async () => {
+            core.debug('Reached timeout duraing setup, exiting');
+            sendCoralogixLog('Reached timeout duraing setup, exiting', {
+                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                severity: 5,
+                category: 'error',
+                ...getGithubLogMetadata()
+            });
+            process.exit(0);
+
+        }, 5000)
         await sendSessionStartLog();
         // Get inputs
         // const jfrogUserWriter = core.getInput('jfrog_user_writer', { required: true });
@@ -42,6 +53,7 @@ async function run(): Promise<void> {
 
         // Unref the child to allow the parent process to exit independently
         child.unref();
+        timeout.close();
 
         core.debug('Tracer started successfully in background');
     } catch (error) {
