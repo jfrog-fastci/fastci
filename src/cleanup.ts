@@ -92,7 +92,7 @@ async function stopTracerProcess(): Promise<void> {
 
 async function cleanup(): Promise<void> {
     try {
-        setTimeout(async () => {
+        const timeout = setTimeout(async () => {
             debug('Reached timeout, exiting');
             sendCoralogixLog('Reached timeout, exiting', {
                 subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
@@ -107,6 +107,7 @@ async function cleanup(): Promise<void> {
         await stopTracerProcess();
         await verifyProcessTreesExists();
         await runOtelExport();
+        timeout.close()
 
         core.debug('Cleanup completed');
     } catch (error) {
