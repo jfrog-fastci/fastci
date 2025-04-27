@@ -11,6 +11,11 @@ import { describe, expect, it, jest, beforeEach } from '@jest/globals';
 jest.mock('@opentelemetry/api');
 jest.mock('./job');
 jest.mock('@actions/core');
+// Mock sendCoralogixLog module
+jest.mock('../../sendCoralogixLog', () => ({
+  sendTraceWorkflowRunLog: jest.fn().mockResolvedValue({}),
+  sendCoralogixLog: jest.fn().mockResolvedValue({})
+}));
 
 describe('workflow.ts', () => {
   const mockSpanContext = { traceId: '1234567890abcdef', spanId: 'span1', traceFlags: 1 };
