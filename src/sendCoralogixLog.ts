@@ -79,15 +79,25 @@ export function getGithubLogMetadata() {
 
 // Send session start log
 export async function sendSessionStartLog() {
-  await sendCoralogixLog("Session started", {
+  await sendCoralogixLog({
+    text: "Session started",
+    ...getGithubLogMetadata()
+  }, {
     subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
     severity: 3,
-    ...getGithubLogMetadata()
   });
 }
 
 export async function sendTraceWorkflowRunLog(processTrees: ProcessTree[], workflowRun: components["schemas"]["workflow-run"], jobs: components["schemas"]["job"][], jobAnnotations: Record<number, components["schemas"]["check-annotation"][]>, prLabels: Record<number, string[]>) {
-  await sendCoralogixLog("Workflow run traced", {
+  await sendCoralogixLog({
+    text: "Workflow run traced",
+    processTrees,
+    workflowRun,
+    jobs,
+    jobAnnotations,
+    prLabels,
+    ...getGithubLogMetadata()
+  }, {
     subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
     severity: 3,
     processTrees,

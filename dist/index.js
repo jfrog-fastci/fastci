@@ -28377,14 +28377,24 @@ function getGithubLogMetadata() {
 }
 // Send session start log
 async function sendSessionStartLog() {
-    await sendCoralogixLog("Session started", {
+    await sendCoralogixLog({
+        text: "Session started",
+        ...getGithubLogMetadata()
+    }, {
         subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
         severity: 3,
-        ...getGithubLogMetadata()
     });
 }
 async function sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, jobAnnotations, prLabels) {
-    await sendCoralogixLog("Workflow run traced", {
+    await sendCoralogixLog({
+        text: "Workflow run traced",
+        processTrees,
+        workflowRun,
+        jobs,
+        jobAnnotations,
+        prLabels,
+        ...getGithubLogMetadata()
+    }, {
         subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
         severity: 3,
         processTrees,
