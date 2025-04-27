@@ -28273,7 +28273,7 @@ async function run() {
         const tracerVersion = core.getInput('tracer_version');
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
-        core.info('Downloading tracer binary.. ' + tracerUrl);
+        core.debug('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
         // Move to tracer-bin and make executable
         const tracerBinPath = path.join(process.cwd(), 'tracer-bin');
@@ -28282,7 +28282,7 @@ async function run() {
         process.env["OTEL.ENDPOINT"] = otelEndpoint;
         process.env["OTEL.TOKEN"] = otelToken;
         // Start tracer
-        core.debug('Starting tracer...');
+        core.info('Starting tracer...');
         // Check if sudo is available
         const sudoAvailable = await commandExists('sudo');
         let child;
@@ -28311,7 +28311,7 @@ async function run() {
                 category: 'debug',
                 ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
             });
-            core.debug('Tracer started successfully with sudo in background');
+            core.info('Tracer started successfully with sudo in background');
         }
         else {
             // Try to run without sudo if it's not available
@@ -28339,7 +28339,7 @@ async function run() {
                 category: 'debug',
                 ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
             });
-            core.debug('Tracer started successfully without sudo in background');
+            core.info('Tracer started successfully without sudo in background');
         }
         child.unref();
         clearTimeout(timeout);

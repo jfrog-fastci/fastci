@@ -39,7 +39,7 @@ async function run(): Promise<void> {
 
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
-        core.info('Downloading tracer binary.. ' + tracerUrl);
+        core.debug('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
 
         // Move to tracer-bin and make executable
@@ -50,7 +50,7 @@ async function run(): Promise<void> {
         process.env["OTEL.TOKEN"] = otelToken
 
         // Start tracer
-        core.debug('Starting tracer...');
+        core.info('Starting tracer...');
         
         // Check if sudo is available
         const sudoAvailable = await commandExists('sudo');
@@ -83,7 +83,7 @@ async function run(): Promise<void> {
                 ...getGithubLogMetadata()
             })
             
-            core.debug('Tracer started successfully with sudo in background');
+            core.info('Tracer started successfully with sudo in background');
         } else {
             // Try to run without sudo if it's not available
             core.warning('sudo is not available, trying to run tracer without sudo');
@@ -111,7 +111,7 @@ async function run(): Promise<void> {
                 category: 'debug',
                 ...getGithubLogMetadata()
             })
-            core.debug('Tracer started successfully without sudo in background');
+            core.info('Tracer started successfully without sudo in background');
         }
         child.unref();
         
