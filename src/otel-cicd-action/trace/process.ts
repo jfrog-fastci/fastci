@@ -112,6 +112,10 @@ async function traceChildProcess(childProcess: ProcessTree, parentSpan: Span, st
  * @param fileEvents File events to add
  */
 function addFileEventsToSpan(span: Span, fileEvents: FileEvent[]): void {
+  if (!fileEvents || !Array.isArray(fileEvents)) {
+    return;
+  }
+  
   for (const event of fileEvents) {
     span.addEvent(
       `${event.mode}:${event.file_path}`, 
