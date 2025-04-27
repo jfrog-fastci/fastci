@@ -16,10 +16,6 @@ export async function sendCoralogixLog(message: any, options: any) {
   const otelEndpoint = getInput('fastci_otel_endpoint', { required: true });
   const otelToken = getInput('fastci_otel_token', { required: true });
 
-  if (!otelToken) {
-    throw new Error('FASTCI_OTEL_TOKEN environment variable is required');
-  }
-
   // Prepare log entry
   const logEntry: any = {
     applicationName: "fastci-github-action",

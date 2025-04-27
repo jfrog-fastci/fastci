@@ -28319,9 +28319,6 @@ async function sendCoralogixLog(message, options) {
     // Get OpenTelemetry endpoint and token from environment variables
     const otelEndpoint = (0, core_1.getInput)('fastci_otel_endpoint', { required: true });
     const otelToken = (0, core_1.getInput)('fastci_otel_token', { required: true });
-    if (!otelToken) {
-        throw new Error('FASTCI_OTEL_TOKEN environment variable is required');
-    }
     // Prepare log entry
     const logEntry = {
         applicationName: "fastci-github-action",
