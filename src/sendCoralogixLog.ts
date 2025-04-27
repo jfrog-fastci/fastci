@@ -28,7 +28,7 @@ export async function sendCoralogixLog(message: any, options: any) {
 
   try {
     // Using fetch API (available in Node.js since v18)
-    debug(`Sending log to Coralogix: ${JSON.stringify(logEntry)}`);
+    const now = new Date();
     const response = await fetch(`https://${otelEndpoint}/logs/v1/singles`, {
       method: 'POST',
       headers: {
@@ -37,6 +37,9 @@ export async function sendCoralogixLog(message: any, options: any) {
       },
       body: JSON.stringify([logEntry]) // API expects an array of log entries
     });
+
+    const duration = Date.now() - now.getTime();
+    debug(`Sent log to Coralogix in ${duration}ms`);
 
     if (!response.ok) {
       throw new Error(`Failed to send log: ${response.status} ${response.statusText}`);

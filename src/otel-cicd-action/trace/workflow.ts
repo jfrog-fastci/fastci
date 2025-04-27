@@ -12,9 +12,6 @@ async function traceWorkflowRun(
   jobAnnotations: Record<number, components["schemas"]["check-annotation"][]>,
   prLabels: Record<number, string[]>,
 ) {
-  const now = new Date();
-  const duration = Date.now() - now.getTime();
-  core.debug(`Sent trace workflow run log in ${duration}ms`);
 
   const tracer = trace.getTracer("otel-cicd-action");
   const startTime = new Date(workflowRun.run_started_at ?? workflowRun.created_at);
