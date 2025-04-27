@@ -75,6 +75,7 @@ export function getGithubLogMetadata() {
     GITHUB_WORKFLOW: process.env.GITHUB_WORKFLOW,
     GITHUB_WORKFLOW_REF: process.env.GITHUB_WORKFLOW_REF,
     GITHUB_WORKFLOW_SHA: process.env.GITHUB_WORKFLOW_SHA,
+    GITHUB_RUN_URL: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
     RUNNER_OS: process.env.RUNNER_OS,
     RUNNER_TOOL_CACHE: process.env.RUNNER_TOOL_CACHE
   };

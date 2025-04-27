@@ -76,6 +76,12 @@ async function run(): Promise<void> {
                     ...getGithubLogMetadata()
                 });
             });
+            await sendCoralogixLog('Tracer started successfully with sudo in background', {
+                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                severity: 3,
+                category: 'debug',
+                ...getGithubLogMetadata()
+            })
             
             core.debug('Tracer started successfully with sudo in background');
         } else {
@@ -99,6 +105,12 @@ async function run(): Promise<void> {
                     ...getGithubLogMetadata()
                 });
             });
+            await sendCoralogixLog('Tracer started successfully without sudo in background', {
+                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                severity: 3,
+                category: 'debug',
+                ...getGithubLogMetadata()
+            })
             core.debug('Tracer started successfully without sudo in background');
         }
         child.unref();
