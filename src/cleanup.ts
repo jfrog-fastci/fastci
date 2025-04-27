@@ -103,6 +103,7 @@ async function cleanup(): Promise<void> {
             process.exit(0);
 
         }, 5000)
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
         await stopTracerProcess();
         await verifyProcessTreesExists();
