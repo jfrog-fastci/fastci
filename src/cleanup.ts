@@ -9,6 +9,8 @@ async function runOtelExport(): Promise<void> {
             core.warning('Timeout exceeded, but continuing the workflow');
             throw new Error('Timeout exceeded');
         }, 5000);
+        // wait for 5 seconds
+        await new Promise(resolve => setTimeout(resolve, 5000));
         await RunCiCdOtelExport();
         clearTimeout(timeout);
     } catch (error) {
