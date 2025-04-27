@@ -5,21 +5,9 @@ import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/
 
 async function runOtelExport(): Promise<void> {
     try {
-        // Create a timeout promise that resolves after 5 seconds
-        const timeoutPromise = new Promise<void>((resolve) => {
-            setTimeout(() => {
-                core.warning('OtelExport timeout exceeded after 5 seconds, but continuing the workflow');
-                resolve();
-            }, 5000);
-        });
-        
-        // Create the actual operation promise
-        const operationPromise = RunCiCdOtelExport();
-        
-        // Race between the timeout and the operation
-        await Promise.race([timeoutPromise, operationPromise]);
+        await RunCiCdOtelExport();
     } catch (error) {
-        core.warning(error as any);
+        core.error(error as any);
     }
 }
 
