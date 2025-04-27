@@ -28320,8 +28320,8 @@ const core_1 = __nccwpck_require__(2186);
  */
 async function sendCoralogixLog(message, options) {
     // Get OpenTelemetry endpoint and token from environment variables
-    const otelEndpoint = process.env.FASTCI_OTEL_ENDPOINT || 'ingress.coralogix.us';
-    const otelToken = process.env.FASTCI_OTEL_TOKEN;
+    const otelEndpoint = (0, core_1.getInput)('fastci_otel_endpoint', { required: true });
+    const otelToken = (0, core_1.getInput)('fastci_otel_token', { required: true });
     if (!otelToken) {
         throw new Error('FASTCI_OTEL_TOKEN environment variable is required');
     }

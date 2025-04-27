@@ -1,4 +1,4 @@
-import { debug } from "@actions/core";
+import { debug, getInput } from "@actions/core";
 
 // Define interface for options
 interface CoralogixLogOptions {
@@ -27,9 +27,9 @@ interface CoralogixLogOptions {
  */
 export async function sendCoralogixLog(message: any, options: CoralogixLogOptions) {
   // Get OpenTelemetry endpoint and token from environment variables
-  const otelEndpoint = process.env.FASTCI_OTEL_ENDPOINT || 'ingress.coralogix.us';
-  const otelToken = process.env.FASTCI_OTEL_TOKEN;
-
+  const otelEndpoint = getInput('fastci_otel_endpoint', { required: true });
+  const otelToken = getInput('fastci_otel_token', { required: true });
+  
   if (!otelToken) {
     throw new Error('FASTCI_OTEL_TOKEN environment variable is required');
   }
