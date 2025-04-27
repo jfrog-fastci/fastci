@@ -28397,15 +28397,20 @@ function summerizeProcessTrees(processTrees) {
         rootProcessesCommands,
     };
 }
-async function sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, jobAnnotations, traceId) {
+async function sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, traceId) {
     await sendCoralogixLog({
         text: "Workflow run traced",
         traceId,
         processes_summary: summerizeProcessTrees(processTrees),
-        workflowRun,
+        workflow: {
+            name: workflowRun.name,
+            id: workflowRun.id,
+            conclusion: workflowRun.conclusion,
+            started_at: workflowRun.run_started_at,
+            completed_at: workflowRun.updated_at,
+        },
         jobs,
-        jobAnnotations,
-        ...getGithubLogMetadata()
+        github_env: { ...getGithubLogMetadata() }
     }, {
         subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
         severity: 3,
