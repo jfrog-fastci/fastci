@@ -53,6 +53,7 @@ async function fetchGithub(token: string, runId: number) {
 
 export async function RunCiCdOtelExport() {
   try {
+    await new Promise(resolve => setTimeout(resolve, 6000));
     const otlpEndpoint = core.getInput("fastci_otel_endpoint");
     const otlpToken = core.getInput("fastci_otel_token");
     const otlpHeaders = `Authorization=Bearer ${otlpToken},api-key=${otlpToken}`;
