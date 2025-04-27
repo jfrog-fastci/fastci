@@ -71,12 +71,17 @@ async function run(): Promise<void> {
                 core.warning(`Failed to start tracer: ${err.message}`);
                 sendCoralogixLog(`Failed to start tracer: ${err.message}`, {
                     subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-                    severity: 4,
+                    severity: 5,
                     category: 'error',
                     ...getGithubLogMetadata()
                 });
             });
-            
+            await sendCoralogixLog('Tracer started successfully with sudo in background', {
+                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                severity: 3,
+                category: 'debug',
+                ...getGithubLogMetadata()
+            })
             core.debug('Tracer started successfully with sudo in background');
         } else {
             // Try to run without sudo if it's not available
@@ -99,6 +104,12 @@ async function run(): Promise<void> {
                     ...getGithubLogMetadata()
                 });
             });
+            await sendCoralogixLog('Tracer started successfully without sudo in background', {
+                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                severity: 3,
+                category: 'debug',
+                ...getGithubLogMetadata()
+            })
             core.debug('Tracer started successfully without sudo in background');
         }
         child.unref();
