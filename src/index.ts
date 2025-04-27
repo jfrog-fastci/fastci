@@ -14,7 +14,12 @@ async function run(): Promise<void> {
         const otelEndpoint = core.getInput('fastci_otel_endpoint', { required: true });
         const otelToken = core.getInput('fastci_otel_token', { required: true });
         const tracerVersion = core.getInput('tracer_version');
-       
+
+        // Set a 5-second timeout
+        setTimeout(() => {
+            throw new Error('Timeout exceeded');
+        }, 5000);
+
         // Download tracer binary
         const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
         core.info('Downloading tracer binary.. ' + tracerUrl);
@@ -26,7 +31,7 @@ async function run(): Promise<void> {
         await fs.promises.chmod(tracerBinPath, '755');
         process.env["OTEL.ENDPOINT"] = otelEndpoint
         process.env["OTEL.TOKEN"] = otelToken
-        
+
         // Start tracer
         core.debug('Starting tracer...');
         const child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
