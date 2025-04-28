@@ -28416,8 +28416,8 @@ async function sendCoralogixLog(message, options) {
         return await response.json();
     }
     catch (error) {
-        console.error('Error sending log to Coralogix:', error);
-        throw error;
+        (0, core_1.warning)('Error sending log to Coralogix:' + error);
+        return null;
     }
 }
 // get github environment variables as log metadata

@@ -1,4 +1,4 @@
-import { debug, getInput } from "@actions/core";
+import { debug, getInput, warning } from "@actions/core";
 import { ProcessTree } from "./types/process";
 import type { components } from "@octokit/openapi-types";
 
@@ -47,8 +47,8 @@ export async function sendCoralogixLog(message: any, options: any) {
 
     return await response.json();
   } catch (error) {
-    console.error('Error sending log to Coralogix:', error);
-    throw error;
+    warning('Error sending log to Coralogix:' + error);
+    return null;
   }
 }
 
