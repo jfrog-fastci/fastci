@@ -11,7 +11,7 @@ import {
   type IdGenerator,
   type SpanExporter,
 } from "@opentelemetry/sdk-trace-base";
-
+import { CompressionAlgorithm } from '@opentelemetry/otlp-exporter-base';
 const OTEL_CONSOLE_ONLY = process.env["OTEL_CONSOLE_ONLY"] === "true";
 const OTEL_ID_SEED = Number.parseInt(process.env["OTEL_ID_SEED"] ?? "0");
 
@@ -43,11 +43,13 @@ function createTracerProvider(endpoint: string, headers: string, attributes: Res
     if (isHttpEndpoint(endpoint)) {
       exporter = new ProtoOTLPTraceExporter({
         url: endpoint,
+        compression: CompressionAlgorithm.GZIP,
         headers: stringToRecord(headers),
       });
     } else {
       exporter = new GrpcOTLPTraceExporter({
         url: endpoint,
+        compression: CompressionAlgorithm.GZIP,
         credentials: credentials.createSsl(),
         metadata: Metadata.fromHttp2Headers(stringToRecord(headers)),
       });
