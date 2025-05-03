@@ -48,6 +48,7 @@ function createTracerProvider(endpoint: string, headers: string, attributes: Res
     } else {
       exporter = new GrpcOTLPTraceExporter({
         url: endpoint,
+        concurrencyLimit: 10,
         credentials: credentials.createSsl(),
         metadata: Metadata.fromHttp2Headers(stringToRecord(headers)),
       });
@@ -56,7 +57,9 @@ function createTracerProvider(endpoint: string, headers: string, attributes: Res
 
   const provider = new BasicTracerProvider({
     resource: new Resource(attributes),
-    spanProcessors: [new BatchSpanProcessor(exporter)],
+    spanProcessors: [new BatchSpanProcessor(exporter, {
+      maxExportBatchSize: 200,
+    })],
     ...(OTEL_ID_SEED && { idGenerator: new DeterministicIdGenerator(OTEL_ID_SEED) }),
   });
 
