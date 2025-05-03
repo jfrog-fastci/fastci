@@ -43,6 +43,7 @@ function createTracerProvider(endpoint: string, headers: string, attributes: Res
     if (isHttpEndpoint(endpoint)) {
       exporter = new ProtoOTLPTraceExporter({
         url: endpoint,
+        compression: CompressionAlgorithm.GZIP,
         headers: stringToRecord(headers),
       });
     } else {
@@ -57,9 +58,7 @@ function createTracerProvider(endpoint: string, headers: string, attributes: Res
 
   const provider = new BasicTracerProvider({
     resource: new Resource(attributes),
-    spanProcessors: [new BatchSpanProcessor(exporter, {
-      maxExportBatchSize: 200,
-    })],
+    spanProcessors: [new BatchSpanProcessor(exporter)],
     ...(OTEL_ID_SEED && { idGenerator: new DeterministicIdGenerator(OTEL_ID_SEED) }),
   });
 
