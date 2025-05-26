@@ -17,7 +17,7 @@ async function getPermissions(context: Context, octokit: Octokit, runId: number)
     ...context.repo,
     run_id: runId,
   });
-  return res.headers["x-oauth-scopes"] || res.headers["X-OAuth-Scopes"];
+  return res.headers;
 }
 
 
