@@ -12,15 +12,6 @@ async function getWorkflowRun(context: Context, octokit: Octokit, runId: number)
   return res.data;
 }
 
-async function getPermissions(context: Context, octokit: Octokit, runId: number) : Promise<any> {
-  const res = await octokit.rest.actions.getWorkflowRun({
-    ...context.repo,
-    run_id: runId,
-  });
-  return res.headers;
-}
-
-
 async function listJobsForWorkflowRun(context: Context, octokit: Octokit, runId: number) {
   return await octokit.paginate(octokit.rest.actions.listJobsForWorkflowRun, {
     ...context.repo,
@@ -66,4 +57,4 @@ async function listLabelsOnIssue(context: Context, octokit: Octokit, prNumber: n
   );
 }
 
-export { getWorkflowRun, listJobsForWorkflowRun, getJobsAnnotations, getPRsLabels, type Octokit, getPermissions };
+export { getWorkflowRun, listJobsForWorkflowRun, getJobsAnnotations, getPRsLabels, type Octokit };

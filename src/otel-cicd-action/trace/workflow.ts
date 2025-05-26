@@ -24,7 +24,7 @@ async function traceWorkflowRun(
       const code = workflowRun.conclusion === "failure" ? SpanStatusCode.ERROR : SpanStatusCode.OK;
       rootSpan.setStatus({ code });
 
-      if (jobs.length > 0) {
+      if (jobs && jobs.length > 0) {
         // "Queued" span represent the time between the workflow has been started_at and
         // the first job has been picked up by a runner
         const queuedSpan = tracer.startSpan("Queued", { startTime }, context.active());
@@ -89,7 +89,7 @@ function workflowRunToAttributes(
 function referencedWorkflowsToAttributes(refs: components["schemas"]["referenced-workflow"][] | null | undefined) {
   const attributes: Attributes = {};
 
-  for (let i = 0; refs && i < refs.length; i++) {
+  for (let i = 0; refs && i < refs?.length; i++) {
     const ref = refs[i];
     const prefix = `github.referenced_workflows.${i}`;
 
@@ -124,7 +124,7 @@ function prsToAttributes(
     "github.base_sha": pullRequests?.[0]?.base?.sha,
   };
 
-  for (let i = 0; pullRequests && i < pullRequests.length; i++) {
+  for (let i = 0; pullRequests && i < pullRequests?.length; i++) {
     const pr = pullRequests[i];
     const prefix = `github.pull_requests.${i}`;
 

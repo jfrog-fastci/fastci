@@ -88,8 +88,8 @@ function jobToAttributes(job: components["schemas"]["job"]): Attributes {
 
 function annotationsToAttributes(annotations: components["schemas"]["check-annotation"][] | undefined) {
   const attributes: Attributes = {};
-
-  for (let i = 0; annotations && i < annotations.length; i++) {
+  debug(`Annotations: ${JSON.stringify(annotations)}`);
+  for (let i = 0; annotations && i < annotations?.length; i++) {
     const annotation = annotations[i];
     const prefix = `github.job.annotations.${i}`;
 
