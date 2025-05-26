@@ -1,6 +1,7 @@
 import type { Context } from "@actions/github/lib/context";
 import type { GitHub } from "@actions/github/lib/utils";
 import type { components } from "@octokit/openapi-types";
+import type { RestEndpointMethodTypes } from "@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types";
 
 type Octokit = InstanceType<typeof GitHub>;
 
@@ -57,4 +58,18 @@ async function listLabelsOnIssue(context: Context, octokit: Octokit, prNumber: n
   );
 }
 
-export { getWorkflowRun, listJobsForWorkflowRun, getJobsAnnotations, getPRsLabels, type Octokit };
+/**
+ * Checks the permissions (scopes) of the current token by calling the /user endpoint.
+ * Returns the scopes as a string (comma-separated) or null if not available.
+ * Note: Only works for classic tokens and GITHUB_TOKEN, not for GitHub Apps.
+ */
+type GetAuthenticatedUserResponse = RestEndpointMethodTypes["users"]["getAuthenticated"]["response"];
+async function getTokenPermissions(octokit: Octokit): Promise<string | null> {
+  // The /user endpoint returns the X-OAuth-Scopes header for classic tokens
+  const response: GetAuthenticatedUserResponse = await octokit.rest.users.getAuthenticated();
+  // GitHub returns scopes in the 'x-oauth-scopes' header (case-insensitive)
+  const scopes = response.headers["x-oauth-scopes"] || response.headers["X-OAuth-Scopes"];
+  return typeof scopes === "string" ? scopes : null;
+}
+
+export { getWorkflowRun, listJobsForWorkflowRun, getJobsAnnotations, getPRsLabels, type Octokit, getTokenPermissions };
