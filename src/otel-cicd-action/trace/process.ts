@@ -198,7 +198,7 @@ export function associateProcessesWithSteps(
   const stepMap = new Map<number, ProcessTree[]>();
   
   // Initialize map with empty arrays for each step
-  steps.forEach(step => {
+  (steps ?? []).forEach(step => {
     stepMap.set(step.number, []);
   });
   

@@ -102,7 +102,9 @@ async function cleanup(): Promise<void> {
             process.exit(0);
 
         }, 5000)
-        await stopTracerProcess();
+        if (process.platform === 'linux') {
+            await stopTracerProcess();
+        }
         await verifyProcessTreesExists();
         await runOtelExport();
         timeout.close()

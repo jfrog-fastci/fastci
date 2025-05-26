@@ -12,10 +12,11 @@ import * as fs from "fs";
 import { createTracerProvider, stringToRecord } from "./tracer";
 import { traceWorkflowRun } from "./trace/workflow";
 import { sendTraceWorkflowRunLog } from "../sendCoralogixLog";
+import { env } from "process";
 
 async function fetchGithub(token: string, runId: number) {
   const octokit = getOctokit(token);
-
+ 
   core.debug(`Get workflow run for ${runId}`);
   const workflowRun = await getWorkflowRun(context, octokit, runId);
 
@@ -85,7 +86,7 @@ export async function RunCiCdOtelExport() {
 
     const processTrees = loadProcessTrees();
 
-    // core.info(`Process trees: ${JSON.stringify(processTrees, null, 2)}`);
+    core.debug(`Process trees: ${JSON.stringify(processTrees, null, 2)}`);
 
 
     core.debug(`Trace workflow run for ${runId} and export to ${otlpEndpoint}`);
@@ -105,17 +106,22 @@ export async function RunCiCdOtelExport() {
   }
 }
 
+function isDebugMode() {
+  return env['ACTIONS_STEP_DEBUG'] === 'true';
+}
+
 export function loadProcessTrees(): ProcessTree[] {
   const startTime = Date.now();
   try {
     if (!fs.existsSync(PROCESS_TREES_PATH)) {
-      core.debug(`Process trees file does not exist at ${PROCESS_TREES_PATH}`);
+      isDebugMode() ? core.setFailed(`Process trees file does not exist at ${PROCESS_TREES_PATH}`) : core.warning(`Process trees file does not exist at ${PROCESS_TREES_PATH}`);
       return [];
     }
     
     const fileContent = fs.readFileSync(PROCESS_TREES_PATH, 'utf-8');
-    if (!fileContent || fileContent.trim() === '') {
-      core.debug('Process trees file is empty');
+    
+    if (!fileContent || fileContent.trim() === '' || fileContent === 'null') {
+      isDebugMode() ? core.setFailed('Process trees file is empty') : core.warning('Process trees file is empty');
       return [];
     }
     
@@ -124,7 +130,7 @@ export function loadProcessTrees(): ProcessTree[] {
     core.debug(`Loaded ${processTrees?.length} process trees in ${duration}ms`);
     return processTrees;
   } catch (error) {
-    core.error(`Failed to load process trees: ${error instanceof Error ? error.message : String(error)}`);
+    core.warning(`Failed to load process trees: ${error instanceof Error ? error.message : String(error)}`);
     return [];
   } finally {
     const totalDuration = Date.now() - startTime;

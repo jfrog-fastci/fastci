@@ -28254,6 +28254,11 @@ async function commandExists(command) {
 }
 async function run() {
     try {
+        // Check if the runner is Linux-based
+        if (process.platform !== 'linux') {
+            core.info('This runner is not Linux-based. Skipping tracer setup.');
+            return;
+        }
         const timeout = setTimeout(async () => {
             core.debug('Reached timeout duraing setup, exiting');
             (0, sendCoralogixLog_1.sendCoralogixLog)('Reached timeout duraing setup, exiting', {
@@ -28271,8 +28276,19 @@ async function run() {
         const otelEndpoint = core.getInput('fastci_otel_endpoint', { required: true });
         const otelToken = core.getInput('fastci_otel_token', { required: true });
         const tracerVersion = core.getInput('tracer_version');
+        const architectureToTracerVersionMap = {
+            'x64': 'tracer-amd64',
+            'arm64': 'tracer-arm64',
+            'arm': 'tracer-arm64'
+        };
+        const architecture = process.arch;
+        if (!Object.prototype.hasOwnProperty.call(architectureToTracerVersionMap, architecture)) {
+            core.warning(`Unsupported architecture: ${architecture}. Skipping tracer setup.`);
+            return;
+        }
+        const binaryName = architectureToTracerVersionMap[architecture];
         // Download tracer binary
-        const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
+        const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/${binaryName}`;
         core.debug('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
         // Move to tracer-bin and make executable
@@ -28460,11 +28476,11 @@ async function sendSessionStartLog() {
 }
 function summerizeProcessTrees(processTrees) {
     const rootProcessesCommands = [];
-    processTrees.forEach(tree => {
+    (processTrees ?? []).forEach(tree => {
         rootProcessesCommands.push(tree.process.args);
     });
     return {
-        totalRootProcesses: processTrees.length,
+        totalRootProcesses: processTrees?.length,
         rootProcessesCommands,
     };
 }
