@@ -16,7 +16,7 @@ import { sendTraceWorkflowRunLog } from "../sendCoralogixLog";
 async function fetchGithub(token: string, runId: number) {
   const octokit = getOctokit(token);
   const permissions = await getPermissions(context, octokit, runId);
-  core.debug(`Permissions: ${permissions}`);
+  core.debug(`Permissions: ${JSON.stringify(permissions)}`);
   
   core.debug(`Get workflow run for ${runId}`);
   const workflowRun = await getWorkflowRun(context, octokit, runId);
