@@ -15,9 +15,16 @@ import { sendTraceWorkflowRunLog } from "../sendCoralogixLog";
 
 async function fetchGithub(token: string, runId: number) {
   const octokit = getOctokit(token);
-  
+  try {
   const scopes = await getTokenPermissions(octokit);
   core.debug(`Scopes: ${scopes}`);
+  } catch (error) {
+    if (error instanceof RequestError) {
+      core.debug(`Failed to get token permissions: ${error.message}}`);
+    } else {
+      throw error;
+    }
+  }
 
   core.debug(`Get workflow run for ${runId}`);
   const workflowRun = await getWorkflowRun(context, octokit, runId);
