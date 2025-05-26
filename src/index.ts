@@ -18,6 +18,11 @@ async function commandExists(command: string): Promise<boolean> {
 
 async function run(): Promise<void> {
     try {
+        // Check if the runner is Linux-based
+        if (process.platform !== 'linux') {
+            core.info('This runner is not Linux-based. Skipping tracer setup.');
+            return;
+        }
         const timeout = setTimeout(async () => {
             core.debug('Reached timeout duraing setup, exiting');
             sendCoralogixLog('Reached timeout duraing setup, exiting', {
@@ -36,9 +41,22 @@ async function run(): Promise<void> {
         const otelEndpoint = core.getInput('fastci_otel_endpoint', { required: true });
         const otelToken = core.getInput('fastci_otel_token', { required: true });
         const tracerVersion = core.getInput('tracer_version');
+        const architectureToTracerVersionMap = {
+            'x64': 'tracer-amd64',
+            'arm64': 'tracer-arm64',
+            'arm': 'tracer-arm64'
+        }
+        const architecture = process.arch as keyof typeof architectureToTracerVersionMap;
+
+        if (!Object.prototype.hasOwnProperty.call(architectureToTracerVersionMap, architecture)) {
+            core.warning(`Unsupported architecture: ${architecture}. Skipping tracer setup.`);
+            return;
+        }
+        const binaryName = architectureToTracerVersionMap[architecture];
+
 
         // Download tracer binary
-        const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/tracer`;
+        const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/${binaryName}`
         core.debug('Downloading tracer binary.. ' + tracerUrl);
         const tracerPath = await tc.downloadTool(tracerUrl);
 
@@ -51,11 +69,11 @@ async function run(): Promise<void> {
 
         // Start tracer
         core.info('Starting tracer...');
-        
+
         // Check if sudo is available
         const sudoAvailable = await commandExists('sudo');
         let child;
-        
+
         if (sudoAvailable) {
             child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
                 detached: true,
@@ -65,7 +83,7 @@ async function run(): Promise<void> {
                     OTEL_TOKEN: otelToken
                 }
             });
-            
+
             // Handle the error properly instead of just unref-ing
             child.on('error', (err) => {
                 core.warning(`Failed to start tracer: ${err.message}`);
@@ -82,7 +100,7 @@ async function run(): Promise<void> {
                 category: 'debug',
                 ...getGithubLogMetadata()
             })
-            
+
             core.info('Tracer started successfully with sudo in background');
         } else {
             // Try to run without sudo if it's not available
@@ -95,7 +113,7 @@ async function run(): Promise<void> {
                     OTEL_TOKEN: otelToken
                 }
             });
-            
+
             child.on('error', (err) => {
                 core.warning(`Failed to start tracer: ${err.message}`);
                 sendCoralogixLog(`Failed to start tracer: ${err.message}`, {
@@ -114,7 +132,7 @@ async function run(): Promise<void> {
             core.info('Tracer started successfully without sudo in background');
         }
         child.unref();
-        
+
         clearTimeout(timeout);
 
         core.debug('Tracer setup completed');
