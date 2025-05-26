@@ -58,18 +58,4 @@ async function listLabelsOnIssue(context: Context, octokit: Octokit, prNumber: n
   );
 }
 
-/**
- * Checks the permissions (scopes) of the current token by calling the /user endpoint.
- * Returns the scopes as a string (comma-separated) or null if not available.
- * Note: Only works for classic tokens and GITHUB_TOKEN, not for GitHub Apps.
- */
-async function getTokenPermissions(octokit: Octokit): Promise<string | null> {
-  // The /user endpoint returns the X-OAuth-Scopes header for classic tokens
-  const response = await octokit.rest.actions.getGithubActionsPermissionsRepository();
-  // GitHub returns scopes in the 'x-oauth-scopes' header (case-insensitive)
-  
-  const scopes = response.headers["x-oauth-scopes"] || response.headers["X-OAuth-Scopes"];
-  return typeof scopes === "string" ? scopes : null;
-}
-
-export { getWorkflowRun, listJobsForWorkflowRun, getJobsAnnotations, getPRsLabels, type Octokit, getTokenPermissions };
+export { getWorkflowRun, listJobsForWorkflowRun, getJobsAnnotations, getPRsLabels, type Octokit };

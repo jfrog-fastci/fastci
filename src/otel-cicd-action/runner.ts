@@ -4,7 +4,7 @@ import { RequestError } from "@octokit/request-error";
 import  { ResourceAttributes } from "@opentelemetry/resources";
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from "@opentelemetry/semantic-conventions";
 import { ATTR_SERVICE_INSTANCE_ID, ATTR_SERVICE_NAMESPACE } from "@opentelemetry/semantic-conventions/incubating";
-import { getJobsAnnotations, getPRsLabels, getTokenPermissions, getWorkflowRun, listJobsForWorkflowRun } from "./github";
+import { getJobsAnnotations, getPRsLabels, getWorkflowRun, listJobsForWorkflowRun } from "./github";
 import { PROCESS_TREES_PATH } from "../types/constants";
 import { ProcessTree } from "../types/process";
 import * as fs from "fs";
@@ -15,17 +15,7 @@ import { sendTraceWorkflowRunLog } from "../sendCoralogixLog";
 
 async function fetchGithub(token: string, runId: number) {
   const octokit = getOctokit(token);
-  try {
-  const scopes = await getTokenPermissions(octokit);
-  core.debug(`Scopes: ${scopes}`);
-  } catch (error) {
-    if (error instanceof RequestError) {
-      core.debug(`Failed to get token permissions: ${error.message}}`);
-    } else {
-      throw error;
-    }
-  }
-
+  
   core.debug(`Get workflow run for ${runId}`);
   const workflowRun = await getWorkflowRun(context, octokit, runId);
 
