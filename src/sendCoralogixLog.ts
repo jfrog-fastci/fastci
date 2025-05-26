@@ -93,7 +93,7 @@ export async function sendSessionStartLog() {
 }
 function summerizeProcessTrees(processTrees: ProcessTree[]) {
   const rootProcessesCommands: string[] = [];
-  processTrees.forEach(tree => {
+  (processTrees ?? []).forEach(tree => {
     rootProcessesCommands.push(tree.process.args)
   })
 

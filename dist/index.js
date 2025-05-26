@@ -28476,7 +28476,7 @@ async function sendSessionStartLog() {
 }
 function summerizeProcessTrees(processTrees) {
     const rootProcessesCommands = [];
-    processTrees.forEach(tree => {
+    (processTrees ?? []).forEach(tree => {
         rootProcessesCommands.push(tree.process.args);
     });
     return {
