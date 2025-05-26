@@ -34,6 +34,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
+        arch: [amd, arm]
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
@@ -45,6 +46,14 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+    - name: Check tracer process
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        if pgrep -f tracer; then
+          echo "Tracer process found."
+        else
+          echo "Tracer process NOT found!" && exit 1
+        fi
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
