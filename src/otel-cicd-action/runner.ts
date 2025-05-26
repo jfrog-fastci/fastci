@@ -114,6 +114,7 @@ export function loadProcessTrees(): ProcessTree[] {
     }
     
     const fileContent = fs.readFileSync(PROCESS_TREES_PATH, 'utf-8');
+    core.debug(`File content: ${fileContent}`);
     if (!fileContent || fileContent.trim() === '') {
       core.debug('Process trees file is empty');
       return [];
