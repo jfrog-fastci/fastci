@@ -98,7 +98,7 @@ function summerizeProcessTrees(processTrees: ProcessTree[]) {
   })
 
   return {
-    totalRootProcesses: processTrees.length,
+    totalRootProcesses: processTrees?.length,
     rootProcessesCommands,
   }
 }

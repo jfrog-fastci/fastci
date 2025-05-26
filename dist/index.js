@@ -28480,7 +28480,7 @@ function summerizeProcessTrees(processTrees) {
         rootProcessesCommands.push(tree.process.args);
     });
     return {
-        totalRootProcesses: processTrees.length,
+        totalRootProcesses: processTrees?.length,
         rootProcessesCommands,
     };
 }
