@@ -1,0 +1,50 @@
+name: Sync Beta Branch
+
+on:
+  schedule:
+    # Run at 00:00 and 12:00 UTC every day
+    - cron: '0 0,12 * * *'
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Message to add to the commit'
+        required: false
+        default: 'Syncing beta branch'
+
+jobs:
+  sync-beta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'github-actions@github.com'
+
+      - name: Sync beta branch with main
+        run: |
+          # Fetch beta branch if it exists
+          git fetch origin beta || true
+          
+          # Store beta's action.yml if it exists
+          if git show origin/beta:action.yml > /dev/null 2>&1; then
+            git show origin/beta:action.yml > beta_action.yml
+          fi
+          
+          # Create or update beta branch
+          git checkout -B beta
+          
+          # Restore beta's action.yml if it existed
+          if [ -f beta_action.yml ]; then
+            mv beta_action.yml action.yml
+            git add action.yml
+            git commit -m "Preserve beta-specific action.yml changes"
+          fi
+          
+          # Push changes
+          git push origin beta --force 
