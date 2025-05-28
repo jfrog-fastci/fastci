@@ -74,8 +74,10 @@ async function run(): Promise<void> {
         const sudoAvailable = await commandExists('sudo');
         let child;
 
+        const trackFiles = core.getInput('tracer_track_files');
+
         if (sudoAvailable) {
-            child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
+            child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken} MONITOR_FILES=${trackFiles}`, './tracer-bin'], {
                 detached: true,
                 stdio: 'ignore',
                 env: {
@@ -109,6 +111,7 @@ async function run(): Promise<void> {
                 detached: true,
                 stdio: 'ignore',
                 env: {
+                    MONITOR_FILES: String(trackFiles),
                     OTEL_ENDPOINT: otelEndpoint,
                     OTEL_TOKEN: otelToken
                 }
