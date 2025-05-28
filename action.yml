@@ -28,6 +28,11 @@ inputs:
     description: "Version of the tracer binary to use"
     required: false
     default: "v0.7.4"
+  
+  tracer_track_files:
+    description: "Track files via eBPF monitoring"
+    required: false
+    default: false
 
   extra_attributes:
     description: "Extra attributes to add to the trace"
