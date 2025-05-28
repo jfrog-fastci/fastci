@@ -77,7 +77,7 @@ async function run(): Promise<void> {
         const trackFiles = core.getInput('tracer_track_files');
 
         if (sudoAvailable) {
-            child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken} MONITOR_FILES_DISABLED=${!trackFiles}`, './tracer-bin'], {
+            child = spawn('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken} MONITOR_FILES=${trackFiles}`, './tracer-bin'], {
                 detached: true,
                 stdio: 'ignore',
                 env: {
@@ -111,7 +111,7 @@ async function run(): Promise<void> {
                 detached: true,
                 stdio: 'ignore',
                 env: {
-                    MONITOR_FILES_DISABLED: String(!trackFiles),
+                    MONITOR_FILES: String(trackFiles),
                     OTEL_ENDPOINT: otelEndpoint,
                     OTEL_TOKEN: otelToken
                 }
