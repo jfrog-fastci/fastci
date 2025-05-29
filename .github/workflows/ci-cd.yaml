@@ -28,10 +28,10 @@ jobs:
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
     - name: Simulate files marked for upload
       run: |
+        ls -la
         file ./tracer-bin
         ldd ./tracer-bin
         
-        ls -la
         ./tracer-bin
         
         mkdir -p /tmp/fastci/cache/upload
