@@ -19,6 +19,15 @@ export function GenerateCacheKeys(): string[] {
     return [cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo];
 }
 
+export function InitializeCacheFolders() {
+    if (!fs.existsSync(DOWNLOAD_CACHE_DIR)) {
+        fs.mkdirSync(DOWNLOAD_CACHE_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(UPLOAD_CACHE_DIR)) {
+        fs.mkdirSync(UPLOAD_CACHE_DIR, { recursive: true });
+    }
+}
+
 export async function RestoreCache() {
     const [cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo] = GenerateCacheKeys();
     const cacheHit = await cache.restoreCache([DOWNLOAD_CACHE_DIR], cacheKey, [fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo])

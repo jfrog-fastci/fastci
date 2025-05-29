@@ -66195,6 +66195,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.UPLOAD_CACHE_DIR = exports.DOWNLOAD_CACHE_DIR = void 0;
 exports.GenerateCacheKeys = GenerateCacheKeys;
+exports.InitializeCacheFolders = InitializeCacheFolders;
 exports.RestoreCache = RestoreCache;
 exports.ListPathsForCache = ListPathsForCache;
 exports.SaveCache = SaveCache;
@@ -66214,6 +66215,14 @@ function GenerateCacheKeys() {
     const fallbackToCacheFromTargetBranch = `${repo}:${operationSystem}:${architecture}:${targetBranch}`;
     const fallbackToCacheFromRepo = `${repo}:${operationSystem}:${architecture}`;
     return [cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo];
+}
+function InitializeCacheFolders() {
+    if (!fs.existsSync(exports.DOWNLOAD_CACHE_DIR)) {
+        fs.mkdirSync(exports.DOWNLOAD_CACHE_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(exports.UPLOAD_CACHE_DIR)) {
+        fs.mkdirSync(exports.UPLOAD_CACHE_DIR, { recursive: true });
+    }
 }
 async function RestoreCache() {
     const [cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo] = GenerateCacheKeys();
@@ -66456,6 +66465,7 @@ async function RunTracer() {
     }
 }
 async function RunSetup() {
+    (0, cache_1.InitializeCacheFolders)();
     // Load cache
     await (0, cache_1.RestoreCache)();
     // start the tracer
