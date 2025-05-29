@@ -11,12 +11,12 @@ export function GenerateCacheKeys(): string[] {
     const repo = process.env.GITHUB_REPOSITORY;
     const operationSystem = process.platform;
     const architecture = process.arch;
-    const sourceBranch = process.env.GITHUB_REF;
-    const targetBranch = process.env.GITHUB_BASE_REF;
-    const cacheKey = `${repo}:${operationSystem}:${architecture}:${sourceBranch}`;
-    const fallbackToCacheFromTargetBranch = `${repo}:${operationSystem}:${architecture}:${targetBranch}`;
-    const fallbackToCacheFromRepo = `${repo}:${operationSystem}:${architecture}`;
-    return [Buffer.from(cacheKey).toString('base64'), Buffer.from(fallbackToCacheFromTargetBranch).toString('base64'), Buffer.from(fallbackToCacheFromRepo).toString('base64')];
+    // const sourceBranch = process.env.GITHUB_REF;
+    // const targetBranch = process.env.GITHUB_BASE_REF;
+    const runId = process.env.GITHUB_RUN_ID;
+    const baseKey = `${repo}:${operationSystem}:${architecture}`;
+    const runBasedKey = `${baseKey}:${runId}`;
+    return [runBasedKey, baseKey];
 }
 
 export function InitializeCacheFolders() {
