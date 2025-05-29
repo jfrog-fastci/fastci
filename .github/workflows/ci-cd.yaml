@@ -30,8 +30,13 @@ jobs:
       run: |
         ls -la
         chmod +x ./tracer-bin
+        mount -t tracefs tracefs /sys/kernel/tracing || true
+        mount -t debugfs debugfs /sys/kernel/debug || true
+
+
+
         ./tracer-bin
-        
+
         mkdir -p /tmp/fastci/cache/upload
         mkdir -p /tmp/test
         echo "hello" > /tmp/test/hello.txt
