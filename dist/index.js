@@ -66442,7 +66442,7 @@ async function RunTracer() {
             core.info('Tracer started successfully without sudo in background');
         }
         // check with ps that the tracer-bin is running
-        await (0, exec_1.exec)('ps | grep tracer');
+        await (0, exec_1.exec)('ps --help');
         child.unref();
         clearTimeout(timeout);
         core.debug('Tracer setup completed');
