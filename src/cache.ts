@@ -29,8 +29,8 @@ export function InitializeCacheFolders() {
 }
 
 export async function RestoreCache() {
-    const [cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo] = GenerateCacheKeys();
-    const cacheHit = await cache.restoreCache(["/tmp/test"], cacheKey, [fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo])
+    const [cacheKey, fallbackToCacheFromTargetBranch] = GenerateCacheKeys();
+    const cacheHit = await cache.restoreCache(["/tmp/test"], cacheKey, [fallbackToCacheFromTargetBranch])
         .catch(error => {
             core.warning(`Error restoring cache: ${error}`);
         });
@@ -38,7 +38,7 @@ export async function RestoreCache() {
     if (cacheHit) {
         core.info(`Cache hit for ${cacheKey}`);
     } else {
-        core.info(`Cache miss for ${[cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo]}`);
+        core.info(`Cache miss for ${[cacheKey, fallbackToCacheFromTargetBranch]}`);
     }
     // todo symlin to paths in DOWNLOAD_CACHE_DIR
 }
@@ -58,7 +58,7 @@ export async function SaveCache() {
         return;
     }
     core.info(`Paths: ${paths}`);
-    const [cacheKey, _, __] = GenerateCacheKeys();
+    const [cacheKey, _] = GenerateCacheKeys();
     core.info(`Saving cache for ${cacheKey} with paths ${paths}`);
     const result = await cache.saveCache(paths, cacheKey)
         .catch(error => {
