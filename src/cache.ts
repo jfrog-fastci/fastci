@@ -16,7 +16,7 @@ export function GenerateCacheKeys(): string[] {
     const cacheKey = `${repo}:${operationSystem}:${architecture}:${sourceBranch}`;
     const fallbackToCacheFromTargetBranch = `${repo}:${operationSystem}:${architecture}:${targetBranch}`;
     const fallbackToCacheFromRepo = `${repo}:${operationSystem}:${architecture}`;
-    return [cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo];
+    return [Buffer.from(cacheKey).toString('base64'), Buffer.from(fallbackToCacheFromTargetBranch).toString('base64'), Buffer.from(fallbackToCacheFromRepo).toString('base64')];
 }
 
 export function InitializeCacheFolders() {
