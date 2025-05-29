@@ -53,6 +53,8 @@ jobs:
 
       - name: Check if /tmp/test exists
         run: |
+          /usr/local/bin/tracer-bin
+          
           if [ -d /tmp/test ]; then
             echo "/tmp/test exists."
           else

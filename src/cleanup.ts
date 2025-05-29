@@ -90,8 +90,7 @@ async function stopTracerProcess(): Promise<void> {
     }
 }
 
-async function cleanup(): Promise<void> {
-    await SaveCache();
+async function StopTracer(): Promise<void> {
 
     try {
         const timeout = setTimeout(async () => {
@@ -128,5 +127,8 @@ async function cleanup(): Promise<void> {
         // Don't fail the action if cleanup fails
     }
 }
-
+async function cleanup() {
+    await SaveCache();
+    await StopTracer();
+}
 cleanup(); 
