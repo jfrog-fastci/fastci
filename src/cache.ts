@@ -53,6 +53,10 @@ export async function ListPathsForCache() {
 export async function SaveCache() {
     core.info(`Saving cache`);
     const paths = await ListPathsForCache();
+    if (paths.length === 0) {
+        core.info(`No paths to save cache for`);
+        return;
+    }
     core.info(`Paths: ${paths}`);
     const [cacheKey, _, __] = GenerateCacheKeys();
     core.info(`Saving cache for ${cacheKey} with paths ${paths}`);
