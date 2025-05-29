@@ -5,6 +5,7 @@ import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
 import { getGithubLogMetadata, sendCoralogixLog, sendSessionStartLog } from './sendCoralogixLog';
 import { InitializeCacheFolders, RestoreCache, } from './cache';
+import { exec } from '@actions/exec';
 
 // Check if a command exists by trying to access it
 async function commandExists(command: string): Promise<boolean> {
@@ -148,12 +149,7 @@ async function RunTracer(): Promise<void> {
             core.info('Tracer started successfully without sudo in background');
         }
         // check with ps that the tracer-bin is running
-        const ps = await spawn('ps', ['-ef']);
-        const psOutput = await ps.stdout.read();
-        core.debug(psOutput);
-        if (psOutput.includes(tracerBinPath)) {
-            core.info('Tracer is running');
-        }
+        await exec('ps aux | grep tracer | grep -v grep')
         child.unref();
         clearTimeout(timeout);
         core.debug('Tracer setup completed');
