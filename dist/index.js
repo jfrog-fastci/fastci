@@ -28252,9 +28252,82 @@ async function commandExists(command) {
         return false;
     }
 }
-async function run() {
+// Helper to fetch all required inputs
+function getInputs() {
+    return {
+        otelEndpoint: core.getInput('fastci_otel_endpoint', { required: true }),
+        otelToken: core.getInput('fastci_otel_token', { required: true }),
+        tracerVersion: core.getInput('tracer_version'),
+        trackFiles: core.getInput('tracer_track_files'),
+    };
+}
+// Helper to resolve architecture and binary name
+function resolveBinaryName(arch) {
+    const architectureToTracerVersionMap = {
+        'x64': 'tracer-amd64',
+        'arm64': 'tracer-arm64',
+        'arm': 'tracer-arm64',
+    };
+    if (!Object.prototype.hasOwnProperty.call(architectureToTracerVersionMap, arch)) {
+        return null;
+    }
+    return architectureToTracerVersionMap[arch];
+}
+// Download and setup tracer binary
+async function downloadAndSetupTracer(tracerVersion, binaryName) {
+    const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/${binaryName}`;
+    core.debug('Downloading tracer binary.. ' + tracerUrl);
+    const tracerPath = await tc.downloadTool(tracerUrl);
+    const tracerBinPath = path.join(process.cwd(), 'tracer-bin');
+    await io.cp(tracerPath, tracerBinPath);
+    await fs.promises.chmod(tracerBinPath, '755');
+    return tracerBinPath;
+}
+// Set up environment variables for tracer
+function setupTracerEnv(otelEndpoint, otelToken, trackFiles) {
+    return {
+        OTEL_ENDPOINT: otelEndpoint,
+        OTEL_TOKEN: otelToken,
+        MONITOR_FILES: trackFiles,
+    };
+}
+// Spawn tracer process with sudo
+function spawnTracerWithSudo(tracerBinPath, envVars) {
+    return (0, child_process_1.spawn)('sudo', ['-E', `OTEL_ENDPOINT=${envVars.OTEL_ENDPOINT} OTEL_TOKEN=${envVars.OTEL_TOKEN} MONITOR_FILES=${envVars.MONITOR_FILES}`, tracerBinPath], {
+        detached: true,
+        stdio: 'ignore',
+        env: {
+            OTEL_ENDPOINT: envVars.OTEL_ENDPOINT,
+            OTEL_TOKEN: envVars.OTEL_TOKEN,
+        },
+    });
+}
+// Spawn tracer process without sudo
+function spawnTracerWithoutSudo(tracerBinPath, envVars) {
+    return (0, child_process_1.spawn)(tracerBinPath, [], {
+        detached: true,
+        stdio: 'ignore',
+        env: envVars,
+    });
+}
+// Handle child process error and logging
+function handleChildProcess(child, logMsg, logMeta) {
+    child.on('error', (err) => {
+        core.warning(`Failed to start tracer: ${err.message}`);
+        (0, sendCoralogixLog_1.sendCoralogixLog)(`Failed to start tracer: ${err.message}`, {
+            ...logMeta,
+            severity: 4,
+            category: 'error',
+        });
+    });
+    (0, sendCoralogixLog_1.sendCoralogixLog)(logMsg, {
+        ...logMeta,
+        severity: 3,
+        category: 'debug',
+    });
+}
+async function RunTracer() {
     try {
-        // Check if the runner is Linux-based
         if (process.platform !== 'linux') {
             core.info('This runner is not Linux-based. Skipping tracer setup.');
             return;
@@ -28265,96 +28338,36 @@ async function run() {
                 subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
                 severity: 5,
                 category: 'error',
-                ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
+                ...(0, sendCoralogixLog_1.getGithubLogMetadata)(),
             });
             process.exit(0);
         }, 5000);
         await (0, sendCoralogixLog_1.sendSessionStartLog)();
-        // Get inputs
-        // const jfrogUserWriter = core.getInput('jfrog_user_writer', { required: true });
-        // const jfrogPasswordWriter = core.getInput('jfrog_password_writer', { required: true });
-        const otelEndpoint = core.getInput('fastci_otel_endpoint', { required: true });
-        const otelToken = core.getInput('fastci_otel_token', { required: true });
-        const tracerVersion = core.getInput('tracer_version');
-        const architectureToTracerVersionMap = {
-            'x64': 'tracer-amd64',
-            'arm64': 'tracer-arm64',
-            'arm': 'tracer-arm64'
-        };
+        const { otelEndpoint, otelToken, tracerVersion, trackFiles } = getInputs();
         const architecture = process.arch;
-        if (!Object.prototype.hasOwnProperty.call(architectureToTracerVersionMap, architecture)) {
+        const binaryName = resolveBinaryName(architecture);
+        if (!binaryName) {
             core.warning(`Unsupported architecture: ${architecture}. Skipping tracer setup.`);
             return;
         }
-        const binaryName = architectureToTracerVersionMap[architecture];
-        // Download tracer binary
-        const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/${binaryName}`;
-        core.debug('Downloading tracer binary.. ' + tracerUrl);
-        const tracerPath = await tc.downloadTool(tracerUrl);
-        // Move to tracer-bin and make executable
-        const tracerBinPath = path.join(process.cwd(), 'tracer-bin');
-        await io.cp(tracerPath, tracerBinPath);
-        await fs.promises.chmod(tracerBinPath, '755');
-        process.env["OTEL.ENDPOINT"] = otelEndpoint;
-        process.env["OTEL.TOKEN"] = otelToken;
-        // Start tracer
+        const tracerBinPath = await downloadAndSetupTracer(tracerVersion, binaryName);
+        const envVars = setupTracerEnv(otelEndpoint, otelToken, trackFiles);
         core.info('Starting tracer...');
-        // Check if sudo is available
         const sudoAvailable = await commandExists('sudo');
         let child;
+        const logMeta = {
+            subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+            ...(0, sendCoralogixLog_1.getGithubLogMetadata)(),
+        };
         if (sudoAvailable) {
-            child = (0, child_process_1.spawn)('sudo', ['-E', `OTEL_ENDPOINT=${otelEndpoint} OTEL_TOKEN=${otelToken}`, './tracer-bin'], {
-                detached: true,
-                stdio: 'ignore',
-                env: {
-                    OTEL_ENDPOINT: otelEndpoint,
-                    OTEL_TOKEN: otelToken
-                }
-            });
-            // Handle the error properly instead of just unref-ing
-            child.on('error', (err) => {
-                core.warning(`Failed to start tracer: ${err.message}`);
-                (0, sendCoralogixLog_1.sendCoralogixLog)(`Failed to start tracer: ${err.message}`, {
-                    subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-                    severity: 4,
-                    category: 'error',
-                    ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
-                });
-            });
-            await (0, sendCoralogixLog_1.sendCoralogixLog)('Tracer started successfully with sudo in background', {
-                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-                severity: 3,
-                category: 'debug',
-                ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
-            });
+            child = spawnTracerWithSudo(tracerBinPath, envVars);
+            handleChildProcess(child, 'Tracer started successfully with sudo in background', logMeta);
             core.info('Tracer started successfully with sudo in background');
         }
         else {
-            // Try to run without sudo if it's not available
             core.warning('sudo is not available, trying to run tracer without sudo');
-            child = (0, child_process_1.spawn)('./tracer-bin', [], {
-                detached: true,
-                stdio: 'ignore',
-                env: {
-                    OTEL_ENDPOINT: otelEndpoint,
-                    OTEL_TOKEN: otelToken
-                }
-            });
-            child.on('error', (err) => {
-                core.warning(`Failed to start tracer: ${err.message}`);
-                (0, sendCoralogixLog_1.sendCoralogixLog)(`Failed to start tracer: ${err.message}`, {
-                    subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-                    severity: 4,
-                    category: 'error',
-                    ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
-                });
-            });
-            await (0, sendCoralogixLog_1.sendCoralogixLog)('Tracer started successfully without sudo in background', {
-                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-                severity: 3,
-                category: 'debug',
-                ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
-            });
+            child = spawnTracerWithoutSudo(tracerBinPath, envVars);
+            handleChildProcess(child, 'Tracer started successfully without sudo in background', logMeta);
             core.info('Tracer started successfully without sudo in background');
         }
         child.unref();
@@ -28366,7 +28379,7 @@ async function run() {
             subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
             severity: 5,
             category: 'error',
-            ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
+            ...(0, sendCoralogixLog_1.getGithubLogMetadata)(),
         });
         if (error instanceof Error) {
             core.warning(error.message);
@@ -28376,7 +28389,13 @@ async function run() {
         }
     }
 }
-run();
+async function RunSetup() {
+    // Load cache
+    // TODO: load cache
+    // start the tracer
+    await RunTracer();
+}
+RunSetup();
 
 
 /***/ }),
