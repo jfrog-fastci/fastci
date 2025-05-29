@@ -66309,7 +66309,6 @@ const tc = __importStar(__nccwpck_require__(7784));
 const fs = __importStar(__nccwpck_require__(7147));
 const sendCoralogixLog_1 = __nccwpck_require__(1740);
 const cache_1 = __nccwpck_require__(4810);
-const exec_1 = __nccwpck_require__(1514);
 // Check if a command exists by trying to access it
 async function commandExists(command) {
     try {
@@ -66442,7 +66441,16 @@ async function RunTracer() {
             core.info('Tracer started successfully without sudo in background');
         }
         // check with ps that the tracer-bin is running
-        await (0, exec_1.exec)('ps');
+        const ps = (0, child_process_1.spawn)('ps', ['aux', '|', 'grep', 'tracer', '|', 'grep', '-v', 'grep']);
+        ps.stdout.on('data', (data) => {
+            core.debug(data.toString());
+        });
+        ps.stderr.on('data', (data) => {
+            core.debug(data.toString());
+        });
+        ps.on('close', (code) => {
+            core.debug(`ps exited with code ${code}`);
+        });
         child.unref();
         clearTimeout(timeout);
         core.debug('Tracer setup completed');
