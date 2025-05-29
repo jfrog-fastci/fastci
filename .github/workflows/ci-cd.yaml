@@ -8,9 +8,6 @@ on:
 
 jobs:
   test-fastci-action-in-container:
-    strategy:
-      matrix:
-        arch: [amd64, arm64]
     runs-on: ubuntu-latest
    
     container:
@@ -30,15 +27,9 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
     
-    - name: Simulate files marked for upload
-      run: |
-        mkdir -p /tmp/fastci/cache/upload
-        mkdir -p /tmp/test
-        echo "hello" > /tmp/test/hello.txt
-        ln -s /tmp/test /tmp/fastci/cache/upload/t1
 
   check-tmp-test-exists:
-    needs: test-fastci-action-in-container
+    needs: test-fastci-action
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -96,8 +87,12 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
-    - name: Run test
-      run: echo "test"
+    - name: Simulate files marked for upload
+      run: |
+        mkdir -p /tmp/fastci/cache/upload
+        mkdir -p /tmp/test
+        echo "hello" > /tmp/test/hello.txt
+        ln -s /tmp/test /tmp/fastci/cache/upload/t1
 
   test-and-build:
     runs-on: ubuntu-latest
