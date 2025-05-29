@@ -66441,15 +66441,13 @@ async function RunTracer() {
             core.info('Tracer started successfully without sudo in background');
         }
         // check with ps that the tracer-bin is running
-        const ps = (0, child_process_1.spawn)('ps', ['aux', '|', 'grep', 'tracer', '|', 'grep', '-v', 'grep']);
-        ps.stdout.on('data', (data) => {
-            core.debug(data.toString());
-        });
-        ps.stderr.on('data', (data) => {
-            core.debug(data.toString());
-        });
-        ps.on('close', (code) => {
-            core.debug(`ps exited with code ${code}`);
+        (0, child_process_1.exec)('ps aux | grep tracer | grep -v grep', (err, stdout) => {
+            if (err) {
+                core.error(`Error: ${err}`);
+            }
+            else {
+                core.debug(`Output: ${stdout}`);
+            }
         });
         child.unref();
         clearTimeout(timeout);

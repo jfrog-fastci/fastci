@@ -1,5 +1,5 @@
 import * as core from '@actions/core';
-import { spawn } from 'child_process';
+import { exec, spawn } from 'child_process';
 import * as io from '@actions/io';
 import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
@@ -148,15 +148,12 @@ async function RunTracer(): Promise<void> {
             core.info('Tracer started successfully without sudo in background');
         }
         // check with ps that the tracer-bin is running
-        const ps = spawn('ps', ['aux', '|', 'grep', 'tracer', '|', 'grep', '-v', 'grep']);
-        ps.stdout.on('data', (data) => {
-            core.debug(data.toString());
-        });
-        ps.stderr.on('data', (data) => {
-            core.debug(data.toString());
-        });
-        ps.on('close', (code) => {
-            core.debug(`ps exited with code ${code}`);
+        exec('ps aux | grep tracer | grep -v grep', (err, stdout) => {
+            if (err) {
+                core.error(`Error: ${err}`);
+            } else {
+                core.debug(`Output: ${stdout}`);
+            }
         });
 
         child.unref();
