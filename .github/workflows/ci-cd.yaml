@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
    
     container:
-      image: node:20-alpine
+      image: ubuntu:22.04
       options: --privileged --cap-add=SYS_RESOURCE --cap-add=SYS_ADMIN --mount type=bind,source=/proc,target=/proc
     
     steps:
