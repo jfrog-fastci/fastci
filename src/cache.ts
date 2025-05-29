@@ -11,7 +11,7 @@ export function GenerateCacheKeys(): string[] {
     const repo = process.env.GITHUB_REPOSITORY;
     const operationSystem = process.platform;
     const architecture = process.arch;
-    const sourceBranch = process.env.GITHUB_REF_NAME;
+    const sourceBranch = process.env.GITHUB_REF;
     const targetBranch = process.env.GITHUB_BASE_REF;
     const cacheKey = `${repo}:${operationSystem}:${architecture}:${sourceBranch}`;
     const fallbackToCacheFromTargetBranch = `${repo}:${operationSystem}:${architecture}:${targetBranch}`;
