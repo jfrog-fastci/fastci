@@ -61,8 +61,8 @@ jobs:
   test-fastci-action:
     strategy:
       matrix:
-        os: ubuntu-latest
         arch: [amd, arm]
+    
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
@@ -76,6 +76,7 @@ jobs:
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
     - name: Check tracer process
       run: |
+        uname -a
         if pgrep -f tracer; then
           echo "Tracer process found."
         else
