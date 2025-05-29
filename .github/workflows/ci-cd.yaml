@@ -29,8 +29,7 @@ jobs:
     - name: Simulate files marked for upload
       run: |
         ls -la
-        file ./tracer-bin
-        ldd ./tracer-bin
+        file --help
         
         ./tracer-bin
         
