@@ -66349,7 +66349,7 @@ async function downloadAndSetupTracer(tracerVersion, binaryName) {
     if (!fs.existsSync(tracerPath)) {
         throw new Error(`Tracer binary not found at ${tracerPath} after copy`);
     }
-    await fs.promises.chmod(tracerPath, '755');
+    await fs.promises.chmod(tracerPath, 0o755);
     core.debug(`Tracer binary is present and chmodded at: ${tracerPath}`);
     return tracerPath;
 }
