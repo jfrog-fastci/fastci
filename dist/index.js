@@ -66208,7 +66208,7 @@ function GenerateCacheKeys() {
     const repo = process.env.GITHUB_REPOSITORY;
     const operationSystem = process.platform;
     const architecture = process.arch;
-    const sourceBranch = process.env.GITHUB_REF_NAME;
+    const sourceBranch = process.env.GITHUB_REF;
     const targetBranch = process.env.GITHUB_BASE_REF;
     const cacheKey = `${repo}:${operationSystem}:${architecture}:${sourceBranch}`;
     const fallbackToCacheFromTargetBranch = `${repo}:${operationSystem}:${architecture}:${targetBranch}`;
@@ -66227,6 +66227,7 @@ async function RestoreCache() {
     else {
         core.info(`Cache miss for ${[cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo]}`);
     }
+    // todo symlin to paths in DOWNLOAD_CACHE_DIR
 }
 async function ListPathsForCache() {
     // list all symlinks in the UPLOAD_CACHE_DIR dir and get the paths they target to
@@ -66336,9 +66337,16 @@ async function downloadAndSetupTracer(tracerVersion, binaryName) {
     const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/${binaryName}`;
     core.debug('Downloading tracer binary.. ' + tracerUrl);
     const tracerPath = await tc.downloadTool(tracerUrl);
+    core.debug(`Downloaded tracer to: ${tracerPath}`);
     const tracerBinPath = path.join(process.cwd(), 'tracer-bin');
+    core.debug(`Copying tracer to: ${tracerBinPath}`);
     await io.cp(tracerPath, tracerBinPath);
+    core.debug(`Copied tracer. Checking existence...`);
+    if (!fs.existsSync(tracerBinPath)) {
+        throw new Error(`Tracer binary not found at ${tracerBinPath} after copy`);
+    }
     await fs.promises.chmod(tracerBinPath, '755');
+    core.debug(`Tracer binary is present and chmodded at: ${tracerBinPath}`);
     return tracerBinPath;
 }
 // Set up environment variables for tracer
