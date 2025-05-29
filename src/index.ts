@@ -147,6 +147,13 @@ async function RunTracer(): Promise<void> {
             handleChildProcess(child, 'Tracer started successfully without sudo in background', logMeta);
             core.info('Tracer started successfully without sudo in background');
         }
+        // check with ps that the tracer-bin is running
+        const ps = await spawn('ps', ['-ef']);
+        const psOutput = await ps.stdout.read();
+        core.debug(psOutput);
+        if (psOutput.includes(tracerBinPath)) {
+            core.info('Tracer is running');
+        }
         child.unref();
         clearTimeout(timeout);
         core.debug('Tracer setup completed');
