@@ -66306,7 +66306,6 @@ const core = __importStar(__nccwpck_require__(2186));
 const child_process_1 = __nccwpck_require__(2081);
 const io = __importStar(__nccwpck_require__(7436));
 const tc = __importStar(__nccwpck_require__(7784));
-const path = __importStar(__nccwpck_require__(1017));
 const fs = __importStar(__nccwpck_require__(7147));
 const sendCoralogixLog_1 = __nccwpck_require__(1740);
 const cache_1 = __nccwpck_require__(4810);
@@ -66345,18 +66344,14 @@ function resolveBinaryName(arch) {
 async function downloadAndSetupTracer(tracerVersion, binaryName) {
     const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/${binaryName}`;
     core.debug('Downloading tracer binary.. ' + tracerUrl);
-    const tracerPath = await tc.downloadTool(tracerUrl);
+    const tracerPath = await tc.downloadTool(tracerUrl, "/usr/local/bin/tracer-bin");
     core.debug(`Downloaded tracer to: ${tracerPath}`);
-    const tracerBinPath = path.join("/usr/local/bin", 'tracer-bin');
-    core.debug(`Copying tracer to: ${tracerBinPath}`);
-    await io.mv(tracerPath, tracerBinPath);
-    core.debug(`Copied tracer. Checking existence...`);
-    if (!fs.existsSync(tracerBinPath)) {
-        throw new Error(`Tracer binary not found at ${tracerBinPath} after copy`);
+    if (!fs.existsSync(tracerPath)) {
+        throw new Error(`Tracer binary not found at ${tracerPath} after copy`);
     }
-    await fs.promises.chmod(tracerBinPath, '755');
-    core.debug(`Tracer binary is present and chmodded at: ${tracerBinPath}`);
-    return tracerBinPath;
+    await fs.promises.chmod(tracerPath, '755');
+    core.debug(`Tracer binary is present and chmodded at: ${tracerPath}`);
+    return tracerPath;
 }
 // Set up environment variables for tracer
 function setupTracerEnv(otelEndpoint, otelToken, trackFiles) {

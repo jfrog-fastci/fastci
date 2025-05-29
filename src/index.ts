@@ -2,7 +2,6 @@ import * as core from '@actions/core';
 import { spawn } from 'child_process';
 import * as io from '@actions/io';
 import * as tc from '@actions/tool-cache';
-import * as path from 'path';
 import * as fs from 'fs';
 import { getGithubLogMetadata, sendCoralogixLog, sendSessionStartLog } from './sendCoralogixLog';
 import { InitializeCacheFolders, RestoreCache, } from './cache';
@@ -44,18 +43,14 @@ function resolveBinaryName(arch: string) {
 async function downloadAndSetupTracer(tracerVersion: string, binaryName: string): Promise<string> {
     const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/${binaryName}`;
     core.debug('Downloading tracer binary.. ' + tracerUrl);
-    const tracerPath = await tc.downloadTool(tracerUrl);
+    const tracerPath = await tc.downloadTool(tracerUrl, "/usr/local/bin/tracer-bin" );
     core.debug(`Downloaded tracer to: ${tracerPath}`);
-    const tracerBinPath = path.join("/usr/local/bin", 'tracer-bin');
-    core.debug(`Copying tracer to: ${tracerBinPath}`);
-    await io.mv(tracerPath, tracerBinPath);
-    core.debug(`Copied tracer. Checking existence...`);
-    if (!fs.existsSync(tracerBinPath)) {
-        throw new Error(`Tracer binary not found at ${tracerBinPath} after copy`);
+    if (!fs.existsSync(tracerPath)) {
+        throw new Error(`Tracer binary not found at ${tracerPath} after copy`);
     }
-    await fs.promises.chmod(tracerBinPath, '755');
-    core.debug(`Tracer binary is present and chmodded at: ${tracerBinPath}`);
-    return tracerBinPath;
+    await fs.promises.chmod(tracerPath, '755');
+    core.debug(`Tracer binary is present and chmodded at: ${tracerPath}`);
+    return tracerPath;
 }
 
 // Set up environment variables for tracer
