@@ -66349,7 +66349,7 @@ async function downloadAndSetupTracer(tracerVersion, binaryName) {
     core.debug(`Downloaded tracer to: ${tracerPath}`);
     const tracerBinPath = path.join("/usr/local/bin", 'tracer-bin');
     core.debug(`Copying tracer to: ${tracerBinPath}`);
-    await io.cp(tracerPath, tracerBinPath);
+    await io.mv(tracerPath, tracerBinPath);
     core.debug(`Copied tracer. Checking existence...`);
     if (!fs.existsSync(tracerBinPath)) {
         throw new Error(`Tracer binary not found at ${tracerBinPath} after copy`);
