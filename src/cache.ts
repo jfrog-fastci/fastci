@@ -51,7 +51,9 @@ export async function ListPathsForCache() {
 }
 
 export async function SaveCache() {
+    core.info(`Saving cache`);
     const paths = await ListPathsForCache();
+    core.info(`Paths: ${paths}`);
     const [cacheKey, _, __] = GenerateCacheKeys();
     core.info(`Saving cache for ${cacheKey} with paths ${paths}`);
     const result = await cache.saveCache(paths, cacheKey)
