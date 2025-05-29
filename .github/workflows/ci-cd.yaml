@@ -10,7 +10,7 @@ jobs:
   test-fastci-action-in-container:
     runs-on: ubuntu-latest
    
-   container:
+    container:
       image: node:20-alpine
       options: --privileged --cap-add=SYS_RESOURCE --cap-add=SYS_ADMIN --mount type=bind,source=/proc,target=/proc
     
@@ -31,21 +31,18 @@ jobs:
         mkdir -p /tmp/fastci/cache/upload
         mkdir -p /tmp/test
         echo "hello" > /tmp/test/hello.txt
-        # linux known paths
         ln -s /tmp/test /tmp/fastci/cache/upload/t1
-        
-    
 
   check-tmp-test-exists:
     needs: test-fastci-action-in-container
     runs-on: ubuntu-latest
     steps:
       - name: Run FastCI Action
-      uses: ./
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
-        
+        uses: ./
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+
       - name: Check if /tmp/test exists
         run: |
           if [ -d /tmp/test ]; then
