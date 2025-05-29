@@ -10,7 +10,7 @@ export const UPLOAD_CACHE_DIR = '/tmp/fastci/cache/upload';
 export function GenerateCacheKeys(): string[] {
     const repo = process.env.GITHUB_REPOSITORY;
     const operationSystem = process.platform;
-    const architecture = process.arch;
+    const architecture = process.env.RUNNER_ARCH;
     // const sourceBranch = process.env.GITHUB_REF;
     // const targetBranch = process.env.GITHUB_BASE_REF;
     const runId = process.env.GITHUB_RUN_ID;
