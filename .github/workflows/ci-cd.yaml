@@ -37,6 +37,10 @@ jobs:
     needs: test-fastci-action-in-container
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Run FastCI Action
         uses: ./
         with:
