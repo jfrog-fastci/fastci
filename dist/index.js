@@ -66226,7 +66226,7 @@ function InitializeCacheFolders() {
 }
 async function RestoreCache() {
     const [cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo] = GenerateCacheKeys();
-    const cacheHit = await cache.restoreCache([exports.DOWNLOAD_CACHE_DIR], cacheKey, [fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo])
+    const cacheHit = await cache.restoreCache(["/tmp/test"], cacheKey, [fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo])
         .catch(error => {
         core.warning(`Error restoring cache: ${error}`);
     });
