@@ -83,7 +83,7 @@ class DeterministicIdGenerator {
     generateId(length) {
         let id = "";
         for (let i = 0; i < length; i++) {
-            id += this.characters[this.getRandomInt(this.characters.length)];
+            id += this.characters[this.getRandomInt(this.characters?.length)];
         }
         return id;
     }

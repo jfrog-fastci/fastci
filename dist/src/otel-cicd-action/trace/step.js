@@ -5,6 +5,7 @@ const api_1 = require("@opentelemetry/api");
 const process_1 = require("./process");
 const core_1 = require("@actions/core");
 async function traceStep(step, processTree) {
+    (0, core_1.debug)(`Tracing step ${step.name}`);
     const tracer = api_1.trace.getTracer("otel-cicd-action");
     if (!step.completed_at || !step.started_at) {
         step.completed_at = new Date().toISOString();
@@ -23,7 +24,7 @@ async function traceStep(step, processTree) {
         const code = step.conclusion === "failure" ? api_1.SpanStatusCode.ERROR : api_1.SpanStatusCode.OK;
         span.setStatus({ code });
         const stepRootProcesses = findRootProcessesRelatedToStep(step, processTree);
-        (0, core_1.info)(`Found ${stepRootProcesses.length} root processes related to step ${step.name}`);
+        (0, core_1.info)(`Found ${stepRootProcesses?.length} root processes related to step ${step.name}`);
         for (const process of stepRootProcesses) {
             await (0, process_1.traceProcessTree)(process, step);
         }
@@ -45,10 +46,9 @@ function stepToAttributes(step) {
 function findRootProcessesRelatedToStep(step, processTree) {
     const stepStartedAt = step.started_at ? new Date(step.started_at) : new Date();
     const stepCompletedAt = step.completed_at ? new Date(step.completed_at) : new Date();
-    return processTree.filter(process => {
-        const pStartedAt = process.process.started_at ? new Date(process.process.started_at) : new Date();
-        const pStoppedAt = process.process.stopped_at ? new Date(process.process.stopped_at) : new Date();
-        (0, core_1.info)(`Checking process ${process.process.command} started at ${pStartedAt} and completed at ${pStoppedAt}, step started at ${stepStartedAt} and completed at ${stepCompletedAt}`);
+    return (processTree ?? []).filter(process => {
+        (0, core_1.debug)(`Checking process ${process?.process?.command} ${JSON.stringify(process?.process?.environment)} started at ${process?.process?.started_at} and completed at ${process?.process?.stopped_at}, step started at ${stepStartedAt} and completed at ${stepCompletedAt}`);
+        const pStartedAt = process?.process?.started_at ? new Date(process.process.started_at) : new Date();
         return (stepStartedAt < pStartedAt) && (pStartedAt < stepCompletedAt);
     });
 }

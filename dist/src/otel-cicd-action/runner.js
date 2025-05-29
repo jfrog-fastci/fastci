@@ -45,6 +45,8 @@ const constants_1 = require("../types/constants");
 const fs = __importStar(require("fs"));
 const tracer_1 = require("./tracer");
 const workflow_1 = require("./trace/workflow");
+const sendCoralogixLog_1 = require("../sendCoralogixLog");
+const process_1 = require("process");
 async function fetchGithub(token, runId) {
     const octokit = (0, github_1.getOctokit)(token);
     core.debug(`Get workflow run for ${runId}`);
@@ -85,7 +87,7 @@ async function RunCiCdOtelExport() {
     try {
         const otlpEndpoint = core.getInput("fastci_otel_endpoint");
         const otlpToken = core.getInput("fastci_otel_token");
-        const otlpHeaders = `Authorization=Bearer ${otlpToken}`;
+        const otlpHeaders = `Authorization=Bearer ${otlpToken},api-key=${otlpToken}`;
         const otelServiceName = core.getInput("otelServiceName") || process.env["OTEL_SERVICE_NAME"] || "";
         const runId = Number.parseInt(core.getInput("runId") || `${github_1.context.runId}`);
         const extraAttributes = (0, tracer_1.stringToRecord)(core.getInput("extra_attributes"));
@@ -108,9 +110,10 @@ async function RunCiCdOtelExport() {
         };
         const provider = (0, tracer_1.createTracerProvider)(otlpEndpoint, otlpHeaders, attributes);
         const processTrees = loadProcessTrees();
-        // core.info(`Process trees: ${JSON.stringify(processTrees, null, 2)}`);
+        core.debug(`Process trees: ${JSON.stringify(processTrees, null, 2)}`);
         core.debug(`Trace workflow run for ${runId} and export to ${otlpEndpoint}`);
         const traceId = await (0, workflow_1.traceWorkflowRun)(processTrees, workflowRun, jobs, jobAnnotations, prLabels);
+        await (0, sendCoralogixLog_1.sendTraceWorkflowRunLog)(processTrees, workflowRun, jobs, traceId);
         core.setOutput("traceId", traceId);
         core.debug(`traceId: ${traceId}`);
         core.debug("Flush and shutdown tracer provider");
@@ -120,28 +123,31 @@ async function RunCiCdOtelExport() {
     }
     catch (error) {
         const message = error instanceof Error ? error : JSON.stringify(error);
-        core.setFailed(message);
+        core.warning(message);
     }
+}
+function isDebugMode() {
+    return process_1.env['ACTIONS_STEP_DEBUG'] === 'true';
 }
 function loadProcessTrees() {
     const startTime = Date.now();
     try {
         if (!fs.existsSync(constants_1.PROCESS_TREES_PATH)) {
-            core.debug(`Process trees file does not exist at ${constants_1.PROCESS_TREES_PATH}`);
+            isDebugMode() ? core.setFailed(`Process trees file does not exist at ${constants_1.PROCESS_TREES_PATH}`) : core.warning(`Process trees file does not exist at ${constants_1.PROCESS_TREES_PATH}`);
             return [];
         }
         const fileContent = fs.readFileSync(constants_1.PROCESS_TREES_PATH, 'utf-8');
-        if (!fileContent || fileContent.trim() === '') {
-            core.debug('Process trees file is empty');
+        if (!fileContent || fileContent.trim() === '' || fileContent === 'null') {
+            isDebugMode() ? core.setFailed('Process trees file is empty') : core.warning('Process trees file is empty');
             return [];
         }
         const processTrees = JSON.parse(fileContent);
         const duration = Date.now() - startTime;
-        core.debug(`Loaded ${processTrees.length} process trees in ${duration}ms`);
+        core.debug(`Loaded ${processTrees?.length} process trees in ${duration}ms`);
         return processTrees;
     }
     catch (error) {
-        core.error(`Failed to load process trees: ${error instanceof Error ? error.message : String(error)}`);
+        core.warning(`Failed to load process trees: ${error instanceof Error ? error.message : String(error)}`);
         return [];
     }
     finally {
