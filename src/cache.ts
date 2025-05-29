@@ -31,6 +31,7 @@ export async function RestoreCache() {
     } else {
         core.info(`Cache miss for ${[cacheKey, fallbackToCacheFromTargetBranch, fallbackToCacheFromRepo]}`);
     }
+    // todo symlin to paths in DOWNLOAD_CACHE_DIR
 }
 
 export async function ListPathsForCache() {
