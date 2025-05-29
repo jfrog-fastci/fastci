@@ -46,6 +46,12 @@ const createSetTimeoutMock = (implementation: (callback: () => void, ms?: number
 // Helper to execute all pending promises
 const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
 
+jest.mock('@actions/cache', () => ({
+  saveCache: jest.fn(),
+  restoreCache: jest.fn(),
+  // Add other functions you use from @actions/cache if needed
+}));
+
 describe('Cleanup Module Tests', () => {
   beforeEach(() => {
     // Reset all mocks
