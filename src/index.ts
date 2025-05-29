@@ -142,7 +142,7 @@ async function RunTracer(): Promise<void> {
             handleChildProcess(child, 'Tracer started successfully with sudo in background', logMeta);
             core.info('Tracer started successfully with sudo in background');
         } else {
-            core.warning('sudo is not available, trying to run tracer without sudo');
+            core.debug('sudo is not available, trying to run tracer without sudo');
             child = spawnTracerWithoutSudo(tracerBinPath, envVars);
             handleChildProcess(child, 'Tracer started successfully without sudo in background', logMeta);
             core.info('Tracer started successfully without sudo in background');
@@ -150,15 +150,14 @@ async function RunTracer(): Promise<void> {
         // check with ps that the tracer-bin is running
         exec('ps aux | grep tracer | grep -v grep', (err, stdout) => {
             if (err) {
-                core.error(`Error: ${err}`);
+                core.warning(`Faield to check if tracer process is running`);
             } else if(stdout.includes("tracer")) {
-                core.info(`tracer started successfully`);
+                core.info(`tracer started successfully (checked with ps)`);
             }
         });
 
         child.unref();
         clearTimeout(timeout);
-        core.debug('Tracer setup completed');
     } catch (error) {
         await sendCoralogixLog(error, {
             subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
