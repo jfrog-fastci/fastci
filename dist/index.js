@@ -66247,7 +66247,7 @@ async function ListPathsForCache() {
 async function SaveCache() {
     core.info(`Saving cache`);
     const paths = await ListPathsForCache();
-    if (paths.length === 0) {
+    if (paths?.length === 0) {
         core.info(`No paths to save cache for`);
         return;
     }
