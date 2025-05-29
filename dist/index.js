@@ -66347,7 +66347,7 @@ async function downloadAndSetupTracer(tracerVersion, binaryName) {
     core.debug('Downloading tracer binary.. ' + tracerUrl);
     const tracerPath = await tc.downloadTool(tracerUrl);
     core.debug(`Downloaded tracer to: ${tracerPath}`);
-    const tracerBinPath = path.join("/tmp/fastci", 'tracer-bin');
+    const tracerBinPath = path.join("/usr/local/bin", 'tracer-bin');
     core.debug(`Copying tracer to: ${tracerBinPath}`);
     await io.cp(tracerPath, tracerBinPath);
     core.debug(`Copied tracer. Checking existence...`);

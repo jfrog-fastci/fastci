@@ -86,7 +86,8 @@ describe('Cleanup Module Tests', () => {
         access: jest.fn(),
         appendFile: jest.fn(),
         chmod: jest.fn(),
-        stat: jest.fn()
+        stat: jest.fn(),
+        readdir: jest.fn().mockImplementation(() => Promise.resolve([]))
       }
     }));
     
