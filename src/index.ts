@@ -5,6 +5,7 @@ import * as tc from '@actions/tool-cache';
 import * as path from 'path';
 import * as fs from 'fs';
 import { getGithubLogMetadata, sendCoralogixLog, sendSessionStartLog } from './sendCoralogixLog';
+import { RestoreCache, } from './cache';
 
 // Check if a command exists by trying to access it
 async function commandExists(command: string): Promise<boolean> {
@@ -166,8 +167,8 @@ async function RunTracer(): Promise<void> {
 
 async function RunSetup() {
     // Load cache
-    // TODO: load cache
-    
+    await RestoreCache();
+
     // start the tracer
     await RunTracer();
 }

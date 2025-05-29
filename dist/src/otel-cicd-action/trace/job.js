@@ -4,12 +4,12 @@ exports.traceJob = traceJob;
 const api_1 = require("@opentelemetry/api");
 const incubating_1 = require("@opentelemetry/semantic-conventions/incubating");
 const step_1 = require("./step");
+const core_1 = require("@actions/core");
 async function traceJob(processTrees, job, annotations) {
+    (0, core_1.debug)(`Tracing job ${job.name}`);
     const tracer = api_1.trace.getTracer("otel-cicd-action");
     if (!job.completed_at) {
         job.completed_at = new Date().toISOString();
-        //core.debug(`Job ${job.id} is not completed yet`);
-        //return;
     }
     const startTime = new Date(job.started_at);
     const completedTime = new Date(job.completed_at);
@@ -63,7 +63,7 @@ function jobToAttributes(job) {
         "github.job.conclusion": job.conclusion ?? undefined,
         "github.job.labels": job.labels.join(", "),
         "github.job.created_at": job.created_at,
-        "github.job.started_at": job.started_at,
+        "github.job.started_at": job?.started_at,
         "github.job.completed_at": job.completed_at ?? undefined,
         "github.conclusion": job.conclusion ?? undefined, // FIXME: it overrides the workflow conclusion
         "github.job.check_run_url": job.check_run_url,
@@ -74,7 +74,8 @@ function jobToAttributes(job) {
 }
 function annotationsToAttributes(annotations) {
     const attributes = {};
-    for (let i = 0; annotations && i < annotations.length; i++) {
+    (0, core_1.debug)(`Annotations: ${JSON.stringify(annotations)}`);
+    for (let i = 0; annotations && i < annotations?.length; i++) {
         const annotation = annotations[i];
         const prefix = `github.job.annotations.${i}`;
         attributes[`${prefix}.level`] = annotation.annotation_level ?? undefined;

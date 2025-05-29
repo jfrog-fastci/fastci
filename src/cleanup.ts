@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import { RunCiCdOtelExport } from './otel-cicd-action/runner';
 import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/constants';
 import { getGithubLogMetadata, sendCoralogixLog } from './sendCoralogixLog';
+import { SaveCache } from './cache';
 
 async function runOtelExport(): Promise<void> {
     try {
@@ -90,6 +91,8 @@ async function stopTracerProcess(): Promise<void> {
 }
 
 async function cleanup(): Promise<void> {
+    await SaveCache();
+
     try {
         const timeout = setTimeout(async () => {
             core.debug('Reached timeout during cleanup, exiting');

@@ -9,26 +9,32 @@ on:
 jobs:
   test-fastci-action-in-container:
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.24.0
+   
+   container:
+      image: node:20-alpine
       options: --privileged --cap-add=SYS_RESOURCE --cap-add=SYS_ADMIN --mount type=bind,source=/proc,target=/proc
+    
     steps:
+    
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'npm'
+
     - name: Run FastCI Action
       uses: ./
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
-    - name: Run test
-      run: echo "test"
+    - name: Simulate files marked for upload
+      run: |
+        mkdir -p /tmp/fastci/cache/upload
+        mkdir -p /tmp/fastci/cache/upload
+        # linux known paths
+        ln -s /etc/aliases /tmp/fastci/cache/upload/etc-aliases
+        
+    
+
 
   test-fastci-action:
     strategy:

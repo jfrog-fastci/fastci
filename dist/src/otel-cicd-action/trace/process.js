@@ -14,7 +14,7 @@ const core_1 = require("@actions/core");
 async function traceProcessTree(processTree, step) {
     const tracer = api_1.trace.getTracer("otel-cicd-action");
     // Create the parent process span
-    (0, core_1.info)(`Tracing process tree ${processTree.process.command}`);
+    (0, core_1.debug)(`Tracing process tree ${processTree.process.command}`);
     await tracer.startActiveSpan(processTree.process.command || "process", {
         startTime: processTree.process.started_at,
         attributes: processToAttributes(processTree, step)
@@ -89,6 +89,9 @@ async function traceChildProcess(childProcess, parentSpan, step) {
  * @param fileEvents File events to add
  */
 function addFileEventsToSpan(span, fileEvents) {
+    if (!fileEvents || !Array.isArray(fileEvents)) {
+        return;
+    }
     for (const event of fileEvents) {
         span.addEvent(`${event.mode}:${event.file_path}`, {
             "file.path": event.file_path,
@@ -123,8 +126,8 @@ function processToAttributes(processTree, step) {
         "process.cpu_time": process.cpu_time,
         "process.memory_usage": process.memory_usage,
         "process.is_root_ci_step": process.is_root_ci_step,
-        "process.child_count": processTree.children.length,
-        "process.file_event_count": processTree.file_events.length,
+        "process.child_count": processTree?.children?.length,
+        "process.file_event_count": processTree?.file_events?.length,
         // Some custom process-specific attributes to help with analysis
         "is_shell": /sh$|bash$|zsh$|fish$|cmd.exe$|powershell.exe$/i.test(process.binary_path),
         "is_package_manager": /npm|yarn|pnpm|pip|composer|gem|mvn|gradle|nuget/i.test(process.command),
@@ -157,7 +160,7 @@ async function traceProcessTrees(processTrees, step) {
 function associateProcessesWithSteps(processTrees, steps) {
     const stepMap = new Map();
     // Initialize map with empty arrays for each step
-    steps.forEach(step => {
+    (steps ?? []).forEach(step => {
         stepMap.set(step.number, []);
     });
     // For each process, find the step it belongs to based on timestamps
