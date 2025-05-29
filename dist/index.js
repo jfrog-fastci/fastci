@@ -66445,8 +66445,8 @@ async function RunTracer() {
             if (err) {
                 core.error(`Error: ${err}`);
             }
-            else {
-                core.debug(`Output: ${stdout}`);
+            else if (stdout.includes("tracer")) {
+                core.info(`tracer started successfully`);
             }
         });
         child.unref();

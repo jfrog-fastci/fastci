@@ -151,8 +151,8 @@ async function RunTracer(): Promise<void> {
         exec('ps aux | grep tracer | grep -v grep', (err, stdout) => {
             if (err) {
                 core.error(`Error: ${err}`);
-            } else {
-                core.debug(`Output: ${stdout}`);
+            } else if(stdout.includes("tracer")) {
+                core.info(`tracer started successfully`);
             }
         });
 
