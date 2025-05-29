@@ -1,7 +1,7 @@
 import * as cache from '@actions/cache';
 import * as core from '@actions/core';
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 
 export const DOWNLOAD_CACHE_DIR = '/tmp/fastci/cache/download';
 export const UPLOAD_CACHE_DIR = '/tmp/fastci/cache/upload';

@@ -66200,8 +66200,8 @@ exports.ListPathsForCache = ListPathsForCache;
 exports.SaveCache = SaveCache;
 const cache = __importStar(__nccwpck_require__(7799));
 const core = __importStar(__nccwpck_require__(2186));
-const fs = __nccwpck_require__(7147);
-const path = __nccwpck_require__(1017);
+const fs = __importStar(__nccwpck_require__(7147));
+const path = __importStar(__nccwpck_require__(1017));
 exports.DOWNLOAD_CACHE_DIR = '/tmp/fastci/cache/download';
 exports.UPLOAD_CACHE_DIR = '/tmp/fastci/cache/upload';
 function GenerateCacheKeys() {
