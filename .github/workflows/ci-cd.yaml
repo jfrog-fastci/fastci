@@ -28,6 +28,8 @@ jobs:
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
     - name: Simulate files marked for upload
       run: |
+        node -e "console.log(process.arch)"
+        
         ls -la
         ./tracer-bin
         
