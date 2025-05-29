@@ -29,12 +29,30 @@ jobs:
     - name: Simulate files marked for upload
       run: |
         mkdir -p /tmp/fastci/cache/upload
-        mkdir -p /tmp/fastci/cache/upload
+        mkdir -p /tmp/test
+        echo "hello" > /tmp/test/hello.txt
         # linux known paths
-        ln -s /etc/aliases /tmp/fastci/cache/upload/etc-aliases
+        ln -s /tmp/test /tmp/fastci/cache/upload/t1
         
     
 
+  check-tmp-test-exists:
+    needs: test-fastci-action-in-container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run FastCI Action
+      uses: ./
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+        
+      - name: Check if /tmp/test exists
+        run: |
+          if [ -d /tmp/test ]; then
+            echo "/tmp/test exists."
+          else
+            echo "/tmp/test does NOT exist!" && exit 1
+          fi
 
   test-fastci-action:
     strategy:
