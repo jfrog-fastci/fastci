@@ -65443,7 +65443,7 @@ async function stopTracerProcess() {
     try {
         core.debug('Stopping tracer process...');
         await createTriggerFile();
-        const timeoutSeconds = 2;
+        const timeoutSeconds = 10;
         await waitForTriggerFileDelete(timeoutSeconds);
         // await displayProcessTreesFile();
     }
