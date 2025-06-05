@@ -65428,8 +65428,16 @@ async function waitForTriggerFileDelete(timeoutSeconds) {
             return false;
         }
         // Check if the file exists and has content
-        if (!fs.existsSync(constants_1.TRIGGER_FILE_PATH)) {
-            return true;
+        if (fs.existsSync(constants_1.AGENT_STOPED_FILE_PATH)) {
+            try {
+                const stats = fs.readFileSync(constants_1.AGENT_STOPED_FILE_PATH, 'utf8');
+                core.debug(`Agent stoped file content: ${stats}`);
+                return true;
+            }
+            catch (error) {
+                core.debug(`Error checking file: ${error}`);
+                return false;
+            }
         }
         // Only log every 5 seconds to avoid flooding the logs
         if (currentTime - lastLogTime >= 1000) {
@@ -65628,10 +65636,11 @@ async function sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, traceId)
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.TRIGGER_FILE_PATH = exports.PROCESS_TREES_PATH = exports.FASTCI_TEMP_DIR = void 0;
+exports.AGENT_STOPED_FILE_PATH = exports.TRIGGER_FILE_PATH = exports.PROCESS_TREES_PATH = exports.FASTCI_TEMP_DIR = void 0;
 exports.FASTCI_TEMP_DIR = '/tmp/fastci';
 exports.PROCESS_TREES_PATH = `${exports.FASTCI_TEMP_DIR}/process_trees.json`;
 exports.TRIGGER_FILE_PATH = `${exports.FASTCI_TEMP_DIR}/trigger`;
+exports.AGENT_STOPED_FILE_PATH = `${exports.FASTCI_TEMP_DIR}/agent-stoped`;
 
 
 /***/ }),

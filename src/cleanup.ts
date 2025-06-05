@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
-import { FASTCI_TEMP_DIR, TRIGGER_FILE_PATH } from './types/constants';
+import { AGENT_STOPED_FILE_PATH, FASTCI_TEMP_DIR, TRIGGER_FILE_PATH } from './types/constants';
 import { getGithubLogMetadata, sendCoralogixLog } from './sendCoralogixLog';
 import { SaveCache } from './cache';
 
@@ -27,9 +27,17 @@ async function waitForTriggerFileDelete(timeoutSeconds: number): Promise<boolean
         }
 
         // Check if the file exists and has content
-        if (!fs.existsSync(TRIGGER_FILE_PATH)) {
-            return true;
+        if (fs.existsSync(AGENT_STOPED_FILE_PATH)) {
+            try {
+                const stats = fs.readFileSync(AGENT_STOPED_FILE_PATH, 'utf8');
+                core.debug(`Agent stoped file content: ${stats}`);
+                return true;
+            } catch (error) {
+                core.debug(`Error checking file: ${error}`);
+                return false;
+            }
         }
+
 
         // Only log every 5 seconds to avoid flooding the logs
         if (currentTime - lastLogTime >= 1000) {
