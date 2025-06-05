@@ -41,7 +41,7 @@ function resolveBinaryName(arch: string) {
 
 // Download and setup tracer binary
 async function downloadAndSetupTracer(tracerVersion: string, binaryName: string): Promise<string> {
-    const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${encodeURI(tracerVersion)}/${binaryName}`;
+    const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${encodeURIComponent(tracerVersion)}/${binaryName}`;
     core.debug('Downloading tracer binary.. ' + tracerUrl);
     const tracerPath = await tc.downloadTool(tracerUrl, "./tracer-bin" );
     core.debug(`Downloaded tracer to: ${tracerPath}`);
