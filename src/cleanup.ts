@@ -1,17 +1,8 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
-import { RunCiCdOtelExport } from './otel-cicd-action/runner';
 import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/constants';
 import { getGithubLogMetadata, sendCoralogixLog } from './sendCoralogixLog';
 import { SaveCache } from './cache';
-
-async function runOtelExport(): Promise<void> {
-    try {
-        await RunCiCdOtelExport();
-    } catch (error) {
-        core.error(error as any);
-    }
-}
 
 async function createTriggerFile(): Promise<void> {
     core.debug('Setting trigger file to stop tracer');
@@ -55,23 +46,6 @@ async function waitForProcessTreesFile(timeoutSeconds: number): Promise<boolean>
         }
 
         await new Promise(resolve => setTimeout(resolve, 200));
-    }
-}
-
-// async function displayProcessTreesFile(): Promise<void> {
-//     if (fs.existsSync(PROCESS_TREES_PATH)) {
-//         await exec(`cat ${PROCESS_TREES_PATH}`);
-//         core.info('Tracer process stopped successfully');
-//     } else {
-//         core.info('process_trees.json file does not exist after waiting');
-//     }
-// }
-
-async function verifyProcessTreesExists(): Promise<void> {
-    if (fs.existsSync(PROCESS_TREES_PATH)) {
-        core.debug('process_trees.json file found successfully');
-    } else {
-        core.debug('process_trees.json file does not exist');
     }
 }
 
