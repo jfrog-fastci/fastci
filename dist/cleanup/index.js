@@ -65415,7 +65415,7 @@ async function createTriggerFile() {
     fs.mkdirSync(constants_1.FASTCI_TEMP_DIR, { recursive: true });
     fs.writeFileSync(constants_1.TRIGGER_FILE_PATH, '');
 }
-async function waitForProcessTreesFile(timeoutSeconds) {
+async function waitForTriggerFileDelete(timeoutSeconds) {
     const startTime = Date.now();
     let lastLogTime = 0;
     core.debug(`Waiting for tracer process to stop (timeout: ${timeoutSeconds}s)...`);
@@ -65428,21 +65428,12 @@ async function waitForProcessTreesFile(timeoutSeconds) {
             return false;
         }
         // Check if the file exists and has content
-        if (fs.existsSync(constants_1.PROCESS_TREES_PATH)) {
-            try {
-                const stats = fs.statSync(constants_1.PROCESS_TREES_PATH);
-                if (stats.size > 0) {
-                    core.debug('process_trees.json file has content, continuing...');
-                    return true;
-                }
-            }
-            catch (error) {
-                core.debug(`Error checking file: ${error}`);
-            }
+        if (!fs.existsSync(constants_1.TRIGGER_FILE_PATH)) {
+            return true;
         }
         // Only log every 5 seconds to avoid flooding the logs
         if (currentTime - lastLogTime >= 1000) {
-            core.debug(`Still waiting for process_trees.json to have content... (${elapsedSeconds}s elapsed)`);
+            core.debug(`Still waiting for trigger file to be deleted (${elapsedSeconds}s elapsed)`);
             lastLogTime = currentTime;
         }
         await new Promise(resolve => setTimeout(resolve, 200));
@@ -65453,7 +65444,7 @@ async function stopTracerProcess() {
         core.debug('Stopping tracer process...');
         await createTriggerFile();
         const timeoutSeconds = 2;
-        await waitForProcessTreesFile(timeoutSeconds);
+        await waitForTriggerFileDelete(timeoutSeconds);
         // await displayProcessTreesFile();
     }
     catch (error) {

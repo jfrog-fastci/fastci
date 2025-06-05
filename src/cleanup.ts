@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
-import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/constants';
+import { FASTCI_TEMP_DIR, TRIGGER_FILE_PATH } from './types/constants';
 import { getGithubLogMetadata, sendCoralogixLog } from './sendCoralogixLog';
 import { SaveCache } from './cache';
 
