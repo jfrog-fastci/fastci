@@ -107,8 +107,6 @@ async function StopTracer(): Promise<void> {
         if (process.platform === 'linux') {
             await stopTracerProcess();
         }
-        await verifyProcessTreesExists();
-        await runOtelExport();
         timeout.close()
 
         core.debug('Cleanup completed');

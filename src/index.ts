@@ -29,9 +29,9 @@ function getInputs() {
 // Helper to resolve architecture and binary name
 function resolveBinaryName(arch: string) {
     const architectureToTracerVersionMap = {
-        'x64': 'tracer-amd64',
-        'arm64': 'tracer-arm64',
-        'arm': 'tracer-arm64',
+        'x64': 'agent-amd64',
+        'arm64': 'agent-arm64',
+        'arm': 'agent-arm64',
     };
     if (!Object.prototype.hasOwnProperty.call(architectureToTracerVersionMap, arch)) {
         return null;
@@ -41,7 +41,7 @@ function resolveBinaryName(arch: string) {
 
 // Download and setup tracer binary
 async function downloadAndSetupTracer(tracerVersion: string, binaryName: string): Promise<string> {
-    const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${tracerVersion}/${binaryName}`;
+    const tracerUrl = `https://github.com/jfrog-fastci/fastci/releases/download/${encodeURI(tracerVersion)}/${binaryName}`;
     core.debug('Downloading tracer binary.. ' + tracerUrl);
     const tracerPath = await tc.downloadTool(tracerUrl, "./tracer-bin" );
     core.debug(`Downloaded tracer to: ${tracerPath}`);
