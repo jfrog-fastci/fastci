@@ -37,6 +37,7 @@ const core = __importStar(require("@actions/core"));
 const fs = __importStar(require("fs"));
 const runner_1 = require("./otel-cicd-action/runner");
 const constants_1 = require("./types/constants");
+const sendCoralogixLog_1 = require("./sendCoralogixLog");
 async function runOtelExport() {
     try {
         await (0, runner_1.RunCiCdOtelExport)();
@@ -108,18 +109,37 @@ async function stopTracerProcess() {
         // await displayProcessTreesFile();
     }
     catch (error) {
-        core.debug(error);
-        core.debug('No tracer process found or unable to stop it');
+        core.error(error);
+        core.error('No tracer process found or unable to stop it');
     }
 }
 async function cleanup() {
     try {
-        await stopTracerProcess();
+        const timeout = setTimeout(async () => {
+            core.debug('Reached timeout during cleanup, exiting');
+            (0, sendCoralogixLog_1.sendCoralogixLog)('Reached timeout during cleanup, exiting', {
+                subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+                severity: 5,
+                category: 'error',
+                ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
+            });
+            process.exit(0);
+        }, 5000);
+        if (process.platform === 'linux') {
+            await stopTracerProcess();
+        }
         await verifyProcessTreesExists();
         await runOtelExport();
+        timeout.close();
         core.debug('Cleanup completed');
     }
     catch (error) {
+        await (0, sendCoralogixLog_1.sendCoralogixLog)(error, {
+            subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
+            severity: 5,
+            category: 'error',
+            ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
+        });
         if (error instanceof Error) {
             core.warning(`Cleanup failed: ${error.message}`);
         }

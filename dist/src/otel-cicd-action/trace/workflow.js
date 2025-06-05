@@ -45,7 +45,7 @@ async function traceWorkflowRun(processTrees, workflowRun, jobs, jobAnnotations,
     return await tracer.startActiveSpan(workflowRun.name ?? workflowRun.display_title, { attributes, root: true, startTime }, async (rootSpan) => {
         const code = workflowRun.conclusion === "failure" ? api_1.SpanStatusCode.ERROR : api_1.SpanStatusCode.OK;
         rootSpan.setStatus({ code });
-        if (jobs.length > 0) {
+        if (jobs && jobs.length > 0) {
             // "Queued" span represent the time between the workflow has been started_at and
             // the first job has been picked up by a runner
             const queuedSpan = tracer.startSpan("Queued", { startTime }, api_1.context.active());
@@ -101,7 +101,7 @@ function workflowRunToAttributes(workflowRun, prLabels) {
 }
 function referencedWorkflowsToAttributes(refs) {
     const attributes = {};
-    for (let i = 0; refs && i < refs.length; i++) {
+    for (let i = 0; refs && i < refs?.length; i++) {
         const ref = refs[i];
         const prefix = `github.referenced_workflows.${i}`;
         attributes[`${prefix}.path`] = ref.path;
@@ -128,7 +128,7 @@ function prsToAttributes(pullRequests, prLabels) {
         "github.base_ref": pullRequests?.[0]?.base?.ref,
         "github.base_sha": pullRequests?.[0]?.base?.sha,
     };
-    for (let i = 0; pullRequests && i < pullRequests.length; i++) {
+    for (let i = 0; pullRequests && i < pullRequests?.length; i++) {
         const pr = pullRequests[i];
         const prefix = `github.pull_requests.${i}`;
         attributes[`${prefix}.id`] = pr.id;

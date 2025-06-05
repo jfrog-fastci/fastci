@@ -9,32 +9,29 @@ on:
 jobs:
   test-fastci-action-in-container:
     runs-on: ubuntu-latest
+   
     container:
-      image: golang:1.24.0
+      image: ubuntu:latest
       options: --privileged --cap-add=SYS_RESOURCE --cap-add=SYS_ADMIN --mount type=bind,source=/proc,target=/proc
+    
     steps:
+    
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'npm'
+
     - name: Run FastCI Action
       uses: ./
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
-    - name: Run test
-      run: echo "test"
 
   test-fastci-action:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        arch: [amd, arm]
+        os: [ubuntu-22.04] # ubuntu-22.04-arm, 
+    
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout repository
@@ -47,8 +44,8 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
     - name: Check tracer process
-      if: matrix.os == 'ubuntu-latest'
       run: |
+        uname -a
         if pgrep -f tracer; then
           echo "Tracer process found."
         else
@@ -59,8 +56,44 @@ jobs:
       with:
         node-version: '20'
         cache: 'npm'
-    - name: Run test
-      run: echo "test"
+    - name: Simulate files marked for upload
+      run: |
+        mkdir -p /tmp/fastci/cache/upload
+        mkdir -p /tmp/test
+        echo "hello" > /tmp/test/hello.txt
+        ln -s /tmp/test /tmp/fastci/cache/upload/t1
+
+  check-tmp-test-exists:
+    needs: test-fastci-action
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04-arm, ubuntu-22.04]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Check for tar and zip
+        run: |
+          tar --version
+          zip --version
+      - name: Run FastCI Action
+        uses: ./
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+
+      - name: Check if /tmp/test exists
+        run: |
+          
+          if [ -d /tmp/test ]; then
+            echo "/tmp/test exists."
+          else
+            echo "/tmp/test does NOT exist!" && exit 1
+          fi
+
+
 
   test-and-build:
     runs-on: ubuntu-latest

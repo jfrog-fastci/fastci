@@ -2,7 +2,7 @@ import type { components } from "@octokit/openapi-types";
 import { type Attributes, SpanStatusCode, trace } from "@opentelemetry/api";
 import { ProcessTree } from "../../types/process";
 import { traceProcessTree } from "./process";
-import { debug, info } from "@actions/core";
+import { debug } from "@actions/core";
 
 type Step = NonNullable<components["schemas"]["job"]["steps"]>[number];
 
@@ -31,7 +31,7 @@ async function traceStep(step: Step, processTree: ProcessTree[]) {
     span.setStatus({ code });
 
     const stepRootProcesses = findRootProcessesRelatedToStep(step, processTree);
-    info(`Found ${stepRootProcesses?.length} root processes related to step ${step.name}`);
+    debug(`Found ${stepRootProcesses?.length} root processes related to step ${step.name}`);
     for (const process of stepRootProcesses) {
       await traceProcessTree(process, step);
     }

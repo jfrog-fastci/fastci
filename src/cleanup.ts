@@ -1,16 +1,8 @@
 import * as core from '@actions/core';
 import * as fs from 'fs';
-import { RunCiCdOtelExport } from './otel-cicd-action/runner';
-import { FASTCI_TEMP_DIR, PROCESS_TREES_PATH, TRIGGER_FILE_PATH } from './types/constants';
+import { AGENT_STOPED_FILE_PATH, FASTCI_TEMP_DIR, TRIGGER_FILE_PATH } from './types/constants';
 import { getGithubLogMetadata, sendCoralogixLog } from './sendCoralogixLog';
-
-async function runOtelExport(): Promise<void> {
-    try {
-        await RunCiCdOtelExport();
-    } catch (error) {
-        core.error(error as any);
-    }
-}
+import { SaveCache } from './cache';
 
 async function createTriggerFile(): Promise<void> {
     core.debug('Setting trigger file to stop tracer');
@@ -18,7 +10,7 @@ async function createTriggerFile(): Promise<void> {
     fs.writeFileSync(TRIGGER_FILE_PATH, '');
 }
 
-async function waitForProcessTreesFile(timeoutSeconds: number): Promise<boolean> {
+async function waitForTriggerFileDelete(timeoutSeconds: number): Promise<boolean> {
     const startTime = Date.now();
     let lastLogTime = 0;
 
@@ -35,42 +27,23 @@ async function waitForProcessTreesFile(timeoutSeconds: number): Promise<boolean>
         }
 
         // Check if the file exists and has content
-        if (fs.existsSync(PROCESS_TREES_PATH)) {
+        if (fs.existsSync(AGENT_STOPED_FILE_PATH)) {
             try {
-                const stats = fs.statSync(PROCESS_TREES_PATH);
-                if (stats.size > 0) {
-                    core.debug('process_trees.json file has content, continuing...');
-                    return true;
-                }
+                const stats = fs.readFileSync(AGENT_STOPED_FILE_PATH, 'utf8');
+                core.debug(`Agent stoped file content: ${stats}`);
+                return true;
             } catch (error) {
                 core.debug(`Error checking file: ${error}`);
+                return false;
             }
         }
 
-        // Only log every 5 seconds to avoid flooding the logs
         if (currentTime - lastLogTime >= 1000) {
-            core.debug(`Still waiting for process_trees.json to have content... (${elapsedSeconds}s elapsed)`);
+            core.debug(`Still waiting for ${AGENT_STOPED_FILE_PATH} to be created (${elapsedSeconds}s elapsed)`);
             lastLogTime = currentTime;
         }
 
         await new Promise(resolve => setTimeout(resolve, 200));
-    }
-}
-
-// async function displayProcessTreesFile(): Promise<void> {
-//     if (fs.existsSync(PROCESS_TREES_PATH)) {
-//         await exec(`cat ${PROCESS_TREES_PATH}`);
-//         core.info('Tracer process stopped successfully');
-//     } else {
-//         core.info('process_trees.json file does not exist after waiting');
-//     }
-// }
-
-async function verifyProcessTreesExists(): Promise<void> {
-    if (fs.existsSync(PROCESS_TREES_PATH)) {
-        core.debug('process_trees.json file found successfully');
-    } else {
-        core.debug('process_trees.json file does not exist');
     }
 }
 
@@ -79,8 +52,8 @@ async function stopTracerProcess(): Promise<void> {
         core.debug('Stopping tracer process...');
         await createTriggerFile();
 
-        const timeoutSeconds = 2;
-        await waitForProcessTreesFile(timeoutSeconds);
+        const timeoutSeconds = 10;
+        await waitForTriggerFileDelete(timeoutSeconds);
 
         // await displayProcessTreesFile();
     } catch (error) {
@@ -89,7 +62,8 @@ async function stopTracerProcess(): Promise<void> {
     }
 }
 
-async function cleanup(): Promise<void> {
+async function StopTracer(): Promise<void> {
+
     try {
         const timeout = setTimeout(async () => {
             core.debug('Reached timeout during cleanup, exiting');
@@ -101,12 +75,10 @@ async function cleanup(): Promise<void> {
             });
             process.exit(0);
 
-        }, 5000)
+        }, 10000)
         if (process.platform === 'linux') {
             await stopTracerProcess();
         }
-        await verifyProcessTreesExists();
-        await runOtelExport();
         timeout.close()
 
         core.debug('Cleanup completed');
@@ -125,5 +97,8 @@ async function cleanup(): Promise<void> {
         // Don't fail the action if cleanup fails
     }
 }
-
+async function cleanup() {
+    await SaveCache();
+    await StopTracer();
+}
 cleanup(); 

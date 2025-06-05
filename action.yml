@@ -27,7 +27,7 @@ inputs:
   tracer_version:
     description: "Version of the tracer binary to use"
     required: false
-    default: "v0.7.5"
+    default: "e-refactor/otel-exporter"
   
   tracer_track_files:
     description: "Track files via eBPF monitoring"
