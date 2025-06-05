@@ -38,10 +38,8 @@ async function waitForTriggerFileDelete(timeoutSeconds: number): Promise<boolean
             }
         }
 
-
-        // Only log every 5 seconds to avoid flooding the logs
         if (currentTime - lastLogTime >= 1000) {
-            core.debug(`Still waiting for trigger file to be deleted (${elapsedSeconds}s elapsed)`);
+            core.debug(`Still waiting for ${AGENT_STOPED_FILE_PATH} to be created (${elapsedSeconds}s elapsed)`);
             lastLogTime = currentTime;
         }
 
@@ -77,7 +75,7 @@ async function StopTracer(): Promise<void> {
             });
             process.exit(0);
 
-        }, 5000)
+        }, 10000)
         if (process.platform === 'linux') {
             await stopTracerProcess();
         }

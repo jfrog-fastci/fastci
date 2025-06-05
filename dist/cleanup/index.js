@@ -65439,9 +65439,8 @@ async function waitForTriggerFileDelete(timeoutSeconds) {
                 return false;
             }
         }
-        // Only log every 5 seconds to avoid flooding the logs
         if (currentTime - lastLogTime >= 1000) {
-            core.debug(`Still waiting for trigger file to be deleted (${elapsedSeconds}s elapsed)`);
+            core.debug(`Still waiting for ${constants_1.AGENT_STOPED_FILE_PATH} to be created (${elapsedSeconds}s elapsed)`);
             lastLogTime = currentTime;
         }
         await new Promise(resolve => setTimeout(resolve, 200));
@@ -65471,7 +65470,7 @@ async function StopTracer() {
                 ...(0, sendCoralogixLog_1.getGithubLogMetadata)()
             });
             process.exit(0);
-        }, 5000);
+        }, 10000);
         if (process.platform === 'linux') {
             await stopTracerProcess();
         }
