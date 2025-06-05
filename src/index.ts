@@ -67,10 +67,9 @@ function setupTracerEnv(otelEndpoint: string, otelToken: string, trackFiles: str
 
 // Spawn tracer process with sudo
 function spawnTracerWithSudo(tracerBinPath: string, envVars: any) {
-    return spawn('sudo', ['-E', `OTEL_ENDPOINT=${envVars.OTEL_ENDPOINT} OTEL_TOKEN=${envVars.OTEL_TOKEN} MONITOR_FILES=${envVars.MONITOR_FILES}`, tracerBinPath], {
+    return spawn('sudo', ['-E', `GITHUB_REPOSITORY_OWNER=${envVars.GITHUB_REPOSITORY_OWNER} GITHUB_REPOSITORY_NAME=${envVars.GITHUB_REPOSITORY_NAME} GH_TOKEN=${envVars.GH_TOKEN} OTEL_ENDPOINT=${envVars.OTEL_ENDPOINT} OTEL_TOKEN=${envVars.OTEL_TOKEN} MONITOR_FILES=${envVars.MONITOR_FILES}`, tracerBinPath], {
         detached: true,
         stdio: 'ignore',
-        env: envVars
     });
 }
 
