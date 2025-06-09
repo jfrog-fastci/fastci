@@ -27,7 +27,7 @@ inputs:
   tracer_version:
     description: "Version of the tracer binary to use"
     required: false
-    default: "v0.7.5"
+    default: "vmilestone-104-create-ci-cd-process-for-coregithub_action-a461d69-936"
   
   tracer_track_files:
     description: "Track files via eBPF monitoring"
