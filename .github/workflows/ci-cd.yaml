@@ -2,11 +2,12 @@ name: CI/CD Workflow
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, dev, beta ]
   pull_request:
-    branches: [ main ]
+    branches: [dev, beta, main ]
 
 jobs:
+  t
   test-fastci-action-in-container:
     runs-on: ubuntu-latest
     container:
@@ -17,16 +18,17 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'npm'
     - name: Run FastCI Action
       uses: ./
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+   
     - name: Run test
       run: echo "test"
 
@@ -61,32 +63,5 @@ jobs:
         cache: 'npm'
     - name: Run test
       run: echo "test"
-
-  test-and-build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run tests
-      run: npm run test
-
-    - name: Build
-      run: npm run build
-
-    - name: Package
-      run: npm run package
       
   
