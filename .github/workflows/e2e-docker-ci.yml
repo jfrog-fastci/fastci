@@ -30,7 +30,7 @@ jobs:
       - name: Checkout
           uses: actions/checkout@v4
           with:
-            repository: docker/docker
+            repository: moby/moby
             fetch-depth: 0
       - name: Dump context
         uses: actions/github-script@v7
@@ -105,7 +105,7 @@ jobs:
         name: Checkout
         uses: actions/checkout@v4
         with:
-          repository: docker/docker
+          repository: moby/moby
           fetch-depth: 0
       -
         name: Create matrix
