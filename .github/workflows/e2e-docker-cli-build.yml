@@ -20,16 +20,6 @@ concurrency:
 env:
   VERSION: ${{ github.ref }}
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - 'master'
-      - '[0-9]+.[0-9]+'
-      - '[0-9]+.x'
-    tags:
-      - 'v*'
-  pull_request:
 
 jobs:
   prepare:
