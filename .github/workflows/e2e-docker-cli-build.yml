@@ -57,6 +57,7 @@ jobs:
           - ""
           - glibc
     steps:
+      - uses: mxschmitt/action-tmate@v3
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
