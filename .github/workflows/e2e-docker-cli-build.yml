@@ -69,6 +69,7 @@ jobs:
         name: Build
         uses: docker/bake-action@v6
         with:
+          source: .
           targets: ${{ matrix.target }}
           set: |
             *.platform=${{ matrix.platform }}
@@ -131,6 +132,7 @@ jobs:
         name: Build and push image
         uses: docker/bake-action@v6
         with:
+          source: .
           files: |
             ./docker-bake.hcl
             cwd://${{ steps.meta.outputs.bake-file }}
@@ -174,7 +176,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: docker/cli
-      - uses: mxschmitt/action-tmate@v3
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -183,5 +184,6 @@ jobs:
         uses: docker/bake-action@v6
         with:
           targets: plugins-cross
+          source: .
           set: |
             *.platform=${{ matrix.platform }}
