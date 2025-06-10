@@ -34,12 +34,7 @@ jobs:
           repository: moby/moby
           ref: 793dd8385a02419c6a2f3652a6d18ad8cb187360
           fetch-depth: 0
-      - name: Dump context
-        uses: actions/github-script@v7
-        with:
-          script: |
-            ls -la
-            console.log(JSON.stringify(context, null, 2));
+
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 20 # guardrails timeout for the whole job
