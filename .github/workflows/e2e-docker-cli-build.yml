@@ -57,7 +57,11 @@ jobs:
           - ""
           - glibc
     steps:
-      - uses: mxschmitt/action-tmate@v3
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: docker/cli
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -95,6 +99,11 @@ jobs:
     runs-on: ubuntu-24.04
     if: ${{ github.event_name != 'pull_request' && github.repository == 'docker/cli' }}
     steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: docker/cli
       -
         name: Login to DockerHub
         if: github.event_name != 'pull_request'
@@ -160,6 +169,11 @@ jobs:
       matrix:
         platform: ${{ fromJson(needs.prepare-plugins.outputs.matrix) }}
     steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: docker/cli
       -
         name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
