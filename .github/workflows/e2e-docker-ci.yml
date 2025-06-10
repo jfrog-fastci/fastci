@@ -1,4 +1,4 @@
-name: ci
+name: E2E - Docker Public Repository/CI.yml
 
 # Default to 'contents: read', which grants actions to read commits.
 #
