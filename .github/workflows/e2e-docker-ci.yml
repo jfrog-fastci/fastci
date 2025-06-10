@@ -6,6 +6,8 @@ name: E2E - Docker Public Repository/CI.yml
 # implicitly set to "none".
 #
 # see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
+
+
 permissions:
   contents: read
 
@@ -24,6 +26,7 @@ env:
 
 jobs:
   validate-dco:
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
