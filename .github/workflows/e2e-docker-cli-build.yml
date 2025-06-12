@@ -27,24 +27,32 @@ jobs:
     outputs:
       matrix: ${{ steps.platforms.outputs.matrix }}
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          repository: docker/cli
-      - uses: mxschmitt/action-tmate@v3
+          path: ./fasici
+     
       - name: Run FastCI Action
-        uses: ./
+        uses: ./fastci
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
       -
+        name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: ./cli
+          repository: docker/cli
+      
+      - uses: mxschmitt/action-tmate@v3
+      -
         name: Create matrix
         id: platforms
+        working-directory: ./cli
         run: |
           echo "matrix=$(docker buildx bake cross --print | jq -cr '.target."cross".platforms')" >>${GITHUB_OUTPUT}
       -
         name: Show matrix
+        working-directory: ./cli
         run: |
           echo ${{ steps.platforms.outputs.matrix }}
 
