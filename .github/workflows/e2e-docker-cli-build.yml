@@ -29,10 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: ./fasici
+          path: ./
      
       - name: Run FastCI Action
-        uses: ./fastci
+        uses: ./
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
