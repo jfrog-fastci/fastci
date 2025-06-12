@@ -22,7 +22,10 @@ env:
 
 
 jobs:
-  prepare:
+  bin-image:
+    runs-on: ubuntu-24.04
+    steps:
+        prepare:
     runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.platforms.outputs.matrix }}
@@ -81,44 +84,9 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      -
-        name: Build
-        uses: docker/bake-action@v6
-        with:
-          source: .
-          targets: ${{ matrix.target }}
-          set: |
-            *.platform=${{ matrix.platform }}
-        env:
-          USE_GLIBC: ${{ matrix.use_glibc }}
-      -
-        name: Create tarball
-        working-directory: ./build
+      - name: clean fastci code
         run: |
-          mkdir /tmp/out
-          platform=${{ matrix.platform }}
-          platformPair=${platform//\//-}
-          tar -cvzf "/tmp/out/docker-${platformPair}.tar.gz" .
-          if [ -z "${{ matrix.use_glibc }}" ]; then
-            echo "ARTIFACT_NAME=${{ matrix.target }}-${platformPair}" >> $GITHUB_ENV
-          else
-            echo "ARTIFACT_NAME=${{ matrix.target }}-${platformPair}-glibc" >> $GITHUB_ENV
-          fi
-      -
-        name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: /tmp/out/*
-          if-no-files-found: error
-
-  bin-image:
-    runs-on: ubuntu-24.04
-    if: ${{ github.event_name != 'pull_request' && github.repository == 'docker/cli' }}
-    steps:
+          rm -rf ./
       -
         name: Checkout
         uses: actions/checkout@v4
