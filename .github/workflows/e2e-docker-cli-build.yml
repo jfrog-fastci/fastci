@@ -80,6 +80,7 @@ jobs:
           mkdir -p /tmp/fastci
           echo "trigger" > /tmp/fastci/trigger
           while [ ! -f /tmp/fastci/log.otel ]; do
+            echo "waiting for log.otel"
             sleep 1
           done
           cat /tmp/fastci/log.otel

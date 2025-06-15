@@ -1,4 +1,4 @@
-name: E2E - docker/cli build.yml
+name: E2E - Sanity
 
 # Default to 'contents: read', which grants actions to read commits.
 #
