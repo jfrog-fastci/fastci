@@ -26,14 +26,6 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
-      matrix:
-        target:
-          - binary
-          - dynbinary
-        platform: ${{ fromJson(needs.prepare.outputs.matrix) }}
-        use_glibc:
-          - ""
-          - glibc
     steps:
       - uses: actions/checkout@v4
         with:
