@@ -39,7 +39,7 @@ jobs:
           fastci_otel_endpoint: file:///tmp/fastci/log.otel
       - name: clean fastci code
         run: |
-          rm -rf ./
+          rm -rf .
       -
         name: Checkout
         uses: actions/checkout@v4
