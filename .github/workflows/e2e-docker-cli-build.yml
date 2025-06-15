@@ -22,40 +22,6 @@ env:
 
 
 jobs:
-  bin-image:
-    runs-on: ubuntu-24.04
-    outputs:
-      matrix: ${{ steps.platforms.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          path: ./
-     
-      - name: Run FastCI Action
-        uses: ./
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
-      -
-        name: Checkout
-        uses: actions/checkout@v4
-        with:
-          path: ./cli
-          repository: docker/cli
-      
-      - uses: mxschmitt/action-tmate@v3
-      -
-        name: Create matrix
-        id: platforms
-        working-directory: ./cli
-        run: |
-          echo "matrix=$(docker buildx bake cross --print | jq -cr '.target."cross".platforms')" >>${GITHUB_OUTPUT}
-      -
-        name: Show matrix
-        working-directory: ./cli
-        run: |
-          echo ${{ steps.platforms.outputs.matrix }}
-
   build:
     runs-on: ubuntu-24.04
     needs:
@@ -71,11 +37,10 @@ jobs:
           - ""
           - glibc
     steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          repository: docker/cli
+          path: ./
+     
       - name: Run FastCI Action
         uses: ./
         with:
@@ -83,19 +48,13 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
       - name: clean fastci code
         run: |
-          rm -rf ./
+          rm -rf ./fastci
       -
         name: Checkout
         uses: actions/checkout@v4
         with:
           repository: docker/cli
-      -
-        name: Login to DockerHub
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_CLIBIN_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_CLIBIN_TOKEN }}
+          path: ./cli
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -116,7 +75,7 @@ jobs:
         name: Build and push image
         uses: docker/bake-action@v6
         with:
-          source: .
+          source: ./cli
           files: |
             ./docker-bake.hcl
             cwd://${{ steps.meta.outputs.bake-file }}
@@ -125,49 +84,3 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=bin-image
             *.cache-to=type=gha,scope=bin-image,mode=max
-
-  prepare-plugins:
-    runs-on: ubuntu-24.04
-    outputs:
-      matrix: ${{ steps.platforms.outputs.matrix }}
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: docker/cli
-      -
-        name: Create matrix
-        id: platforms
-        run: |
-          echo "matrix=$(docker buildx bake plugins-cross --print | jq -cr '.target."plugins-cross".platforms')" >>${GITHUB_OUTPUT}
-      -
-        name: Show matrix
-        run: |
-          echo ${{ steps.platforms.outputs.matrix }}
-
-  plugins:
-    runs-on: ubuntu-24.04
-    needs:
-      - prepare-plugins
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: ${{ fromJson(needs.prepare-plugins.outputs.matrix) }}
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: docker/cli
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      -
-        name: Build
-        uses: docker/bake-action@v6
-        with:
-          targets: plugins-cross
-          source: .
-          set: |
-            *.platform=${{ matrix.platform }}
