@@ -36,6 +36,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+          fastci_otel_endpoint: file:///tmp/fastci/log.otel
       - name: clean fastci code
         run: |
           rm -rf ./fastci
@@ -56,11 +57,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
+          working-directory: ./cli
           images: dockereng/cli-bin
           tags: |
             type=semver,pattern={{version}}
             type=ref,event=branch
             type=ref,event=pr
+      - uses: mxschmitt/action-tmate@v3
       -
         name: Build and push image
         uses: docker/bake-action@v6
@@ -75,3 +78,13 @@ jobs:
           set: |
             *.cache-from=type=gha,scope=bin-image
             *.cache-to=type=gha,scope=bin-image,mode=max
+      
+      - name: Stop FastCI and Collect OTel Trace File
+        run: |
+          mkdir -p /tmp/fastci
+          echo "trigger" > /tmp/fastci/trigger
+          while [ ! -f /tmp/fastci/log.otel ]; do
+            sleep 1
+          done
+          cat /tmp/fastci/log.otel
+          
