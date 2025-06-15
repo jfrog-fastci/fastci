@@ -26,7 +26,6 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
         prepare:
-    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.platforms.outputs.matrix }}
     steps:
