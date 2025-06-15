@@ -1,0 +1,53 @@
+name: E2E - docker/cli build.yml
+
+# Default to 'contents: read', which grants actions to read commits.
+#
+# If any permission is set, any permission not included in the list is
+# implicitly set to "none".
+#
+# see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
+
+
+permissions:
+  contents: read
+on:
+  pull_request:
+    branches: [dev, beta, main ]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERSION: ${{ github.ref }}
+
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ./
+     
+      - name: Run FastCI Action
+        uses: ./
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+          fastci_otel_endpoint: file:///tmp/fastci/log.otel
+      
+      - name: Echo test
+        run: |
+          echo "test"
+
+      - name: Stop FastCI and Collect OTel Trace File
+        run: |
+          mkdir -p /tmp/fastci
+          echo "trigger" > /tmp/fastci/trigger
+          while [ ! -f /tmp/fastci/log.otel ]; do
+            sleep 1
+          done
+          cat /tmp/fastci/log.otel
+          
