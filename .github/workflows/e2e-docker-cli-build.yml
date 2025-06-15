@@ -24,8 +24,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    needs:
-      - prepare
     strategy:
       fail-fast: false
       matrix:
