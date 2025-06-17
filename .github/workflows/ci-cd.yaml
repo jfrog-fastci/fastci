@@ -19,6 +19,9 @@ jobs:
         --mount type=bind,source=/sys/kernel/tracing,target=/sys/kernel/tracing
         --mount type=bind,source=/proc,target=/proc
     steps:
+    - name: Print env
+      run: env
+
     - name: Mount debugfs and tracefs
       run: |
         mountpoint -q /sys/kernel/debug || mount -t debugfs none /sys/kernel/debug
@@ -33,6 +36,8 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+      env:
+        GITHUB_REPOSITORY: jfrog-fastci/fastci
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
