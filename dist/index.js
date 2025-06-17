@@ -66349,12 +66349,13 @@ function resolveBinaryName(arch) {
 }
 // Download and setup tracer binary
 async function downloadAndSetupTracer(tracerVersion, binaryName, fullRepoName = 'jfrog-fastci/fastci') {
+    const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
     var tracerPath = '';
     if (tracerVersion === 'local') {
         tracerPath = `/tmp/fastci/bin/${binaryName}`;
     }
     else {
-        const tracerUrl = `https://github.com/${fullRepoName}/releases/download/${encodeURIComponent(tracerVersion)}/${binaryName}`;
+        const tracerUrl = `${serverUrl}/${fullRepoName}/releases/download/${encodeURIComponent(tracerVersion)}/${binaryName}`;
         core.debug('Downloading tracer binary.. ' + tracerUrl);
         tracerPath = await tc.downloadTool(tracerUrl, "./tracer-bin");
         core.debug(`Downloaded tracer to: ${tracerPath}`);
