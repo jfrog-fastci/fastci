@@ -11,8 +11,22 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: golang:1.24.0
-      options: --privileged --cap-add=SYS_RESOURCE --cap-add=SYS_ADMIN --mount type=bind,source=/proc,target=/proc
+      options: >-
+        --privileged
+        --cap-add=SYS_RESOURCE
+        --cap-add=SYS_ADMIN
+        --mount type=bind,source=/sys/kernel/debug,target=/sys/kernel/debug
+        --mount type=bind,source=/sys/kernel/tracing,target=/sys/kernel/tracing
+        --mount type=bind,source=/proc,target=/proc
     steps:
+    - name: Print env
+      run: env
+
+    - name: Mount debugfs and tracefs
+      run: |
+        mountpoint -q /sys/kernel/debug || mount -t debugfs none /sys/kernel/debug
+        mountpoint -q /sys/kernel/tracing || mount -t tracefs none /sys/kernel/tracing
+      shell: bash
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
@@ -22,6 +36,8 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+      env:
+        GITHUB_REPOSITORY: jfrog-fastci/fastci
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
