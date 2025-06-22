@@ -66347,6 +66347,44 @@ function resolveBinaryName(arch) {
     }
     return architectureToTracerVersionMap[arch];
 }
+// Find release by name using GitHub API
+async function findReleaseByName(serverUrl, owner, repo, releaseName, githubToken) {
+    const apiUrl = `${serverUrl}/api/v3/repos/${owner}/${repo}/releases`;
+    const headers = {
+        'Authorization': `Bearer ${githubToken}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'fastci-tracer-action'
+    };
+    const response = await fetch(apiUrl, { headers });
+    if (!response.ok) {
+        throw new Error(`Failed to fetch releases: ${response.status} ${response.statusText}`);
+    }
+    const releases = await response.json();
+    const release = releases.find((r) => r.name === releaseName || r.tag_name === releaseName);
+    if (!release) {
+        throw new Error(`Release with name/tag '${releaseName}' not found`);
+    }
+    return release;
+}
+// Find asset by binary name
+function findAssetByName(release, binaryName) {
+    const asset = release.assets.find((a) => a.name === binaryName);
+    if (!asset) {
+        throw new Error(`Asset with name '${binaryName}' not found in release '${release.name}'`);
+    }
+    return asset;
+}
+// Download asset using GitHub API
+async function downloadAsset(asset, githubToken) {
+    const headers = {
+        'Authorization': `Bearer ${githubToken}`,
+        'Accept': 'application/octet-stream',
+        'User-Agent': 'fastci-tracer-action'
+    };
+    // Use tc.downloadTool for better caching
+    const tempPath = await tc.downloadTool(asset.url, "./agent", undefined, headers);
+    return tempPath;
+}
 // Download and setup tracer binary
 async function downloadAndSetupTracer(tracerVersion, binaryName, fullRepoName = 'jfrog-fastci/fastci') {
     const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
@@ -66355,9 +66393,21 @@ async function downloadAndSetupTracer(tracerVersion, binaryName, fullRepoName = 
         tracerPath = `/tmp/fastci/bin/${binaryName}`;
     }
     else {
-        const tracerUrl = `${serverUrl}/${fullRepoName}/releases/download/${encodeURIComponent(tracerVersion)}/${binaryName}`;
-        core.debug('Downloading tracer binary.. ' + tracerUrl);
-        tracerPath = await tc.downloadTool(tracerUrl, "./tracer-bin");
+        // Parse owner and repo from fullRepoName
+        const [owner, repo] = fullRepoName.split('/');
+        if (!owner || !repo) {
+            throw new Error(`Invalid repository name format: ${fullRepoName}. Expected format: owner/repo`);
+        }
+        const githubToken = process.env.GITHUB_TOKEN || process.env.INPUT_GITHUB_TOKEN;
+        if (!githubToken) {
+            throw new Error('GitHub token is required for downloading releases');
+        }
+        core.debug(`Finding release '${tracerVersion}' in ${fullRepoName}...`);
+        const release = await findReleaseByName(serverUrl, owner, repo, tracerVersion, githubToken);
+        core.debug(`Finding asset '${binaryName}' in release '${release.name}'...`);
+        const asset = findAssetByName(release, binaryName);
+        core.debug(`Downloading asset from: ${asset.url}`);
+        tracerPath = await downloadAsset(asset, githubToken);
         core.debug(`Downloaded tracer to: ${tracerPath}`);
     }
     if (!fs.existsSync(tracerPath)) {
