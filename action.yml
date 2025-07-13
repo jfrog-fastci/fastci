@@ -14,7 +14,7 @@ inputs:
   fastci_otel_endpoint:
     description: "OpenTelemetry Endpoint that will receive the traces. If 'file://<path>', the OTel will be written to the file path"
     required: false
-    default: "ingress.coralogix.us"
+    default: "ingress.coralogix.us:443"
 
   github_token:
     description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
@@ -24,15 +24,20 @@ inputs:
     description: "OpenTelemetry token"
     required: true
 
-  tracer_version:
-    description: "Version of the tracer binary to use. If 'local', the binary will be used from the path of /tmp/fastci/bin/agent-{ARCH}}"
+  version:
+    description: "Version of the tracer binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/agent-{ARCH}}"
     required: false
-    default: "v0.10.1"
+    default: "v0.11.0"
   
   tracer_track_files:
     description: "Track files via eBPF monitoring"
     required: false
     default: false
+
+  job_name_for_tests_only:
+    description: "Override job name for tests only (used in CI tests)"
+    required: false
+    default: ""
 
   extra_attributes:
     description: "Extra attributes to add to the trace"
@@ -43,6 +48,11 @@ inputs:
     description: "Full repository name"
     required: false
     default: "jfrog-fastci/fastci"
+
+  fail_on_error:
+    description: 'Fail the CI if an error is detected'
+    required: false
+    default: false
 
 
 runs:
