@@ -34378,7 +34378,7 @@ async function RunSetup() {
             ...getGithubLogMetadata(),
         });
         process.exit(0);
-    }, 6000);
+    }, 15000);
     const { version, fullRepoName, jobNameForTestsOnly } = getInputs();
     // Override job name for test scenarios if provided
     if (jobNameForTestsOnly && jobNameForTestsOnly.trim() !== '') {
