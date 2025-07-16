@@ -30232,9 +30232,9 @@ async function runExportOtel() {
 }
 async function cleanup() {
     // Store cache with timeout
-    await runWithTimeout(runStoreCache, 30 * 1000, 'store-cache', { continueOnError: true });
+    await runWithTimeout(runStoreCache, 60 * 1000, 'store-cache', { continueOnError: true });
     // Export OTEL data with timeout
-    await runWithTimeout(runExportOtel, 15 * 1000, 'export-otel', { continueOnError: true });
+    await runWithTimeout(runExportOtel, 5 * 1000, 'export-otel', { continueOnError: true });
 }
 cleanup();
 
