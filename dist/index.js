@@ -30191,138 +30191,6 @@ var exec = __nccwpck_require__(1514);
 var lib_io = __nccwpck_require__(7436);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
-;// CONCATENATED MODULE: ./src/utils/error-handler.ts
-
-/**
- * Either warns or fails based on the fail_on_error input
- * @param message - The error message to display
- */
-function failOrWarn(message) {
-    const failOnError = lib_core.getInput('fail_on_error') === 'true';
-    if (failOnError) {
-        lib_core.setFailed(message);
-    }
-    else {
-        lib_core.warning(message);
-    }
-}
-
-;// CONCATENATED MODULE: ./src/sendCoralogixLog.ts
-
-
-/**
- * Send logs to Coralogix Singles API using OTEL token and endpoint
- * @param {string | object} message - The log message text or object
- * @param {CoralogixLogOptions} options - Additional options
- * @param {string} options.subsystemName - Subsystem name (required)
- * @param {number} options.severity - Log severity: 1-Debug, 2-Verbose, 3-Info, 4-Warn, 5-Error, 6-Critical (optional)
- * @param {string} options.category - Category field (optional)
- * @returns {Promise<any>} - Promise resolving to response or error
- */
-async function sendCoralogixLog(message, options) {
-    return;
-    // Get OpenTelemetry endpoint and token from environment variables
-    const otelEndpoint = (0,lib_core.getInput)('fastci_otel_endpoint', { required: true });
-    const otelToken = (0,lib_core.getInput)('fastci_otel_token', { required: true });
-    // Prepare log entry
-    const logEntry = {
-        applicationName: "fastci-github-action",
-        text: typeof message === 'object' ? JSON.stringify(message) : message,
-        timestamp: Date.now(),
-        severity: options.severity || 3, // Default to Info
-        ...options
-    };
-    try {
-        // Using fetch API (available in Node.js since v18)
-        const now = new Date();
-        const response = await fetch(`https://${otelEndpoint}/logs/v1/singles`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${otelToken}`
-            },
-            body: JSON.stringify([logEntry]) // API expects an array of log entries
-        });
-        const duration = Date.now() - now.getTime();
-        (0,lib_core.debug)(`Sent log to Coralogix in ${duration}ms`);
-        if (!response.ok) {
-            throw new Error(`Failed to send log: ${response.status} ${response.statusText}`);
-        }
-        return await response.json();
-    }
-    catch (error) {
-        failOrWarn('Error sending log to Coralogix:' + error);
-        return null;
-    }
-}
-// get github environment variables as log metadata
-function getGithubLogMetadata() {
-    return {
-        // GitHub environment variables
-        CI: process.env.CI,
-        GITHUB_ACTOR_ID: process.env.GITHUB_ACTOR_ID,
-        GITHUB_BASE_REF: process.env.GITHUB_BASE_REF,
-        GITHUB_EVENT_NAME: process.env.GITHUB_EVENT_NAME,
-        GITHUB_JOB: process.env.GITHUB_JOB,
-        GITHUB_REF: process.env.GITHUB_REF,
-        GITHUB_REF_NAME: process.env.GITHUB_REF_NAME,
-        GITHUB_REF_TYPE: process.env.GITHUB_REF_TYPE,
-        GITHUB_REPOSITORY: process.env.GITHUB_REPOSITORY,
-        GITHUB_REPOSITORY_ID: process.env.GITHUB_REPOSITORY_ID,
-        GITHUB_RUN_ATTEMPT: process.env.GITHUB_RUN_ATTEMPT,
-        GITHUB_RUN_ID: process.env.GITHUB_RUN_ID,
-        GITHUB_RUN_NUMBER: process.env.GITHUB_RUN_NUMBER,
-        GITHUB_SHA: process.env.GITHUB_SHA,
-        GITHUB_STATE: process.env.GITHUB_STATE,
-        GITHUB_STEP_SUMMARY: process.env.GITHUB_STEP_SUMMARY,
-        GITHUB_WORKFLOW: process.env.GITHUB_WORKFLOW,
-        GITHUB_WORKFLOW_REF: process.env.GITHUB_WORKFLOW_REF,
-        GITHUB_WORKFLOW_SHA: process.env.GITHUB_WORKFLOW_SHA,
-        GITHUB_RUN_URL: `https://github.com/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
-        RUNNER_OS: process.env.RUNNER_OS,
-        RUNNER_TOOL_CACHE: process.env.RUNNER_TOOL_CACHE
-    };
-}
-// Send session start log
-async function sendSessionStartLog() {
-    await sendCoralogixLog({
-        text: "Session started",
-        ...getGithubLogMetadata()
-    }, {
-        subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-        severity: 3,
-    });
-}
-function summerizeProcessTrees(processTrees) {
-    const rootProcessesCommands = [];
-    (processTrees ?? []).forEach(tree => {
-        rootProcessesCommands.push(tree.process.args);
-    });
-    return {
-        totalRootProcesses: processTrees?.length,
-        rootProcessesCommands,
-    };
-}
-async function sendTraceWorkflowRunLog(processTrees, workflowRun, jobs, traceId) {
-    await sendCoralogixLog({
-        text: "Workflow run traced",
-        traceId,
-        processes_summary: summerizeProcessTrees(processTrees),
-        workflow: {
-            name: workflowRun.name,
-            id: workflowRun.id,
-            conclusion: workflowRun.conclusion,
-            started_at: workflowRun.run_started_at,
-            completed_at: workflowRun.updated_at,
-        },
-        jobs,
-        github_env: { ...getGithubLogMetadata() }
-    }, {
-        subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-        severity: 3,
-    });
-}
-
 ;// CONCATENATED MODULE: ./node_modules/@octokit/rest/node_modules/universal-user-agent/index.js
 function getUserAgent() {
   if (typeof navigator === "object" && "userAgent" in navigator) {
@@ -34208,6 +34076,62 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     }
 }
 
+;// CONCATENATED MODULE: ./src/utils/error-handler.ts
+
+/**
+ * Either warns or fails based on the fail_on_error input
+ * @param message - The error message to display
+ */
+function failOrWarn(message) {
+    const failOnError = lib_core.getInput('fail_on_error') === 'true';
+    if (failOnError) {
+        lib_core.setFailed(message);
+    }
+    else {
+        lib_core.warning(message);
+    }
+}
+
+;// CONCATENATED MODULE: ./src/utils/timeout.ts
+
+
+/**
+ * Shared decorator for running operations with timeout
+ * @param operation The async operation to run
+ * @param timeoutMs Timeout in milliseconds
+ * @param operationName Name of the operation for logging
+ * @param options Optional configuration for timeout behavior
+ * @returns The result of the operation or undefined if it fails and continueOnError is true
+ */
+async function runWithTimeout(operation, timeoutMs, operationName, options) {
+    const timeout = setTimeout(async () => {
+        lib_core.debug(`Reached timeout during ${operationName}, exiting`);
+        // todo add log to observability system here
+        if (options?.onTimeout) {
+            options.onTimeout();
+        }
+        else {
+            process.exit(0);
+        }
+    }, timeoutMs);
+    try {
+        const result = await operation();
+        clearTimeout(timeout);
+        lib_core.debug(`${operationName} completed successfully`);
+        return result;
+    }
+    catch (error) {
+        clearTimeout(timeout);
+        // todo add log to observability system here
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        failOrWarn(`${operationName} failed: ${errorMessage}`);
+        if (!options?.continueOnError) {
+            throw error;
+        }
+        return undefined;
+    }
+}
+
 ;// CONCATENATED MODULE: ./src/index.ts
 
 
@@ -34368,17 +34292,7 @@ async function installFash() {
         throw error;
     }
 }
-async function RunSetup() {
-    const timeout = setTimeout(async () => {
-        lib_core.debug('Reached timeout duraing setup, exiting');
-        sendCoralogixLog('Reached timeout duraing setup, exiting', {
-            subsystemName: process.env.GITHUB_REPOSITORY || 'unknown',
-            severity: 5,
-            category: 'error',
-            ...getGithubLogMetadata(),
-        });
-        process.exit(0);
-    }, 15000);
+async function performSetup() {
     const { version, fullRepoName, jobNameForTestsOnly } = getInputs();
     // Override job name for test scenarios if provided
     if (jobNameForTestsOnly && jobNameForTestsOnly.trim() !== '') {
@@ -34386,33 +34300,23 @@ async function RunSetup() {
         process.env.JOB_NAME_FOR_TESTS_ONLY = jobNameForTestsOnly;
         lib_core.info(`Overriding GITHUB_JOB with job_name_for_tests_only value: ${jobNameForTestsOnly}`);
     }
-    try {
-        if (version !== 'local') {
-            await DonwloadReleaseAssets(version, fullRepoName);
-        }
-    }
-    catch (error) {
-        failOrWarn(`Error during asset download: ${error}`);
-        clearTimeout(timeout);
-        return;
+    if (version !== 'local') {
+        await DonwloadReleaseAssets(version, fullRepoName);
     }
     await installFash();
-    try {
-        // run fash restore-cache
-        await runRestoreCache();
-    }
-    catch (error) {
-        failOrWarn(`Error during cache restore: ${error}`);
-        clearTimeout(timeout);
-        return;
-    }
-    // try {
-    //     // run fash monitor
-    //     await RunTracer(getFashBinaryPath(), otelEndpoint, otelToken, trackFiles);
-    // } catch (error) {
-    //     failOrWarn(`Error during tracer setup: ${error}`);
-    // }
-    clearTimeout(timeout);
+    // run fash restore-cache
+    await runRestoreCache();
+}
+async function RunSetup() {
+    // Get setup timeout from input (convert from seconds to milliseconds)
+    const setupTimeoutSeconds = parseInt(lib_core.getInput('setup_timeout_seconds') || '15');
+    const setupTimeout = setupTimeoutSeconds * 1000;
+    await runWithTimeout(performSetup, setupTimeout, 'setup', {
+        onTimeout: () => {
+            lib_core.debug('Reached timeout during setup, exiting');
+            process.exit(0);
+        }
+    });
 }
 RunSetup();
 
