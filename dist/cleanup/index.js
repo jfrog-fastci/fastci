@@ -30231,10 +30231,13 @@ async function runExportOtel() {
     return result;
 }
 async function cleanup() {
+    // Get timeout values from inputs (convert from seconds to milliseconds)
+    const storeCacheTimeout = parseInt(lib_core.getInput('store_cache_timeout_seconds') || '30') * 1000;
+    const exportOtelTimeout = parseInt(lib_core.getInput('export_otel_timeout_seconds') || '15') * 1000;
     // Store cache with timeout
-    await runWithTimeout(runStoreCache, 60 * 1000, 'store-cache', { continueOnError: true });
+    await runWithTimeout(runStoreCache, storeCacheTimeout, 'store-cache', { continueOnError: true });
     // Export OTEL data with timeout
-    await runWithTimeout(runExportOtel, 5 * 1000, 'export-otel', { continueOnError: true });
+    await runWithTimeout(runExportOtel, exportOtelTimeout, 'export-otel', { continueOnError: true });
 }
 cleanup();
 
