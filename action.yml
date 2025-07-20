@@ -27,7 +27,7 @@ inputs:
   version:
     description: "Version of the tracer binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/agent-{ARCH}}"
     required: false
-    default: "v0.13.0"
+    default: "v0.13.2"
   
   tracer_track_files:
     description: "Track files via eBPF monitoring"
@@ -53,6 +53,21 @@ inputs:
     description: 'Fail the CI if an error is detected'
     required: false
     default: false
+
+  setup_timeout_seconds:
+    description: 'Timeout for the setup phase in seconds'
+    required: false
+    default: '30'
+  
+  store_cache_timeout_seconds:
+    description: 'Timeout for storing cache in seconds'
+    required: false
+    default: '60'
+  
+  export_otel_timeout_seconds:
+    description: 'Timeout for exporting OpenTelemetry data in seconds'
+    required: false
+    default: '15'
 
 
 runs:
