@@ -34034,11 +34034,11 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     let octokit;
     if (serverUrl.includes('github.com')) {
         // Public GitHub: use default baseUrl
-        octokit = new dist_src_Octokit({ auth: process.env.GITHUB_TOKEN });
+        octokit = new dist_src_Octokit({ auth: getGithubToken() });
     }
     else {
         // GHES: set baseUrl to the API endpoint
-        octokit = new dist_src_Octokit({ auth: process.env.GITHUB_TOKEN, baseUrl: `${serverUrl}/api/v3` });
+        octokit = new dist_src_Octokit({ auth: getGithubToken(), baseUrl: `${serverUrl}/api/v3` });
     }
     const [owner, repo] = fullRepoName.split('/');
     const release = await octokit.repos.getReleaseByTag({
@@ -34159,6 +34159,7 @@ function getInputs() {
         trackFiles: lib_core.getInput('tracer_track_files'),
         fullRepoName: lib_core.getInput('full_repo_name'),
         jobNameForTestsOnly: lib_core.getInput('job_name_for_tests_only'),
+        installFash: lib_core.getInput('install_fash', { required: false }),
     };
 }
 async function runRestoreCache() {
@@ -34293,7 +34294,7 @@ async function installFash() {
     }
 }
 async function performSetup() {
-    const { version, fullRepoName, jobNameForTestsOnly } = getInputs();
+    const { version, fullRepoName, jobNameForTestsOnly, installFash: installFashInput } = getInputs();
     // Override job name for test scenarios if provided
     if (jobNameForTestsOnly && jobNameForTestsOnly.trim() !== '') {
         process.env.GITHUB_JOB = jobNameForTestsOnly;
@@ -34303,7 +34304,9 @@ async function performSetup() {
     if (version !== 'local') {
         await DonwloadReleaseAssets(version, fullRepoName);
     }
-    await installFash();
+    if (installFashInput === 'true') {
+        await installFash();
+    }
     // run fash restore-cache
     await runRestoreCache();
 }
