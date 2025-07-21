@@ -27,7 +27,7 @@ inputs:
   version:
     description: "Version of the tracer binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/agent-{ARCH}}"
     required: false
-    default: "v0.14.0"
+    default: "milestone-190-fash-fails-report-tests-pipeline-in-usaf-rules-2-e24704f-1612"
   
   tracer_track_files:
     description: "Track files via eBPF monitoring"
@@ -72,7 +72,7 @@ inputs:
   install_fash:
     description: 'Install fash'
     required: false
-    default: false
+    default: true
 
 
 runs:
