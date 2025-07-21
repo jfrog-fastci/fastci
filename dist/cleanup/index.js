@@ -30055,11 +30055,11 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     let octokit;
     if (serverUrl.includes('github.com')) {
         // Public GitHub: use default baseUrl
-        octokit = new Octokit({ auth: getGithubToken() });
+        octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
     }
     else {
         // GHES: set baseUrl to the API endpoint
-        octokit = new Octokit({ auth: getGithubToken(), baseUrl: `${serverUrl}/api/v3` });
+        octokit = new Octokit({ auth: process.env.GITHUB_TOKEN, baseUrl: `${serverUrl}/api/v3` });
     }
     const [owner, repo] = fullRepoName.split('/');
     const release = await octokit.repos.getReleaseByTag({
