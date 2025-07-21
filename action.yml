@@ -72,7 +72,7 @@ inputs:
   install_fash:
     description: 'Install fash'
     required: false
-    default: true
+    default: false
 
 
 runs:
