@@ -27,7 +27,7 @@ inputs:
   version:
     description: "Version of the tracer binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/agent-{ARCH}}"
     required: false
-    default: "v0.14.0"
+    default: "milestone-181-fash-fails-to-run-when-running-sh-script-on-fastci-ci-a857b77-1672"
   
   tracer_track_files:
     description: "Track files via eBPF monitoring"
@@ -72,7 +72,12 @@ inputs:
   install_fash:
     description: 'Install fash'
     required: false
-    default: false
+    default: true
+  
+  fash_log_level:
+    description: 'Fash log level (trace, debug, info, warn, error, fatal, panic)'
+    required: false
+    default: 'error'
 
 
 runs:
