@@ -34160,10 +34160,34 @@ function getInputs() {
         fullRepoName: lib_core.getInput('full_repo_name'),
         jobNameForTestsOnly: lib_core.getInput('job_name_for_tests_only'),
         installFash: lib_core.getInput('install_fash', { required: false }),
+        fashLogLevel: lib_core.getInput('fash_log_level', { required: false }) || 'error',
     };
 }
 async function runRestoreCache() {
     lib_core.debug(`Running restore-cache`);
+    // Ensure we have enough git commits for cache key generation
+    lib_core.info('Ensuring sufficient git history for cache operations');
+    try {
+        // Try to fetch at least 5 commits with efficient filter
+        await exec.exec('git', ['fetch', '--depth=5', '--filter=tree:0', '--no-tags'], {
+            ignoreReturnCode: true,
+            silent: true
+        });
+    }
+    catch (error) {
+        lib_core.debug(`Initial fetch attempt failed: ${error}`);
+        // If shallow clone, try to unshallow with filter
+        try {
+            await exec.exec('git', ['fetch', '--unshallow', '--filter=tree:0', '--no-tags'], {
+                ignoreReturnCode: true,
+                silent: true
+            });
+        }
+        catch (unshallowError) {
+            lib_core.debug(`Unshallow attempt failed: ${unshallowError}`);
+            // Continue anyway - the Go code will handle missing commits gracefully
+        }
+    }
     const fashBinPath = getFashBinaryPath();
     const result = await exec.exec(fashBinPath, ["restore-cache"], {
         env: { ...process.env, GITHUB_TOKEN: getGithubToken() || '', },
@@ -34215,11 +34239,12 @@ async function restoreShellFromBackup(shellPath) {
         failOrWarn(`Failed to restore original shell: ${restoreError}`);
     }
 }
-function createFashConfig() {
+function createFashConfig(logLevel) {
     const defaultConfig = {
         CacheDir: "/tmp/fastci/cache/upload",
         OTelEndpoint: "",
         OTelHeaders: "",
+        LogLevel: logLevel,
         Optimizations: {
             GoBuildOptimization: {
                 IsEnabled: true,
@@ -34227,12 +34252,19 @@ function createFashConfig() {
                 SupportedBinaryVersions: "*",
                 Group: "OptimizationGroupGo",
                 Name: "Go Build Cache Optimization"
+            },
+            MakeOptimization: {
+                IsEnabled: true,
+                SupportedBranchesRegex: ["*"],
+                SupportedBinaryVersions: "*",
+                Group: "OptimizationGroupMake",
+                Name: "Make Shell Interception"
             }
         }
     };
     const configPath = '/tmp/fastci/config.json';
     external_fs_.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2));
-    lib_core.info(`Created default fash configuration at ${configPath}`);
+    lib_core.info(`Created default fash configuration at ${configPath} with log level: ${logLevel}`);
 }
 function getShellPath() {
     let shellPath = process.env.SHELL;
@@ -34258,7 +34290,7 @@ async function replaceShellWithFash(fashBinPath, shellPath) {
     await removeOriginalShell(shellPath);
     await copyFashToShellPath(fashBinPath, shellPath);
 }
-async function installFash() {
+async function installFash(fashLogLevel = 'error') {
     lib_core.debug(`Installing fash`);
     const fashBinPath = getFashBinaryPath();
     lib_core.info(`Looking for fash binary at: ${fashBinPath}`);
@@ -34276,7 +34308,7 @@ async function installFash() {
         return;
     }
     try {
-        createFashConfig();
+        createFashConfig(fashLogLevel);
         lib_core.info('Starting bash replacement...');
         const shellPath = getShellPath();
         if (shouldReplaceShell(shellPath)) {
@@ -34294,7 +34326,7 @@ async function installFash() {
     }
 }
 async function performSetup() {
-    const { version, fullRepoName, jobNameForTestsOnly, installFash: installFashInput } = getInputs();
+    const { version, fullRepoName, jobNameForTestsOnly, installFash: installFashInput, fashLogLevel } = getInputs();
     // Override job name for test scenarios if provided
     if (jobNameForTestsOnly && jobNameForTestsOnly.trim() !== '') {
         process.env.GITHUB_JOB = jobNameForTestsOnly;
@@ -34305,7 +34337,9 @@ async function performSetup() {
         await DonwloadReleaseAssets(version, fullRepoName);
     }
     if (installFashInput === 'true') {
-        await installFash();
+        // Set the FASH_LOG_LEVEL environment variable
+        lib_core.exportVariable('FASH_LOG_LEVEL', fashLogLevel);
+        await installFash(fashLogLevel);
     }
     // run fash restore-cache
     await runRestoreCache();
