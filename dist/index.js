@@ -30188,7 +30188,7 @@ var lib_core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
-var lib_io = __nccwpck_require__(7436);
+var io = __nccwpck_require__(7436);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
 ;// CONCATENATED MODULE: ./node_modules/@octokit/rest/node_modules/universal-user-agent/index.js
@@ -34150,6 +34150,10 @@ async function commandExists(command) {
         return false;
     }
 }
+// Check if sudo command exists
+async function sudoExists() {
+    return await commandExists('sudo');
+}
 // Helper to fetch all required inputs
 function getInputs() {
     return {
@@ -34165,6 +34169,29 @@ function getInputs() {
 }
 async function runRestoreCache() {
     lib_core.debug(`Running restore-cache`);
+    // Ensure we have enough git commits for cache key generation
+    lib_core.info('Ensuring sufficient git history for cache operations');
+    try {
+        // Try to fetch at least 5 commits with efficient filter
+        await exec.exec('git', ['fetch', '--depth=5', '--filter=tree:0', '--no-tags'], {
+            ignoreReturnCode: true,
+            silent: true
+        });
+    }
+    catch (error) {
+        lib_core.debug(`Initial fetch attempt failed: ${error}`);
+        // If shallow clone, try to unshallow with filter
+        try {
+            await exec.exec('git', ['fetch', '--unshallow', '--filter=tree:0', '--no-tags'], {
+                ignoreReturnCode: true,
+                silent: true
+            });
+        }
+        catch (unshallowError) {
+            lib_core.debug(`Unshallow attempt failed: ${unshallowError}`);
+            // Continue anyway - the Go code will handle missing commits gracefully
+        }
+    }
     const fashBinPath = getFashBinaryPath();
     const result = await exec.exec(fashBinPath, ["restore-cache"], {
         env: { ...process.env, GITHUB_TOKEN: getGithubToken() || '', },
@@ -34177,8 +34204,36 @@ async function runRestoreCache() {
 }
 async function backupShell(shellPath) {
     try {
-        await exec.exec('sudo', ['cp', shellPath, `${shellPath}.original`]);
-        lib_core.info(`Backed up original shell at ${shellPath} to ${shellPath}.original`);
+        const backupPath = `${shellPath}.original`;
+        // Check if the backup already exists and contains real bash
+        if (external_fs_.existsSync(backupPath)) {
+            try {
+                const { stdout } = await exec.getExecOutput('file', [backupPath], { silent: true });
+                if (stdout.includes('ELF') && !stdout.includes('fash')) {
+                    lib_core.info(`Backup already exists at ${backupPath} and appears to be real bash, skipping backup`);
+                    return;
+                }
+            }
+            catch (fileCheckError) {
+                lib_core.debug(`Could not check backup file type: ${fileCheckError}`);
+            }
+        }
+        // Check if the current shell is already fash
+        try {
+            const { stdout } = await exec.getExecOutput('file', [shellPath], { silent: true });
+            if (stdout.includes('fash')) {
+                lib_core.warning(`Shell at ${shellPath} is already fash, cannot backup real bash`);
+                return;
+            }
+        }
+        catch (fileCheckError) {
+            lib_core.debug(`Could not check shell file type: ${fileCheckError}`);
+        }
+        const useSudo = await sudoExists();
+        const command = useSudo ? 'sudo' : 'cp';
+        const args = useSudo ? ['cp', shellPath, backupPath] : [shellPath, backupPath];
+        await exec.exec(command, args);
+        lib_core.info(`Backed up original shell at ${shellPath} to ${backupPath} ${useSudo ? '(with sudo)' : '(without sudo)'}`);
     }
     catch (error) {
         failOrWarn(`Failed to backup original shell: ${error}`);
@@ -34187,8 +34242,11 @@ async function backupShell(shellPath) {
 }
 async function removeOriginalShell(shellPath) {
     try {
-        await exec.exec('sudo', ['rm', shellPath]);
-        lib_core.info(`Removed original shell at ${shellPath}`);
+        const useSudo = await sudoExists();
+        const command = useSudo ? 'sudo' : 'rm';
+        const args = useSudo ? ['rm', shellPath] : [shellPath];
+        await exec.exec(command, args);
+        lib_core.info(`Removed original shell at ${shellPath} ${useSudo ? '(with sudo)' : '(without sudo)'}`);
     }
     catch (error) {
         failOrWarn(`Failed to remove original shell: ${error}`);
@@ -34198,8 +34256,11 @@ async function removeOriginalShell(shellPath) {
 }
 async function copyFashToShellPath(fashBinPath, shellPath) {
     try {
-        await exec.exec('sudo', ['cp', fashBinPath, shellPath]);
-        lib_core.info(`Copied fash to ${shellPath}`);
+        const useSudo = await sudoExists();
+        const command = useSudo ? 'sudo' : 'cp';
+        const args = useSudo ? ['cp', fashBinPath, shellPath] : [fashBinPath, shellPath];
+        await exec.exec(command, args);
+        lib_core.info(`Copied fash to ${shellPath} ${useSudo ? '(with sudo)' : '(without sudo)'}`);
     }
     catch (error) {
         failOrWarn(`Failed to copy fash to shell path: ${error}`);
@@ -34209,8 +34270,11 @@ async function copyFashToShellPath(fashBinPath, shellPath) {
 }
 async function restoreShellFromBackup(shellPath) {
     try {
-        await exec.exec('sudo', ['cp', `${shellPath}.original`, shellPath]);
-        lib_core.info(`Restored original shell from backup.`);
+        const useSudo = await sudoExists();
+        const command = useSudo ? 'sudo' : 'cp';
+        const args = useSudo ? ['cp', `${shellPath}.original`, shellPath] : [`${shellPath}.original`, shellPath];
+        await exec.exec(command, args);
+        lib_core.info(`Restored original shell from backup ${useSudo ? '(with sudo)' : '(without sudo)'}.`);
     }
     catch (restoreError) {
         failOrWarn(`Failed to restore original shell: ${restoreError}`);
@@ -34229,6 +34293,13 @@ function createFashConfig(logLevel) {
                 SupportedBinaryVersions: "*",
                 Group: "OptimizationGroupGo",
                 Name: "Go Build Cache Optimization"
+            },
+            MakeOptimization: {
+                IsEnabled: true,
+                SupportedBranchesRegex: ["*"],
+                SupportedBinaryVersions: "*",
+                Group: "OptimizationGroupMake",
+                Name: "Make Shell Interception"
             }
         }
     };
@@ -34236,16 +34307,9 @@ function createFashConfig(logLevel) {
     external_fs_.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2));
     lib_core.info(`Created default fash configuration at ${configPath} with log level: ${logLevel}`);
 }
-function getShellPath() {
-    let shellPath = process.env.SHELL;
-    if (!shellPath || shellPath.trim() === '') {
-        shellPath = '/usr/bin/bash';
-        lib_core.info('Environment variable $SHELL is not set, defaulting to /usr/bin/bash');
-    }
-    else {
-        lib_core.info(`Using shell from $SHELL: ${shellPath}`);
-    }
-    return shellPath;
+function getShellPathsToReplace() {
+    // Always try to replace both common bash locations
+    return ['/bin/bash', '/usr/bin/bash'];
 }
 function shouldReplaceShell(shellPath) {
     const shellBase = shellPath.split('/').pop();
@@ -34253,12 +34317,49 @@ function shouldReplaceShell(shellPath) {
         lib_core.info(`Shell is '${shellBase}', not 'bash' or 'sh'. Skipping replacement.`);
         return false;
     }
+    // Check if the shell path actually exists
+    if (!external_fs_.existsSync(shellPath)) {
+        lib_core.info(`Shell path ${shellPath} does not exist. Skipping replacement.`);
+        return false;
+    }
     return true;
 }
 async function replaceShellWithFash(fashBinPath, shellPath) {
+    lib_core.info(`Replacing shell at ${shellPath} with fash`);
     await backupShell(shellPath);
     await removeOriginalShell(shellPath);
     await copyFashToShellPath(fashBinPath, shellPath);
+}
+async function replaceMultipleShellsWithFash(fashBinPath) {
+    const shellPaths = getShellPathsToReplace();
+    const replacedPaths = [];
+    for (const shellPath of shellPaths) {
+        if (shouldReplaceShell(shellPath)) {
+            try {
+                await replaceShellWithFash(fashBinPath, shellPath);
+                replacedPaths.push(shellPath);
+            }
+            catch (error) {
+                lib_core.warning(`Failed to replace shell at ${shellPath}: ${error}`);
+                // Continue with other shells, but ensure we clean up any successful replacements on failure
+                for (const replacedPath of replacedPaths) {
+                    try {
+                        await restoreShellFromBackup(replacedPath);
+                    }
+                    catch (restoreError) {
+                        lib_core.warning(`Failed to restore ${replacedPath} during cleanup: ${restoreError}`);
+                    }
+                }
+                throw error;
+            }
+        }
+    }
+    if (replacedPaths.length === 0) {
+        lib_core.warning('No bash shells were found to replace');
+    }
+    else {
+        lib_core.info(`Successfully replaced ${replacedPaths.length} shell(s): ${replacedPaths.join(', ')}`);
+    }
 }
 async function installFash(fashLogLevel = 'error') {
     lib_core.debug(`Installing fash`);
@@ -34278,19 +34379,27 @@ async function installFash(fashLogLevel = 'error') {
         return;
     }
     try {
+        // Check sudo availability early for logging
+        const hasSudo = await sudoExists();
+        lib_core.info(`Environment check: sudo ${hasSudo ? 'available' : 'not available'} - will ${hasSudo ? 'use sudo' : 'operate without sudo'}`);
         createFashConfig(fashLogLevel);
         lib_core.info('Starting bash replacement...');
-        const shellPath = getShellPath();
-        if (shouldReplaceShell(shellPath)) {
-            await replaceShellWithFash(fashBinPath, shellPath);
-        }
+        await replaceMultipleShellsWithFash(fashBinPath);
     }
     catch (error) {
         failOrWarn(`Failed to install fash: ${error}`);
-        const shellPath = getShellPath();
-        const backupPath = `${shellPath}.original`;
-        if (external_fs_.existsSync(backupPath)) {
-            await restoreShellFromBackup(shellPath);
+        // Try to restore any shells that might have been replaced
+        const shellPaths = getShellPathsToReplace();
+        for (const shellPath of shellPaths) {
+            const backupPath = `${shellPath}.original`;
+            if (external_fs_.existsSync(backupPath)) {
+                try {
+                    await restoreShellFromBackup(shellPath);
+                }
+                catch (restoreError) {
+                    lib_core.warning(`Failed to restore ${shellPath} from backup: ${restoreError}`);
+                }
+            }
         }
         throw error;
     }
