@@ -72,7 +72,7 @@ inputs:
   install_fash:
     description: 'Install fash'
     required: false
-    default: true
+    default: false
   
   fash_log_level:
     description: 'Fash log level (trace, debug, info, warn, error, fatal, panic)'
