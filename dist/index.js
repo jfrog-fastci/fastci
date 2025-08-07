@@ -30183,12 +30183,17 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
 (() => {
 
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "g": () => (/* binding */ createBashiConfig)
+});
+
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var lib_core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
-var lib_io = __nccwpck_require__(7436);
+var io = __nccwpck_require__(7436);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
 ;// CONCATENATED MODULE: ./node_modules/@octokit/rest/node_modules/universal-user-agent/index.js
@@ -34001,11 +34006,8 @@ function getGHServerUrl() {
 function getGithubToken() {
     return process.env.GITHUB_TOKEN || process.env.INPUT_GITHUB_TOKEN;
 }
-function getAgentBinaryPath() {
-    return `/tmp/fastci/tools/agent-${getBinarySuffixName()}`;
-}
-function getFashBinaryPath() {
-    return `/tmp/fastci/tools/fash-${getBinarySuffixName()}`;
+function getBashiBinaryPath() {
+    return `/tmp/fastci/tools/bashi-${getBinarySuffixName()}`;
 }
 function getCacheJsPath() {
     return `/tmp/fastci/tools/cache.js`;
@@ -34052,7 +34054,7 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     const binarySuffix = getBinarySuffixName();
     const downloadPromises = release.data.assets.map(async (asset) => {
         // Only download binaries that end with the exact architecture suffix
-        if (asset.name === `agent-${binarySuffix}` || asset.name === `fash-${binarySuffix}`) {
+        if (asset.name === `agent-${binarySuffix}` || asset.name === `bashi-${binarySuffix}`) {
             const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
             lib_core.debug(`Downloaded asset ${asset.name} to: ${path}`);
         }
@@ -34150,6 +34152,10 @@ async function commandExists(command) {
         return false;
     }
 }
+// Check if sudo command exists
+async function sudoExists() {
+    return await commandExists('sudo');
+}
 // Helper to fetch all required inputs
 function getInputs() {
     return {
@@ -34159,14 +34165,37 @@ function getInputs() {
         trackFiles: lib_core.getInput('tracer_track_files'),
         fullRepoName: lib_core.getInput('full_repo_name'),
         jobNameForTestsOnly: lib_core.getInput('job_name_for_tests_only'),
-        installFash: lib_core.getInput('install_fash', { required: false }),
-        fashLogLevel: lib_core.getInput('fash_log_level', { required: false }) || 'error',
+        installBashi: lib_core.getInput('install_bashi', { required: false }),
+        bashiLogLevel: lib_core.getInput('bashi_log_level', { required: false }) || 'debug',
     };
 }
 async function runRestoreCache() {
     lib_core.debug(`Running restore-cache`);
-    const fashBinPath = getFashBinaryPath();
-    const result = await exec.exec(fashBinPath, ["restore-cache"], {
+    // Ensure we have enough git commits for cache key generation
+    lib_core.info('Ensuring sufficient git history for cache operations');
+    try {
+        // Try to fetch at least 5 commits with efficient filter
+        await exec.exec('git', ['fetch', '--depth=5', '--filter=tree:0', '--no-tags'], {
+            ignoreReturnCode: true,
+            silent: true
+        });
+    }
+    catch (error) {
+        lib_core.debug(`Initial fetch attempt failed: ${error}`);
+        // If shallow clone, try to unshallow with filter
+        try {
+            await exec.exec('git', ['fetch', '--unshallow', '--filter=tree:0', '--no-tags'], {
+                ignoreReturnCode: true,
+                silent: true
+            });
+        }
+        catch (unshallowError) {
+            lib_core.debug(`Unshallow attempt failed: ${unshallowError}`);
+            // Continue anyway - the Go code will handle missing commits gracefully
+        }
+    }
+    const bashiBinPath = getBashiBinaryPath();
+    const result = await exec.exec(bashiBinPath, ["restore-cache"], {
         env: { ...process.env, GITHUB_TOKEN: getGithubToken() || '', },
     }).catch((err) => {
         failOrWarn(`Failed to restore cache: ${err}`);
@@ -34177,8 +34206,36 @@ async function runRestoreCache() {
 }
 async function backupShell(shellPath) {
     try {
-        await exec.exec('sudo', ['cp', shellPath, `${shellPath}.original`]);
-        lib_core.info(`Backed up original shell at ${shellPath} to ${shellPath}.original`);
+        const backupPath = `${shellPath}.original`;
+        // Check if the backup already exists and contains real bash
+        if (external_fs_.existsSync(backupPath)) {
+            try {
+                const { stdout } = await exec.getExecOutput('file', [backupPath], { silent: true });
+                if (stdout.includes('ELF') && !stdout.includes('bashi')) {
+                    lib_core.info(`Backup already exists at ${backupPath} and appears to be real bash, skipping backup`);
+                    return;
+                }
+            }
+            catch (fileCheckError) {
+                lib_core.debug(`Could not check backup file type: ${fileCheckError}`);
+            }
+        }
+        // Check if the current shell is already bashi
+        try {
+            const { stdout } = await exec.getExecOutput('file', [shellPath], { silent: true });
+            if (stdout.includes('bashi')) {
+                lib_core.warning(`Shell at ${shellPath} is already bashi, cannot backup real bash`);
+                return;
+            }
+        }
+        catch (fileCheckError) {
+            lib_core.debug(`Could not check shell file type: ${fileCheckError}`);
+        }
+        const useSudo = await sudoExists();
+        const command = useSudo ? 'sudo' : 'cp';
+        const args = useSudo ? ['cp', shellPath, backupPath] : [shellPath, backupPath];
+        await exec.exec(command, args);
+        lib_core.info(`Backed up original shell at ${shellPath} to ${backupPath} ${useSudo ? '(with sudo)' : '(without sudo)'}`);
     }
     catch (error) {
         failOrWarn(`Failed to backup original shell: ${error}`);
@@ -34187,8 +34244,11 @@ async function backupShell(shellPath) {
 }
 async function removeOriginalShell(shellPath) {
     try {
-        await exec.exec('sudo', ['rm', shellPath]);
-        lib_core.info(`Removed original shell at ${shellPath}`);
+        const useSudo = await sudoExists();
+        const command = useSudo ? 'sudo' : 'rm';
+        const args = useSudo ? ['rm', shellPath] : [shellPath];
+        await exec.exec(command, args);
+        lib_core.info(`Removed original shell at ${shellPath} ${useSudo ? '(with sudo)' : '(without sudo)'}`);
     }
     catch (error) {
         failOrWarn(`Failed to remove original shell: ${error}`);
@@ -34196,56 +34256,104 @@ async function removeOriginalShell(shellPath) {
         throw error;
     }
 }
-async function copyFashToShellPath(fashBinPath, shellPath) {
+async function copyBashiToShellPath(bashiBinPath, shellPath) {
     try {
-        await exec.exec('sudo', ['cp', fashBinPath, shellPath]);
-        lib_core.info(`Copied fash to ${shellPath}`);
+        const useSudo = await sudoExists();
+        const command = useSudo ? 'sudo' : 'cp';
+        const args = useSudo ? ['cp', bashiBinPath, shellPath] : [bashiBinPath, shellPath];
+        await exec.exec(command, args);
+        lib_core.info(`Copied bashi to ${shellPath} ${useSudo ? '(with sudo)' : '(without sudo)'}`);
     }
     catch (error) {
-        failOrWarn(`Failed to copy fash to shell path: ${error}`);
+        failOrWarn(`Failed to copy bashi to shell path: ${error}`);
         await restoreShellFromBackup(shellPath);
         throw error;
     }
 }
 async function restoreShellFromBackup(shellPath) {
     try {
-        await exec.exec('sudo', ['cp', `${shellPath}.original`, shellPath]);
-        lib_core.info(`Restored original shell from backup.`);
+        const useSudo = await sudoExists();
+        const command = useSudo ? 'sudo' : 'cp';
+        const args = useSudo ? ['cp', `${shellPath}.original`, shellPath] : [`${shellPath}.original`, shellPath];
+        await exec.exec(command, args);
+        lib_core.info(`Restored original shell from backup ${useSudo ? '(with sudo)' : '(without sudo)'}.`);
     }
     catch (restoreError) {
         failOrWarn(`Failed to restore original shell: ${restoreError}`);
     }
 }
-function createFashConfig(logLevel) {
-    const defaultConfig = {
-        CacheDir: "/tmp/fastci/cache/upload",
-        OTelEndpoint: "",
-        OTelHeaders: "",
-        LogLevel: logLevel,
-        Optimizations: {
-            GoBuildOptimization: {
-                IsEnabled: true,
-                SupportedBranchesRegex: ["*"],
-                SupportedBinaryVersions: "*",
-                Group: "OptimizationGroupGo",
-                Name: "Go Build Cache Optimization"
+function createBashiConfig(logLevel) {
+    // Get inputs
+    const inputs = getInputs();
+    // Extract organization and repository name from GITHUB_REPOSITORY (format: "owner/repo")
+    const githubRepository = process.env.GITHUB_REPOSITORY || '';
+    const [organization, repositoryName] = githubRepository.split('/');
+    // Get GitHub token
+    const githubToken = getGithubToken() || '';
+    // Extract branch name from GITHUB_REF (format: "refs/heads/branch-name" or "refs/pull/123/merge")
+    const githubRef = process.env.GITHUB_REF || '';
+    let branchName = process.env.GITHUB_REF_NAME || '';
+    // For pull requests, use the head branch
+    if (githubRef.startsWith('refs/pull/')) {
+        branchName = process.env.GITHUB_HEAD_REF || branchName;
+    }
+    const config = {
+        log_level: logLevel,
+        optimizations: {
+            cache_dir: "/tmp/fastci/cache/upload",
+            go_build_optimization: {
+                is_enabled: true,
+                supported_branches_regex: "*",
+                supported_binary_versions: "*"
+            },
+            make_optimization: {
+                is_enabled: true,
+                supported_branches_regex: "*",
+                supported_binary_versions: "*"
+            },
+            integration_test_optimization: {
+                is_enabled: true,
+                supported_branches_regex: "*",
+                supported_binary_versions: "*"
+            }
+        },
+        observability: {
+            otel_endpoint: inputs.otelEndpoint || "",
+            file_path: "/tmp/fastci/logs.otel"
+        },
+        ci_configuration: {
+            ci_provider: {
+                name: "github",
+                token: githubToken
+            },
+            cache: {
+                url: "",
+                service_version: "v1.0.0",
+                token: ""
+            },
+            organization: organization || "",
+            repository: {
+                name: repositoryName || "",
+                sha: process.env.GITHUB_SHA || "",
+                ref: githubRef,
+                branch: branchName,
+                actor: process.env.GITHUB_ACTOR || ""
+            },
+            build_information: {
+                job_name: process.env.GITHUB_JOB || "",
+                run_id: process.env.GITHUB_RUN_ID || "",
+                build_id: process.env.GITHUB_RUN_NUMBER || ""
             }
         }
     };
     const configPath = '/tmp/fastci/config.json';
-    external_fs_.writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2));
-    lib_core.info(`Created default fash configuration at ${configPath} with log level: ${logLevel}`);
+    external_fs_.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    lib_core.info(`Created complete bashi configuration at ${configPath} with log level: ${logLevel}`);
+    lib_core.debug(`Configuration: ${JSON.stringify(config, null, 2)}`);
 }
-function getShellPath() {
-    let shellPath = process.env.SHELL;
-    if (!shellPath || shellPath.trim() === '') {
-        shellPath = '/usr/bin/bash';
-        lib_core.info('Environment variable $SHELL is not set, defaulting to /usr/bin/bash');
-    }
-    else {
-        lib_core.info(`Using shell from $SHELL: ${shellPath}`);
-    }
-    return shellPath;
+function getShellPathsToReplace() {
+    // Always try to replace both common bash locations
+    return ['/bin/bash', '/usr/bin/bash'];
 }
 function shouldReplaceShell(shellPath) {
     const shellBase = shellPath.split('/').pop();
@@ -34253,20 +34361,57 @@ function shouldReplaceShell(shellPath) {
         lib_core.info(`Shell is '${shellBase}', not 'bash' or 'sh'. Skipping replacement.`);
         return false;
     }
+    // Check if the shell path actually exists
+    if (!external_fs_.existsSync(shellPath)) {
+        lib_core.info(`Shell path ${shellPath} does not exist. Skipping replacement.`);
+        return false;
+    }
     return true;
 }
-async function replaceShellWithFash(fashBinPath, shellPath) {
+async function replaceShellWithBashi(bashiBinPath, shellPath) {
+    lib_core.info(`Replacing shell at ${shellPath} with bashi`);
     await backupShell(shellPath);
     await removeOriginalShell(shellPath);
-    await copyFashToShellPath(fashBinPath, shellPath);
+    await copyBashiToShellPath(bashiBinPath, shellPath);
 }
-async function installFash(fashLogLevel = 'error') {
-    lib_core.debug(`Installing fash`);
-    const fashBinPath = getFashBinaryPath();
-    lib_core.info(`Looking for fash binary at: ${fashBinPath}`);
-    // Check if fash binary exists
-    if (!external_fs_.existsSync(fashBinPath)) {
-        lib_core.warning(`Fash binary not found at ${fashBinPath}, skipping fash installation`);
+async function replaceMultipleShellsWithBashi(bashiBinPath) {
+    const shellPaths = getShellPathsToReplace();
+    const replacedPaths = [];
+    for (const shellPath of shellPaths) {
+        if (shouldReplaceShell(shellPath)) {
+            try {
+                await replaceShellWithBashi(bashiBinPath, shellPath);
+                replacedPaths.push(shellPath);
+            }
+            catch (error) {
+                lib_core.warning(`Failed to replace shell at ${shellPath}: ${error}`);
+                // Continue with other shells, but ensure we clean up any successful replacements on failure
+                for (const replacedPath of replacedPaths) {
+                    try {
+                        await restoreShellFromBackup(replacedPath);
+                    }
+                    catch (restoreError) {
+                        lib_core.warning(`Failed to restore ${replacedPath} during cleanup: ${restoreError}`);
+                    }
+                }
+                throw error;
+            }
+        }
+    }
+    if (replacedPaths.length === 0) {
+        lib_core.warning('No bash shells were found to replace');
+    }
+    else {
+        lib_core.info(`Successfully replaced ${replacedPaths.length} shell(s): ${replacedPaths.join(', ')}`);
+    }
+}
+async function installBashi(bashiLogLevel = 'error') {
+    lib_core.debug(`Installing bashi`);
+    const bashiBinPath = getBashiBinaryPath();
+    lib_core.info(`Looking for bashi binary at: ${bashiBinPath}`);
+    // Check if bashi binary exists
+    if (!external_fs_.existsSync(bashiBinPath)) {
+        lib_core.warning(`Bashi binary not found at ${bashiBinPath}, skipping bashi installation`);
         // List files in the directory to debug
         try {
             const files = external_fs_.readdirSync('/tmp/fastci/tools');
@@ -34278,25 +34423,33 @@ async function installFash(fashLogLevel = 'error') {
         return;
     }
     try {
-        createFashConfig(fashLogLevel);
+        // Check sudo availability early for logging
+        const hasSudo = await sudoExists();
+        lib_core.info(`Environment check: sudo ${hasSudo ? 'available' : 'not available'} - will ${hasSudo ? 'use sudo' : 'operate without sudo'}`);
+        createBashiConfig(bashiLogLevel);
         lib_core.info('Starting bash replacement...');
-        const shellPath = getShellPath();
-        if (shouldReplaceShell(shellPath)) {
-            await replaceShellWithFash(fashBinPath, shellPath);
-        }
+        await replaceMultipleShellsWithBashi(bashiBinPath);
     }
     catch (error) {
-        failOrWarn(`Failed to install fash: ${error}`);
-        const shellPath = getShellPath();
-        const backupPath = `${shellPath}.original`;
-        if (external_fs_.existsSync(backupPath)) {
-            await restoreShellFromBackup(shellPath);
+        failOrWarn(`Failed to install bashi: ${error}`);
+        // Try to restore any shells that might have been replaced
+        const shellPaths = getShellPathsToReplace();
+        for (const shellPath of shellPaths) {
+            const backupPath = `${shellPath}.original`;
+            if (external_fs_.existsSync(backupPath)) {
+                try {
+                    await restoreShellFromBackup(shellPath);
+                }
+                catch (restoreError) {
+                    lib_core.warning(`Failed to restore ${shellPath} from backup: ${restoreError}`);
+                }
+            }
         }
         throw error;
     }
 }
 async function performSetup() {
-    const { version, fullRepoName, jobNameForTestsOnly, installFash: installFashInput, fashLogLevel } = getInputs();
+    const { version, fullRepoName, jobNameForTestsOnly, installBashi: installBashiInput, bashiLogLevel } = getInputs();
     // Override job name for test scenarios if provided
     if (jobNameForTestsOnly && jobNameForTestsOnly.trim() !== '') {
         process.env.GITHUB_JOB = jobNameForTestsOnly;
@@ -34306,12 +34459,12 @@ async function performSetup() {
     if (version !== 'local') {
         await DonwloadReleaseAssets(version, fullRepoName);
     }
-    if (installFashInput === 'true') {
-        // Set the FASH_LOG_LEVEL environment variable
-        lib_core.exportVariable('FASH_LOG_LEVEL', fashLogLevel);
-        await installFash(fashLogLevel);
+    if (installBashiInput === 'true') {
+        // Set the BASHI_LOG_LEVEL environment variable
+        lib_core.exportVariable('BASHI_LOG_LEVEL', bashiLogLevel);
+        await installBashi(bashiLogLevel);
     }
-    // run fash restore-cache
+    // run bashi restore-cache
     await runRestoreCache();
 }
 async function RunSetup() {
@@ -34333,3 +34486,5 @@ RunSetup();
 
 })();
 
+var __webpack_exports__createBashiConfig = __webpack_exports__.g;
+export { __webpack_exports__createBashiConfig as createBashiConfig };
