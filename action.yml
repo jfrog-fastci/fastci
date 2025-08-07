@@ -25,14 +25,9 @@ inputs:
     required: true
 
   version:
-    description: "Version of the tracer binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/agent-{ARCH}}"
+    description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
     required: false
-    default: "v0.14.12"
-  
-  tracer_track_files:
-    description: "Track files via eBPF monitoring"
-    required: false
-    default: false
+    default: "milestone-1-remove-agent-from-ci-and-publish-c8b186f-82"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -69,15 +64,15 @@ inputs:
     required: false
     default: '15'
   
-  install_fash:
-    description: 'Install fash'
+  install_bashi:
+    description: 'Install bashi'
     required: false
-    default: false
+    default: true
   
-  fash_log_level:
-    description: 'Fash log level (trace, debug, info, warn, error, fatal, panic)'
+  bashi_log_level:
+    description: 'Bashi log level (trace, debug, info, warn, error, fatal, panic)'
     required: false
-    default: 'error'
+    default: 'debug'
 
 
 runs:
