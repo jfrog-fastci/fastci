@@ -34028,6 +34028,10 @@ async function downloadAsset(assetUrl, path, githubToken) {
         'Authorization': `Bearer ${githubToken}`,
         'Accept': 'application/octet-stream',
     };
+    // if path exists remove it and process the download
+    if (external_fs_.existsSync(path)) {
+        external_fs_.rmSync(path, { recursive: false, force: true });
+    }
     const tempPath = await tool_cache.downloadTool(assetUrl, path, undefined, headers);
     return tempPath;
 }
