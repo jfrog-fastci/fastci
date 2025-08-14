@@ -34170,7 +34170,7 @@ function getInputs() {
         fullRepoName: lib_core.getInput('full_repo_name'),
         jobNameForTestsOnly: lib_core.getInput('job_name_for_tests_only'),
         installBashi: lib_core.getInput('install_bashi', { required: false }),
-        bashiLogLevel: lib_core.getInput('bashi_log_level', { required: false }) || 'debug',
+        bashiLogLevel: lib_core.getInput('bashi_log_level', { required: false }) || 'error',
     };
 }
 async function runRestoreCache() {
