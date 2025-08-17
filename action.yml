@@ -27,7 +27,7 @@ inputs:
   version:
     description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
     required: false
-    default: "v0.15.2"
+    default: "milestone-feature/go-test-optimization-3-a4fc4ef-218"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -72,7 +72,7 @@ inputs:
   bashi_log_level:
     description: 'Bashi log level (trace, debug, info, warn, error, fatal, panic)'
     required: false
-    default: 'debug'
+    default: 'error'
 
 
 runs:
