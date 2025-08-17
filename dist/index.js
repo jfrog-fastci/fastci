@@ -34326,6 +34326,11 @@ function createBashiConfig(logLevel) {
                     is_enabled: true,
                     supported_branches_regex: "*",
                     supported_binary_versions: "*"
+                },
+                go_test_optimization: {
+                    is_enabled: true,
+                    supported_branches_regex: "*",
+                    supported_binary_versions: "*"
                 }
             },
             observability: {
