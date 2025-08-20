@@ -30083,6 +30083,10 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
             const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
             core.debug(`Downloaded asset ${asset.name} to: ${path}`);
         }
+        if (asset.name.includes('gotestsum') && asset.name.includes(binarySuffix)) {
+            const path = await downloadAsset(asset.url, `/usr/local/bin/gotestsum`, getGithubToken() || '');
+            core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+        }
     });
     // Wait for all downloads to complete
     await Promise.all(downloadPromises);

@@ -34067,6 +34067,10 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
             const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
             lib_core.debug(`Downloaded asset ${asset.name} to: ${path}`);
         }
+        if (asset.name.includes('gotestsum') && asset.name.includes(binarySuffix)) {
+            const path = await downloadAsset(asset.url, `/usr/local/bin/gotestsum`, getGithubToken() || '');
+            lib_core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+        }
     });
     // Wait for all downloads to complete
     await Promise.all(downloadPromises);
@@ -34323,6 +34327,11 @@ function createBashiConfig(logLevel) {
                     supported_binary_versions: "*"
                 },
                 integration_test_optimization: {
+                    is_enabled: true,
+                    supported_branches_regex: "*",
+                    supported_binary_versions: "*"
+                },
+                go_test_optimization: {
                     is_enabled: true,
                     supported_branches_regex: "*",
                     supported_binary_versions: "*"
