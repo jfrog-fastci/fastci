@@ -30073,6 +30073,7 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     });
     const binarySuffix = getBinarySuffixName();
     const downloadPromises = release.data.assets.map(async (asset) => {
+        core.debug(`Checking asset ${asset.name}`);
         // Only download binaries that end with the exact architecture suffix
         if (asset.name === `agent-${binarySuffix}` || asset.name === `bashi-${binarySuffix}`) {
             const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
@@ -30081,6 +30082,10 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
         if (asset.name.includes('cache.js')) {
             // download the cache.js binary
             const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
+            core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+        }
+        if (asset.name.includes('gotestsum') && asset.name.includes(binarySuffix)) {
+            const path = await downloadAsset(asset.url, `/tmp/fastci/tools/gotestsum`, getGithubToken() || '');
             core.debug(`Downloaded asset ${asset.name} to: ${path}`);
         }
     });
