@@ -27,7 +27,7 @@ inputs:
   version:
     description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
     required: false
-    default: "v0.16.1"
+    default: "milestone-main-0828212-303"
 
 
   job_name_for_tests_only:
