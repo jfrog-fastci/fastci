@@ -30095,7 +30095,7 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     // list the files in /tmp/fastci/tools
     const files = fs.readdirSync('/tmp/fastci/tools');
     core.debug(`Files in /tmp/fastci/tools: ${files}`);
-    assert(files.length === 2, 'Expected 2 files in /tmp/fastci/tools');
+    assert(files.length === 3, 'Expected 3 files in /tmp/fastci/tools');
     for (const file of files) {
         const path = `/tmp/fastci/tools/${file}`;
         await fs.promises.chmod(path, 0o755);
