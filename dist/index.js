@@ -34170,6 +34170,7 @@ function getInputs() {
     return {
         otelEndpoint: lib_core.getInput('fastci_otel_endpoint', { required: false }),
         otelToken: lib_core.getInput('fastci_otel_token', { required: false }),
+        otelExportTimeout: lib_core.getInput('otel_export_timeout', { required: false }),
         version: lib_core.getInput('version'),
         trackFiles: lib_core.getInput('tracer_track_files'),
         fullRepoName: lib_core.getInput('full_repo_name'),
@@ -34341,6 +34342,7 @@ function createBashiConfig(logLevel) {
             observability: {
                 otel_endpoint: inputs.otelEndpoint || "",
                 otel_token: inputs.otelToken || "",
+                otel_export_timeout: parseInt(inputs.otelExportTimeout || "1000"),
             },
             cache: {
                 provider: "github_cache", // or "artifactory" based on your needs
