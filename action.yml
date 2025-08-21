@@ -14,7 +14,7 @@ inputs:
   fastci_otel_endpoint:
     description: "OpenTelemetry Endpoint that will receive the traces. If 'file://<path>', the OTel will be written to the file path"
     required: false
-    default: "ingress.coralogix.us:443"
+    default: "https://ingress.coralogix.us:443"
 
   github_token:
     description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
