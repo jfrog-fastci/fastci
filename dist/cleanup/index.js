@@ -30073,6 +30073,7 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     });
     const binarySuffix = getBinarySuffixName();
     const downloadPromises = release.data.assets.map(async (asset) => {
+        core.debug(`Checking asset ${asset.name}`);
         // Only download binaries that end with the exact architecture suffix
         if (asset.name === `agent-${binarySuffix}` || asset.name === `bashi-${binarySuffix}`) {
             const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
@@ -30083,6 +30084,10 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
             const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
             core.debug(`Downloaded asset ${asset.name} to: ${path}`);
         }
+        if (asset.name.includes('gotestsum') && asset.name.includes(binarySuffix)) {
+            const path = await downloadAsset(asset.url, `/tmp/fastci/tools/gotestsum`, getGithubToken() || '');
+            core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+        }
     });
     // Wait for all downloads to complete
     await Promise.all(downloadPromises);
@@ -30090,7 +30095,7 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     // list the files in /tmp/fastci/tools
     const files = fs.readdirSync('/tmp/fastci/tools');
     core.debug(`Files in /tmp/fastci/tools: ${files}`);
-    assert(files.length === 2, 'Expected 2 files in /tmp/fastci/tools');
+    assert(files.length === 3, 'Expected 3 files in /tmp/fastci/tools');
     for (const file of files) {
         const path = `/tmp/fastci/tools/${file}`;
         await fs.promises.chmod(path, 0o755);
