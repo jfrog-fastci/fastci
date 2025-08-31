@@ -14,7 +14,7 @@ inputs:
   fastci_otel_endpoint:
     description: "OpenTelemetry Endpoint that will receive the traces. If 'file://<path>', the OTel will be written to the file path"
     required: false
-    default: "ingress.coralogix.us:443"
+    default: "https://ingress.coralogix.us:443"
 
   github_token:
     description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
@@ -27,7 +27,8 @@ inputs:
   version:
     description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
     required: false
-    default: "v0.15.5"
+    default: "v0.17.1"
+
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -63,6 +64,11 @@ inputs:
     description: 'Timeout for exporting OpenTelemetry data in seconds'
     required: false
     default: '15'
+  
+  otel_export_timeout:
+    description: 'OpenTelemetry export timeout in milliseconds for batch operations'
+    required: false
+    default: '1000'
   
   install_bashi:
     description: 'Install bashi'
