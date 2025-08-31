@@ -27,7 +27,8 @@ inputs:
   version:
     description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
     required: false
-    default: "v0.17.0"
+    default: "v0.17.1"
+
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
