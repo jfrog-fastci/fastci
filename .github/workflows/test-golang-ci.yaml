@@ -1,0 +1,127 @@
+name: 🚀 FastCI Enabled
+
+run-name: FastCI Enabled
+
+permissions:
+  actions: read
+  contents: read
+  
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Select the FastCI branch to use'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - main
+
+jobs:
+  performance-with-fastci:
+    runs-on: ubuntu-latest
+    name: performance-with-fastci
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+
+      - name: Record Start Time
+        run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Start FastCI Optimization
+        uses: jfrog-fastci/fastci@${{ inputs.branch }}
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          fastci_otel_token: ${{ secrets.COROLOGIX_OTEL_TOKEN }}
+          install_bashi: true
+          bashi_log_level: 'info'
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.3'
+          cache: false
+
+      - name: Run Performance Workload
+        id: workload
+        run: |
+          WORKLOAD_START=$(date +%s)
+
+          go mod download
+          go build -v .
+          
+          WORKLOAD_END=$(date +%s)
+          WORKLOAD_DURATION=$((WORKLOAD_END - WORKLOAD_START))
+          
+          echo "workload_duration=$WORKLOAD_DURATION" >> $GITHUB_OUTPUT
+
+      - name: Build Large Go Project (Kubernetes)
+        id: kubernetes_build
+        run: |
+          KUBERNETES_START=$(date +%s)
+          
+          git clone --depth 1 --branch v1.31.0 https://github.com/kubernetes/kubernetes.git /tmp/kubernetes
+          cd /tmp/kubernetes
+
+          echo "Building kubectl..."
+          go build -v ./cmd/kubectl
+          
+          echo "Building kubelet..."
+          go build -v ./cmd/kubelet
+          
+          echo "Building kube-apiserver..."
+          go build -v ./cmd/kube-apiserver
+          
+          echo "Building kube-controller-manager..."
+          go build -v ./cmd/kube-controller-manager
+          
+          echo "Building kube-scheduler..."
+          go build -v ./cmd/kube-scheduler
+          
+          KUBERNETES_END=$(date +%s)
+          KUBERNETES_DURATION=$((KUBERNETES_END - KUBERNETES_START))
+          
+          echo "kubernetes_duration=$KUBERNETES_DURATION" >> $GITHUB_OUTPUT
+          
+          cd /
+          rm -rf /tmp/kubernetes
+
+      - name: Record End Time and Calculate Duration
+        id: measure_duration
+        run: |
+          END_TIME=$(date +%s)
+          TOTAL_DURATION=$((END_TIME - START_TIME))
+          echo "total_duration=$TOTAL_DURATION" >> $GITHUB_OUTPUT
+          
+      - name: Create Summary
+        run: |
+          {
+            echo "## 🚀 FastCI Performance Demo - With FastCI"
+            echo ""
+            echo "### ⏱️ Performance Results"
+            echo "| Metric | Duration | Time (min:sec) |"
+            echo "|--------|----------|----------------|"
+            echo "| **Total Job Duration** | ${{ steps.measure_duration.outputs.total_duration }}s | $(printf '%d:%02d' $((${{ steps.measure_duration.outputs.total_duration }}/60)) $((${{ steps.measure_duration.outputs.total_duration }}%60))) |"
+            echo "| **Local Workload** | ${{ steps.workload.outputs.workload_duration }}s | $(printf '%d:%02d' $((${{ steps.workload.outputs.workload_duration }}/60)) $((${{ steps.workload.outputs.workload_duration }}%60))) |"
+            echo "| **Kubernetes Build** | ${{ steps.kubernetes_build.outputs.kubernetes_duration }}s | $(printf '%d:%02d' $((${{ steps.kubernetes_build.outputs.kubernetes_duration }}/60)) $((${{ steps.kubernetes_build.outputs.kubernetes_duration }}%60))) |"
+            echo ""
+            echo "### 🚀 FastCI Status"
+            echo "- **Enabled**: ✅ YES"
+            echo "- **Cache Optimization**: Active"
+            echo ""
+            echo "### 💡 Key Benefits"
+            echo "- Automatic caching of Go build artifacts"
+            echo "- Significantly faster subsequent builds"
+            echo "- No configuration changes needed to your code"
+            echo ""
+            echo "### 📊 What's Being Cached"
+            echo "- Go module downloads"
+            echo "- Go build cache"
+            echo "- Compiled object files"
+            echo ""
+            echo "---"
+            echo "🚀 **FastCI** - Accelerate your CI/CD pipeline with intelligent caching!"
+          } >> $GITHUB_STEP_SUMMARY 
