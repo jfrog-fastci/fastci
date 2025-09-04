@@ -1,4 +1,4 @@
-name: 🚀 FastCI Enabled
+name: Golang CI with FastCI
 
 run-name: FastCI Enabled
 
@@ -55,20 +55,7 @@ jobs:
         with:
           go-version: '1.24.3'
           cache: false
-
-      - name: Run Performance Workload
-        id: workload
-        run: |
-          WORKLOAD_START=$(date +%s)
-
-          go mod download
-          go build -v .
           
-          WORKLOAD_END=$(date +%s)
-          WORKLOAD_DURATION=$((WORKLOAD_END - WORKLOAD_START))
-          
-          echo "workload_duration=$WORKLOAD_DURATION" >> $GITHUB_OUTPUT
-
       - name: Build Large Go Project (Kubernetes)
         id: kubernetes_build
         run: |
