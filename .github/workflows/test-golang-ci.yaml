@@ -32,12 +32,23 @@ jobs:
         run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
 
       - name: Start FastCI Optimization
-        uses: jfrog-fastci/fastci@${{ inputs.branch }}
+        if: inputs.branch == 'dev'
+        uses: jfrog-fastci/fastci@dev
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           fastci_otel_token: ${{ secrets.COROLOGIX_OTEL_TOKEN }}
           install_bashi: true
           bashi_log_level: 'info'
+
+      - name: Start FastCI Optimization
+        if: inputs.branch == 'main'
+        uses: jfrog-fastci/fastci@main
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          fastci_otel_token: ${{ secrets.COROLOGIX_OTEL_TOKEN }}
+          install_bashi: true
+          bashi_log_level: 'info'
+          
 
       - name: Set up Go
         uses: actions/setup-go@v5
