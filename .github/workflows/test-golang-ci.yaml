@@ -64,6 +64,8 @@ jobs:
           git clone --depth 1 --branch v1.31.0 https://github.com/kubernetes/kubernetes.git /tmp/kubernetes
           cd /tmp/kubernetes
 
+          go test ./...
+
           echo "Building kubectl..."
           go build -v ./cmd/kubectl
           
