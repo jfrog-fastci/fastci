@@ -48,6 +48,7 @@ jobs:
           fastci_otel_token: ${{ secrets.COROLOGIX_OTEL_TOKEN }}
           install_bashi: true
           bashi_log_level: 'info'
+          enabled_optimizations: 'go_test_junit_optimization'
           
 
       - name: Set up Go
