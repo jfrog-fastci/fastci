@@ -17,6 +17,7 @@ on:
         options:
           - dev
           - main
+          - disabled
 
 jobs:
   performance-with-fastci:
