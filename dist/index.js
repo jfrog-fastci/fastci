@@ -34317,7 +34317,12 @@ function createOptimizationConfig(enabledOptimizations) {
             supported_branches_regex: "*",
             supported_binary_versions: "*"
         },
-        go_test_optimization: {
+        go_test_junit_optimization: {
+            is_enabled: false,
+            supported_branches_regex: "*",
+            supported_binary_versions: "*"
+        },
+        go_test_cache_optimization: {
             is_enabled: false,
             supported_branches_regex: "*",
             supported_binary_versions: "*"
