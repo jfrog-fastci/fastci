@@ -68,7 +68,7 @@ jobs:
           cd /tmp/kubernetes
 
           go test ./...
-
+          
           echo "Building kubectl..."
           go build -v ./cmd/kubectl
           
@@ -128,3 +128,4 @@ jobs:
             echo "---"
             echo "🚀 **FastCI** - Accelerate your CI/CD pipeline with intelligent caching!"
           } >> $GITHUB_STEP_SUMMARY 
+
