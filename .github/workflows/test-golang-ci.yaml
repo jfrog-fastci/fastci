@@ -67,6 +67,8 @@ jobs:
           git clone --depth 1 --branch v1.31.0 https://github.com/kubernetes/kubernetes.git /tmp/kubernetes
           cd /tmp/kubernetes
 
+          go test ./...
+          
           echo "Building kubectl..."
           go build -v ./cmd/kubectl
           
@@ -97,3 +99,33 @@ jobs:
           TOTAL_DURATION=$((END_TIME - START_TIME))
           echo "total_duration=$TOTAL_DURATION" >> $GITHUB_OUTPUT
           
+      - name: Create Summary
+        run: |
+          {
+            echo "## 🚀 FastCI Performance Demo - With FastCI"
+            echo ""
+            echo "### ⏱️ Performance Results"
+            echo "| Metric | Duration | Time (min:sec) |"
+            echo "|--------|----------|----------------|"
+            echo "| **Total Job Duration** | ${{ steps.measure_duration.outputs.total_duration }}s | $(printf '%d:%02d' $((${{ steps.measure_duration.outputs.total_duration }}/60)) $((${{ steps.measure_duration.outputs.total_duration }}%60))) |"
+            echo "| **Local Workload** | ${{ steps.workload.outputs.workload_duration }}s | $(printf '%d:%02d' $((${{ steps.workload.outputs.workload_duration }}/60)) $((${{ steps.workload.outputs.workload_duration }}%60))) |"
+            echo "| **Kubernetes Build** | ${{ steps.kubernetes_build.outputs.kubernetes_duration }}s | $(printf '%d:%02d' $((${{ steps.kubernetes_build.outputs.kubernetes_duration }}/60)) $((${{ steps.kubernetes_build.outputs.kubernetes_duration }}%60))) |"
+            echo ""
+            echo "### 🚀 FastCI Status"
+            echo "- **Enabled**: ✅ YES"
+            echo "- **Cache Optimization**: Active"
+            echo ""
+            echo "### 💡 Key Benefits"
+            echo "- Automatic caching of Go build artifacts"
+            echo "- Significantly faster subsequent builds"
+            echo "- No configuration changes needed to your code"
+            echo ""
+            echo "### 📊 What's Being Cached"
+            echo "- Go module downloads"
+            echo "- Go build cache"
+            echo "- Compiled object files"
+            echo ""
+            echo "---"
+            echo "🚀 **FastCI** - Accelerate your CI/CD pipeline with intelligent caching!"
+          } >> $GITHUB_STEP_SUMMARY 
+
