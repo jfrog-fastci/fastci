@@ -7,8 +7,6 @@ permissions:
   contents: read
   
 on:
-  push:
-    branches: [ main, dev, beta ]
   workflow_dispatch:
     inputs:
       branch:
