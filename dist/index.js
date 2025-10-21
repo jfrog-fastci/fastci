@@ -34161,9 +34161,35 @@ async function commandExists(command) {
         return false;
     }
 }
-// Check if sudo command exists
+// Check if sudo can actually be used (exists, NNP not set, and non-interactive works)
 async function sudoExists() {
-    return await commandExists('sudo');
+    // 1) sudo binary present
+    if (!(await commandExists('sudo'))) {
+        return false;
+    }
+    // 2) Kernel "no new privileges" blocks elevation inside some containers
+    try {
+        const status = external_fs_.readFileSync('/proc/self/status', 'utf8');
+        if (/^NoNewPrivs:\s+1/m.test(status)) {
+            lib_core.info('NNP detected (NoNewPrivs=1) – disabling sudo usage');
+            return false;
+        }
+    }
+    catch (_) {
+        // ignore – best effort
+    }
+    // 3) Ensure sudo works non-interactively (no password prompt in CI)
+    try {
+        const { exitCode } = await exec.getExecOutput('sudo', ['-n', 'true'], { silent: true, ignoreReturnCode: true });
+        if (exitCode !== 0) {
+            lib_core.info('sudo -n is not permitted – disabling sudo usage');
+            return false;
+        }
+    }
+    catch (_) {
+        return false;
+    }
+    return true;
 }
 // Helper to fetch all required inputs
 function getInputs() {
@@ -34177,6 +34203,7 @@ function getInputs() {
         jobNameForTestsOnly: lib_core.getInput('job_name_for_tests_only'),
         installBashi: lib_core.getInput('install_bashi', { required: false }),
         bashiLogLevel: lib_core.getInput('bashi_log_level', { required: false }) || 'error',
+        enabledOptimizations: lib_core.getInput('enabled_optimizations', { required: false }) || '',
     };
 }
 async function runRestoreCache() {
@@ -34292,7 +34319,67 @@ async function restoreShellFromBackup(shellPath) {
         failOrWarn(`Failed to restore original shell: ${restoreError}`);
     }
 }
-function createBashiConfig(logLevel) {
+// Helper function to create optimization configuration based on enabled optimizations
+function createOptimizationConfig(enabledOptimizations) {
+    // Parse the enabled optimizations string into an array
+    const enabledList = enabledOptimizations
+        .split(',')
+        .map(opt => opt.trim())
+        .filter(opt => opt.length > 0);
+    // Define all available optimizations with their default configuration
+    const allOptimizations = {
+        go_build_optimization: {
+            is_enabled: false,
+            supported_branches_regex: "*",
+            supported_binary_versions: "*"
+        },
+        make_optimization: {
+            is_enabled: false,
+            supported_branches_regex: "*",
+            supported_binary_versions: "*"
+        },
+        integration_test_optimization: {
+            is_enabled: false,
+            supported_branches_regex: "*",
+            supported_binary_versions: "*"
+        },
+        go_test_junit_optimization: {
+            is_enabled: false,
+            supported_branches_regex: "*",
+            supported_binary_versions: "*"
+        },
+        go_test_cache_optimization: {
+            is_enabled: false,
+            supported_branches_regex: "*",
+            supported_binary_versions: "*"
+        },
+        docker_buildx_trace_optimization: {
+            is_enabled: false,
+            supported_branches_regex: "*",
+            supported_binary_versions: "*"
+        }
+    };
+    // Enable only the specified optimizations
+    enabledList.forEach(optimization => {
+        if (optimization in allOptimizations) {
+            allOptimizations[optimization].is_enabled = true;
+        }
+        else {
+            lib_core.warning(`Unknown optimization: ${optimization}. Available optimizations: ${Object.keys(allOptimizations).join(', ')}`);
+        }
+    });
+    // If no optimizations are specified, enable all by default (backward compatibility)
+    if (enabledList.length === 0) {
+        Object.keys(allOptimizations).forEach(key => {
+            allOptimizations[key].is_enabled = true;
+        });
+    }
+    return {
+        cache_dir: "/tmp/fastci/cache/upload",
+        ...allOptimizations
+    };
+}
+function createBashiConfig(logLevel, enabledOptimizations = '') {
     // Get inputs
     const inputs = getInputs();
     // Extract organization and repository name from GITHUB_REPOSITORY (format: "owner/repo")
@@ -34316,29 +34403,7 @@ function createBashiConfig(logLevel) {
                 }
             },
             log_level: logLevel,
-            optimizations: {
-                cache_dir: "/tmp/fastci/cache/upload",
-                go_build_optimization: {
-                    is_enabled: true,
-                    supported_branches_regex: "*",
-                    supported_binary_versions: "*"
-                },
-                make_optimization: {
-                    is_enabled: true,
-                    supported_branches_regex: "*",
-                    supported_binary_versions: "*"
-                },
-                integration_test_optimization: {
-                    is_enabled: true,
-                    supported_branches_regex: "*",
-                    supported_binary_versions: "*"
-                },
-                go_test_optimization: {
-                    is_enabled: true,
-                    supported_branches_regex: "*",
-                    supported_binary_versions: "*"
-                }
-            },
+            optimizations: createOptimizationConfig(enabledOptimizations),
             observability: {
                 otel_endpoint: inputs.otelEndpoint || "",
                 otel_token: inputs.otelToken || "",
@@ -34355,6 +34420,8 @@ function createBashiConfig(logLevel) {
             repository: {
                 organization: organization || "",
                 name: repositoryName || "",
+                vcs_ref_head_name: process.env.GITHUB_HEAD_REF || "",
+                vcs_ref_head_revision: process.env.GITHUB_SHA || "",
                 sha: process.env.GITHUB_SHA || "",
                 ref: githubRef,
                 branch: branchName,
@@ -34362,6 +34429,7 @@ function createBashiConfig(logLevel) {
             },
             ci_provider: "github",
             execution_info: {
+                step_id: process.env.GITHUB_ACTION || "",
                 run_attempt: parseInt(process.env.GITHUB_RUN_ATTEMPT || "1"),
                 job_id: process.env.GITHUB_JOB || "",
                 run_id: process.env.GITHUB_RUN_ID || "",
@@ -34393,6 +34461,36 @@ function shouldReplaceShell(shellPath) {
 }
 async function replaceShellWithBashi(bashiBinPath, shellPath) {
     lib_core.info(`Replacing shell at ${shellPath} with bashi`);
+    // If sudo cannot be used (e.g., due to NNP), skip when not writable
+    const canUseSudo = await sudoExists();
+    if (!canUseSudo) {
+        try {
+            external_fs_.accessSync(shellPath, external_fs_.constants.W_OK);
+        }
+        catch {
+            // Fallback: prepend PATH with symlinks to bashi
+            const binDir = '/tmp/fastci/bin';
+            try {
+                external_fs_.mkdirSync(binDir, { recursive: true });
+            }
+            catch { }
+            for (const name of ['bash', 'sh']) {
+                const link = `${binDir}/${name}`;
+                try {
+                    if (external_fs_.existsSync(link))
+                        external_fs_.unlinkSync(link);
+                }
+                catch { }
+                try {
+                    external_fs_.symlinkSync(bashiBinPath, link);
+                }
+                catch { }
+            }
+            lib_core.addPath(binDir);
+            lib_core.info(`Using PATH fallback at ${binDir} for bash/sh (NNP detected)`);
+            return;
+        }
+    }
     await backupShell(shellPath);
     await removeOriginalShell(shellPath);
     await copyBashiToShellPath(bashiBinPath, shellPath);
@@ -34428,7 +34526,7 @@ async function replaceMultipleShellsWithBashi(bashiBinPath) {
         lib_core.info(`Successfully replaced ${replacedPaths.length} shell(s): ${replacedPaths.join(', ')}`);
     }
 }
-async function installBashi(bashiLogLevel = 'error') {
+async function installBashi(bashiLogLevel = 'error', enabledOptimizations = '') {
     lib_core.debug(`Installing bashi`);
     const bashiBinPath = getBashiBinaryPath();
     lib_core.info(`Looking for bashi binary at: ${bashiBinPath}`);
@@ -34449,7 +34547,7 @@ async function installBashi(bashiLogLevel = 'error') {
         // Check sudo availability early for logging
         const hasSudo = await sudoExists();
         lib_core.info(`Environment check: sudo ${hasSudo ? 'available' : 'not available'} - will ${hasSudo ? 'use sudo' : 'operate without sudo'}`);
-        createBashiConfig(bashiLogLevel);
+        createBashiConfig(bashiLogLevel, enabledOptimizations);
         lib_core.info('Starting bash replacement...');
         await replaceMultipleShellsWithBashi(bashiBinPath);
     }
@@ -34472,7 +34570,7 @@ async function installBashi(bashiLogLevel = 'error') {
     }
 }
 async function performSetup() {
-    const { version, fullRepoName, jobNameForTestsOnly, installBashi: installBashiInput, bashiLogLevel } = getInputs();
+    const { version, fullRepoName, jobNameForTestsOnly, installBashi: installBashiInput, bashiLogLevel, enabledOptimizations } = getInputs();
     // Override job name for test scenarios if provided
     if (jobNameForTestsOnly && jobNameForTestsOnly.trim() !== '') {
         process.env.GITHUB_JOB = jobNameForTestsOnly;
@@ -34485,7 +34583,7 @@ async function performSetup() {
     if (installBashiInput === 'true') {
         // Set the BASHI_LOG_LEVEL environment variable
         lib_core.exportVariable('BASHI_LOG_LEVEL', bashiLogLevel);
-        await installBashi(bashiLogLevel);
+        await installBashi(bashiLogLevel, enabledOptimizations);
     }
     // run bashi restore-cache
     await runRestoreCache();
