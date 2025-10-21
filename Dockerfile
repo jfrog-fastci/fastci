@@ -18,3 +18,4 @@ RUN npm run build
 
 # Default command
 CMD ["node", "dist/index.js"]
+
