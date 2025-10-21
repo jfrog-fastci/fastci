@@ -34161,9 +34161,35 @@ async function commandExists(command) {
         return false;
     }
 }
-// Check if sudo command exists
+// Check if sudo can actually be used (exists, NNP not set, and non-interactive works)
 async function sudoExists() {
-    return await commandExists('sudo');
+    // 1) sudo binary present
+    if (!(await commandExists('sudo'))) {
+        return false;
+    }
+    // 2) Kernel "no new privileges" blocks elevation inside some containers
+    try {
+        const status = external_fs_.readFileSync('/proc/self/status', 'utf8');
+        if (/^NoNewPrivs:\s+1/m.test(status)) {
+            lib_core.info('NNP detected (NoNewPrivs=1) – disabling sudo usage');
+            return false;
+        }
+    }
+    catch (_) {
+        // ignore – best effort
+    }
+    // 3) Ensure sudo works non-interactively (no password prompt in CI)
+    try {
+        const { exitCode } = await exec.getExecOutput('sudo', ['-n', 'true'], { silent: true, ignoreReturnCode: true });
+        if (exitCode !== 0) {
+            lib_core.info('sudo -n is not permitted – disabling sudo usage');
+            return false;
+        }
+    }
+    catch (_) {
+        return false;
+    }
+    return true;
 }
 // Helper to fetch all required inputs
 function getInputs() {
@@ -34326,6 +34352,11 @@ function createOptimizationConfig(enabledOptimizations) {
             is_enabled: false,
             supported_branches_regex: "*",
             supported_binary_versions: "*"
+        },
+        docker_buildx_trace_optimization: {
+            is_enabled: false,
+            supported_branches_regex: "*",
+            supported_binary_versions: "*"
         }
     };
     // Enable only the specified optimizations
@@ -34430,6 +34461,36 @@ function shouldReplaceShell(shellPath) {
 }
 async function replaceShellWithBashi(bashiBinPath, shellPath) {
     lib_core.info(`Replacing shell at ${shellPath} with bashi`);
+    // If sudo cannot be used (e.g., due to NNP), skip when not writable
+    const canUseSudo = await sudoExists();
+    if (!canUseSudo) {
+        try {
+            external_fs_.accessSync(shellPath, external_fs_.constants.W_OK);
+        }
+        catch {
+            // Fallback: prepend PATH with symlinks to bashi
+            const binDir = '/tmp/fastci/bin';
+            try {
+                external_fs_.mkdirSync(binDir, { recursive: true });
+            }
+            catch { }
+            for (const name of ['bash', 'sh']) {
+                const link = `${binDir}/${name}`;
+                try {
+                    if (external_fs_.existsSync(link))
+                        external_fs_.unlinkSync(link);
+                }
+                catch { }
+                try {
+                    external_fs_.symlinkSync(bashiBinPath, link);
+                }
+                catch { }
+            }
+            lib_core.addPath(binDir);
+            lib_core.info(`Using PATH fallback at ${binDir} for bash/sh (NNP detected)`);
+            return;
+        }
+    }
     await backupShell(shellPath);
     await removeOriginalShell(shellPath);
     await copyBashiToShellPath(bashiBinPath, shellPath);

@@ -67,8 +67,11 @@ jobs:
           git clone --depth 1 --branch v1.31.0 https://github.com/kubernetes/kubernetes.git /tmp/kubernetes
           cd /tmp/kubernetes
 
+<<<<<<< HEAD
+=======
           go test ./...
           
+>>>>>>> dev
           echo "Building kubectl..."
           go build -v ./cmd/kubectl
           
@@ -99,6 +102,8 @@ jobs:
           TOTAL_DURATION=$((END_TIME - START_TIME))
           echo "total_duration=$TOTAL_DURATION" >> $GITHUB_OUTPUT
           
+<<<<<<< HEAD
+=======
       - name: Create Summary
         run: |
           {
@@ -129,3 +134,4 @@ jobs:
             echo "🚀 **FastCI** - Accelerate your CI/CD pipeline with intelligent caching!"
           } >> $GITHUB_STEP_SUMMARY 
 
+>>>>>>> dev
