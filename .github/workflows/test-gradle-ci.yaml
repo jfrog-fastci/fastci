@@ -1,0 +1,88 @@
+name: Gradle CI with FastCI
+
+run-name: FastCI Gradle Test
+
+permissions:
+  actions: read
+  contents: read
+  
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Select the FastCI branch to use'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - main
+          - disabled
+
+jobs:
+  performance-with-fastci:
+    runs-on: ubuntu-latest
+    name: performance-with-fastci
+    steps:
+      - name: Checkout Spring Boot Repository
+        uses: actions/checkout@v4
+        with:
+          repository: spring-projects/spring-boot
+          ref: bf8e0c45a8d84dc473404f033e07858aa3d0d52b
+          fetch-depth: 10
+
+      - name: Record Start Time
+        run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Start FastCI Optimization
+        if: inputs.branch == 'dev'
+        uses: jfrog-fastci/fastci@dev
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+          install_bashi: true
+          bashi_log_level: 'debug'
+
+
+      - name: Start FastCI Optimization
+        if: inputs.branch == 'main'
+        uses: jfrog-fastci/fastci@main
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+          install_bashi: true
+          bashi_log_level: 'debug'
+          
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+          
+      - name: Build Spring Boot with Gradle
+        id: gradle_build
+        run: |
+          GRADLE_START=$(date +%s)
+          
+          echo "Building Spring Boot with Gradle..."
+          ./gradlew build -x test --no-daemon --stacktrace
+          
+          GRADLE_END=$(date +%s)
+          GRADLE_DURATION=$((GRADLE_END - GRADLE_START))
+          
+          echo "gradle_duration=$GRADLE_DURATION" >> $GITHUB_OUTPUT
+          echo "Gradle build completed in $GRADLE_DURATION seconds"
+
+      - name: Record End Time and Calculate Duration
+        id: measure_duration
+        run: |
+          END_TIME=$(date +%s)
+          TOTAL_DURATION=$((END_TIME - START_TIME))
+          echo "total_duration=$TOTAL_DURATION" >> $GITHUB_OUTPUT
+          echo "Total workflow duration: $TOTAL_DURATION seconds"
+          
+
