@@ -37,7 +37,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-          enabled_optimizations: 'go_test_junit_optimization,docker_buildx_trace_optimization'
+          enabled_optimizations: 'go_test_junit_optimization'
 
       - name: Start FastCI Optimization
         if: inputs.branch == 'main'
@@ -47,7 +47,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-          enabled_optimizations: 'go_test_junit_optimization,docker_buildx_trace_optimization'
+          enabled_optimizations: 'go_test_junit_optimization'
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -77,7 +77,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-          enabled_optimizations: 'go_test_junit_optimization,docker_buildx_trace_optimization'
+          enabled_optimizations: 'go_test_junit_optimization'
 
       - name: Start FastCI Optimization
         if: inputs.branch == 'main'
@@ -87,7 +87,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-          enabled_optimizations: 'go_test_junit_optimization,docker_buildx_trace_optimization'
+          enabled_optimizations: 'go_test_junit_optimization'
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -118,7 +118,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-          enabled_optimizations: 'go_test_junit_optimization,docker_buildx_trace_optimization'
+          enabled_optimizations: 'go_test_junit_optimization'
 
       - name: Start FastCI Optimization
         if: inputs.branch == 'main'
@@ -128,7 +128,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-          enabled_optimizations: 'go_test_junit_optimization,docker_buildx_trace_optimization'
+          enabled_optimizations: 'go_test_junit_optimization'
       
       - name: Build with Native Docker
         env:
