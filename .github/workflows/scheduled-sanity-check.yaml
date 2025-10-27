@@ -1,0 +1,57 @@
+name: Scheduled Sanity Check
+
+permissions:
+  actions: write
+  contents: write
+  
+on:
+  schedule:
+    # Run at 00:00 and 12:00 UTC every day
+    - cron: '0 0,12 * * *'
+
+jobs:
+  trigger-golang-ci-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      
+    - name: Trigger and wait for Golang CI Test
+      run: |
+        echo "Triggering Golang CI workflow..."
+        gh workflow run test-golang-ci.yaml -f branch=main
+        
+        echo "Waiting for workflow to start..."
+        sleep 15
+        
+        echo "Getting latest run ID..."
+        run_id=$(gh run list --workflow=test-golang-ci.yaml --limit 1 --json databaseId --jq '.[0].databaseId')
+        
+        echo "Waiting for run $run_id to complete..."
+        gh run watch $run_id --exit-status
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  trigger-docker-buildx-ci-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Trigger and wait for Docker Buildx CI Test
+      run: |
+        echo "Triggering Docker Buildx CI workflow..."
+        gh workflow run test-docker-buildx-ci.yaml -f branch=main
+        
+        echo "Waiting for workflow to start..."
+        sleep 15
+        
+        echo "Getting latest run ID..."
+        run_id=$(gh run list --workflow=test-docker-buildx-ci.yaml --limit 1 --json databaseId --jq '.[0].databaseId')
+        
+        echo "Waiting for run $run_id to complete..."
+        gh run watch $run_id --exit-status
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+  
