@@ -8,14 +8,9 @@ on:
   workflow_dispatch:
   push: 
     branches: [dev]
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
 
 jobs:
   trigger-golang-ci-test:
-    # Only run when PR is from dev branch to main
-    if: github.head_ref == 'dev'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -38,8 +33,6 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   trigger-docker-buildx-ci-test:
-    # Only run when PR is from dev branch to main
-    if: github.head_ref == 'dev'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
