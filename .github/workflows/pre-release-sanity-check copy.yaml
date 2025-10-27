@@ -53,5 +53,27 @@ jobs:
         gh run watch $run_id --exit-status
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  trigger-gradle-ci-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Trigger and wait for Gradle CI Test
+      run: |
+        echo "Triggering Gradle CI workflow..."
+        gh workflow run test-gradle-ci.yaml -f branch=dev
+        
+        echo "Waiting for workflow to start..."
+        sleep 15
+        
+        echo "Getting latest run ID..."
+        run_id=$(gh run list --workflow=test-gradle-ci.yaml --limit 1 --json databaseId --jq '.[0].databaseId')
+        
+        echo "Waiting for run $run_id to complete..."
+        gh run watch $run_id --exit-status
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
   
