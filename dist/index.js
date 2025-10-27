@@ -34143,7 +34143,16 @@ async function runWithTimeout(operation, timeoutMs, operationName, options) {
     }
 }
 
+;// CONCATENATED MODULE: ./src/types/constants.ts
+const FASTCI_TEMP_DIR = '/tmp/fastci';
+const PROCESS_TREES_PATH = `${FASTCI_TEMP_DIR}/process_trees.json`;
+var CIProvider;
+(function (CIProvider) {
+    CIProvider["GITHUB"] = "github";
+})(CIProvider || (CIProvider = {}));
+
 ;// CONCATENATED MODULE: ./src/index.ts
+
 
 
 
@@ -34387,11 +34396,12 @@ function createBashiConfig(logLevel, enabledOptimizations = '') {
     const [organization, repositoryName] = githubRepository.split('/');
     // Get GitHub token
     const githubToken = getGithubToken() || '';
+    let branchName = process.env.GITHUB_REF_NAME || '';
     // Extract branch name from GITHUB_REF (format: "refs/heads/branch-name" or "refs/pull/123/merge")
     const githubRef = process.env.GITHUB_REF || '';
-    let branchName = process.env.GITHUB_REF_NAME || '';
-    // For pull requests, use the head branch
+    let isPullRequest = false;
     if (githubRef.startsWith('refs/pull/')) {
+        isPullRequest = true;
         branchName = process.env.GITHUB_HEAD_REF || branchName;
     }
     const runtimeContext = {
@@ -34405,9 +34415,12 @@ function createBashiConfig(logLevel, enabledOptimizations = '') {
             log_level: logLevel,
             optimizations: createOptimizationConfig(enabledOptimizations),
             observability: {
-                otel_endpoint: inputs.otelEndpoint || "",
-                otel_token: inputs.otelToken || "",
-                otel_export_timeout: parseInt(inputs.otelExportTimeout || "1000"),
+                otel: {
+                    otel_endpoint: inputs.otelEndpoint || "",
+                    otel_token: inputs.otelToken || "",
+                    otel_export_timeout: parseInt(inputs.otelExportTimeout || "1000"),
+                },
+                system_monitoring_enabled: true,
             },
             cache: {
                 provider: "github_cache", // or "artifactory" based on your needs
@@ -34420,20 +34433,34 @@ function createBashiConfig(logLevel, enabledOptimizations = '') {
             repository: {
                 organization: organization || "",
                 name: repositoryName || "",
-                vcs_ref_head_name: process.env.GITHUB_HEAD_REF || "",
                 vcs_ref_head_revision: process.env.GITHUB_SHA || "",
-                sha: process.env.GITHUB_SHA || "",
                 ref: githubRef,
                 branch: branchName,
-                actor: process.env.GITHUB_ACTOR || ""
             },
-            ci_provider: "github",
+            ci_provider: CIProvider.GITHUB,
             execution_info: {
-                step_id: process.env.GITHUB_ACTION || "",
-                run_attempt: parseInt(process.env.GITHUB_RUN_ATTEMPT || "1"),
-                job_id: process.env.GITHUB_JOB || "",
-                run_id: process.env.GITHUB_RUN_ID || "",
-                workflow_id: process.env.GITHUB_WORKFLOW || ""
+                runner_info: {
+                    runner_arch: process.env.RUNNER_ARCH || "",
+                    runner_env: process.env.RUNNER_ENVIRONMENT || "",
+                    runner_os: process.env.RUNNER_OS || "",
+                },
+                workflow_info: {
+                    trigger_event_name: process.env.GITHUB_EVENT_NAME || "",
+                    workflow_id: process.env.GITHUB_WORKFLOW || "",
+                    workflow_initiator: process.env.GITHUB_ACTOR || "",
+                    workflow_current_actor: process.env.GITHUB_TRIGGERING_ACTOR || "",
+                    is_pull_request: isPullRequest,
+                    run_info: {
+                        run_id: process.env.GITHUB_RUN_ID || "",
+                        run_attempt: parseInt(process.env.GITHUB_RUN_ATTEMPT || "1"),
+                        job_id: process.env.GITHUB_JOB || "",
+                        is_debug_run: parseInt(process.env.RUNNER_DEBUG || ""),
+                    },
+                    action_info: {
+                        is_github_action: process.env.GITHUB_ACTIONS || "",
+                        github_action_repository: process.env.GITHUB_ACTION_REPOSITORY || "",
+                    },
+                },
             }
         }
     };
