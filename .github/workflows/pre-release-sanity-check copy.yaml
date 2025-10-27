@@ -6,6 +6,8 @@ permissions:
   
 on:
   workflow_dispatch:
+  push: 
+    branches: [dev]
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
