@@ -39,7 +39,7 @@ jobs:
         uses: jfrog-fastci/fastci@dev
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
-          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+          fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
 
@@ -49,7 +49,7 @@ jobs:
         uses: jfrog-fastci/fastci@main
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
-          fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+          fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
           
