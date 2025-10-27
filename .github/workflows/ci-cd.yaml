@@ -1,87 +1,61 @@
 name: CI/CD Workflow
 
+permissions:
+  actions: write
+  contents: write
+  
 on:
-  workflow_dispatch:
-  push:
-    branches: [ main, dev, beta ]
   pull_request:
-    branches: [dev, beta, main ]
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 jobs:
-  test-fastci-action-in-container:
+  trigger-golang-ci-test:
+    # Only run when PR is from dev branch to main
+    if: github.head_ref == 'dev'
     runs-on: ubuntu-latest
-    container:
-      image: golang:1.24.0
-      options: >-
-        --privileged
-        --cap-add=SYS_RESOURCE
-        --cap-add=SYS_ADMIN
-        --mount type=bind,source=/sys/kernel/debug,target=/sys/kernel/debug
-        --mount type=bind,source=/sys/kernel/tracing,target=/sys/kernel/tracing
-        --mount type=bind,source=/proc,target=/proc
     steps:
-    - name: Print env
-      run: env
-
-    - name: Mount debugfs and tracefs
-      run: |
-        mountpoint -q /sys/kernel/debug || mount -t debugfs none /sys/kernel/debug
-        mountpoint -q /sys/kernel/tracing || mount -t tracefs none /sys/kernel/tracing
-      shell: bash
     - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Run FastCI Action
-      uses: ./
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
+      
+    - name: Trigger and wait for Golang CI Test
+      run: |
+        echo "Triggering Golang CI workflow..."
+        gh workflow run test-golang-ci.yaml -f branch=dev
+        
+        echo "Waiting for workflow to start..."
+        sleep 15
+        
+        echo "Getting latest run ID..."
+        run_id=$(gh run list --workflow=test-golang-ci.yaml --limit 1 --json databaseId --jq '.[0].databaseId')
+        
+        echo "Waiting for run $run_id to complete..."
+        gh run watch $run_id --exit-status
       env:
-        GITHUB_REPOSITORY: jfrog-fastci/fastci
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'npm'
-   
-    - name: Run test
-      run: echo "test"
-
-  test-fastci-action:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        arch: [amd, arm]
-    runs-on: ${{ matrix.os }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
+  trigger-docker-buildx-ci-test:
+    # Only run when PR is from dev branch to main
+    if: github.head_ref == 'dev'
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    - name: Run FastCI Action
-      uses: ./
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        fastci_otel_token: ${{ secrets.FASTCI_OTEL_TOKEN }}
-    - name: Install dotnet
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: "6.x"
-    - name: Check agent process
-      if: matrix.os == 'ubuntu-latest'
+    
+    - name: Trigger and wait for Docker Buildx CI Test
       run: |
-        if pgrep -f agent; then
-          echo "agent process found."
-        else
-          echo "agent process NOT found!" && exit 1
-        fi
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
-        cache: 'npm'
-    - name: Run test
-      run: echo "test"
+        echo "Triggering Docker Buildx CI workflow..."
+        gh workflow run test-docker-buildx-ci.yaml -f branch=dev
+        
+        echo "Waiting for workflow to start..."
+        sleep 15
+        
+        echo "Getting latest run ID..."
+        run_id=$(gh run list --workflow=test-docker-buildx-ci.yaml --limit 1 --json databaseId --jq '.[0].databaseId')
+        
+        echo "Waiting for run $run_id to complete..."
+        gh run watch $run_id --exit-status
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
   
