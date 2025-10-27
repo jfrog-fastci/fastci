@@ -1,18 +1,16 @@
-name: CI/CD Workflow
+name: Scheduled Sanity Check
 
 permissions:
   actions: write
   contents: write
   
 on:
-  pull_request:
-    branches: [main]
-    types: [opened, synchronize, reopened]
+  schedule:
+    # Run at 00:00 and 12:00 UTC every day
+    - cron: '0 0,12 * * *'
 
 jobs:
   trigger-golang-ci-test:
-    # Only run when PR is from dev branch to main
-    if: github.head_ref == 'dev'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -21,7 +19,7 @@ jobs:
     - name: Trigger and wait for Golang CI Test
       run: |
         echo "Triggering Golang CI workflow..."
-        gh workflow run test-golang-ci.yaml -f branch=dev
+        gh workflow run test-golang-ci.yaml -f branch=main
         
         echo "Waiting for workflow to start..."
         sleep 15
@@ -35,8 +33,6 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   
   trigger-docker-buildx-ci-test:
-    # Only run when PR is from dev branch to main
-    if: github.head_ref == 'dev'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -45,7 +41,7 @@ jobs:
     - name: Trigger and wait for Docker Buildx CI Test
       run: |
         echo "Triggering Docker Buildx CI workflow..."
-        gh workflow run test-docker-buildx-ci.yaml -f branch=dev
+        gh workflow run test-docker-buildx-ci.yaml -f branch=main
         
         echo "Waiting for workflow to start..."
         sleep 15
