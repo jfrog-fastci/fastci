@@ -9,7 +9,6 @@ inputs:
   jfrog_password_writer:
     description: "JFrog Password Writer"
     required: false
-    
 
   fastci_otel_endpoint:
     description: "OpenTelemetry Endpoint that will receive the traces. If 'file://<path>', the OTel will be written to the file path"
@@ -28,7 +27,6 @@ inputs:
     description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
     required: false
     default: "v0.18.13"
-
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -84,7 +82,6 @@ inputs:
     description: 'Enabled optimizations (go_build_optimization, make_optimization, integration_test_optimization, go_test_junit_optimization, go_test_cache_optimization)'
     required: false
     default: 'go_test_junit_optimization'
-
 
 runs:
   using: 'node20'
