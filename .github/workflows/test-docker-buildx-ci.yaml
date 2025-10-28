@@ -19,6 +19,11 @@ on:
           - main
           - disabled
 
+  # This will also run the workflow automatically on every push to the 'dev' branch
+  push:
+    branches:
+      - dev
+
 jobs:
   docker-buildx-cli:
     runs-on: ubuntu-latest
