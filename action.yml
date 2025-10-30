@@ -29,6 +29,7 @@ inputs:
     required: false
     default: "v0.18.19"
 
+
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
     required: false
@@ -82,7 +83,8 @@ inputs:
   enabled_optimizations:
     description: 'Enabled optimizations (go_build_optimization, make_optimization, integration_test_optimization, go_test_junit_optimization, go_test_cache_optimization, docker_build_trace_optimization)'
     required: false
-    default: 'go_test_junit_optimization'
+    default: 'go_test_junit_optimization,docker_build_trace_optimization'
+
 
 
 runs:
