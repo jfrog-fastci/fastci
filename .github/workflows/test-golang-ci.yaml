@@ -1,4 +1,4 @@
-name: Golang CI with FastCI
+name: 🧪 [Release-Gate] Golang CI
 
 run-name: FastCI Enabled
 
@@ -18,7 +18,12 @@ on:
           - dev
           - main
           - disabled
-
+          
+# This will also run the workflow automatically on every push to the 'dev' branch
+  push:
+    branches:
+      - dev
+      
 jobs:
   performance-with-fastci:
     runs-on: ubuntu-latest

@@ -1,4 +1,4 @@
-name: Docker Buildx CI Test
+name: 🧪 [Release-Gate] Docker Buildx CI
 
 run-name: Docker Buildx Test
 
@@ -18,6 +18,11 @@ on:
           - dev
           - main
           - disabled
+
+  # This will also run the workflow automatically on every push to the 'dev' branch
+  push:
+    branches:
+      - dev
 
 jobs:
   docker-buildx-cli:
