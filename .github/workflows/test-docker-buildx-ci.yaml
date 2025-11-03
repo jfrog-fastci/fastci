@@ -1,11 +1,10 @@
 name: 🧪 [Release-Gate] Docker Buildx CI
-
 run-name: Docker Buildx Test
 
 permissions:
   actions: read
   contents: read
-  
+
 on:
   workflow_dispatch:
     inputs:
@@ -18,7 +17,6 @@ on:
           - dev
           - main
           - disabled
-
   # This will also run the workflow automatically on every push to the 'dev' branch
   push:
     branches:
@@ -27,15 +25,18 @@ on:
 jobs:
   docker-buildx-cli:
     runs-on: ubuntu-latest
-    name: Build with Docker Buildx CLI
+    strategy:
+      matrix:
+        fastci_enabled: [true, false]
+    name: Build with Docker Buildx CLI (FastCI: ${{ matrix.fastci_enabled }})
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 10
 
-      - name: Start FastCI Optimization
-        if: inputs.branch == 'dev'
+      - name: Start FastCI Optimization (dev)
+        if: matrix.fastci_enabled == true && inputs.branch == 'dev'
         uses: jfrog-fastci/fastci@dev
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -43,18 +44,18 @@ jobs:
           install_bashi: true
           bashi_log_level: 'debug'
 
-      - name: Start FastCI Optimization
-        if: inputs.branch == 'main'
+      - name: Start FastCI Optimization (main)
+        if: matrix.fastci_enabled == true && inputs.branch == 'main'
         uses: jfrog-fastci/fastci@main
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-      
+          
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Build with Buildx CLI
         run: |
           docker buildx build \
@@ -65,15 +66,18 @@ jobs:
 
   docker-buildx-action:
     runs-on: ubuntu-latest
-    name: Build with Docker Buildx Action
+    strategy:
+      matrix:
+        fastci_enabled: [true, false]
+    name: Build with Docker Buildx Action (FastCI: ${{ matrix.fastci_enabled }})
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 10
 
-      - name: Start FastCI Optimization
-        if: inputs.branch == 'dev'
+      - name: Start FastCI Optimization (dev)
+        if: matrix.fastci_enabled == true && inputs.branch == 'dev'
         uses: jfrog-fastci/fastci@dev
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -81,18 +85,18 @@ jobs:
           install_bashi: true
           bashi_log_level: 'debug'
 
-      - name: Start FastCI Optimization
-        if: inputs.branch == 'main'
+      - name: Start FastCI Optimization (main)
+        if: matrix.fastci_enabled == true && inputs.branch == 'main'
         uses: jfrog-fastci/fastci@main
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-      
+          
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Build with Buildx Action
         uses: docker/build-push-action@v5
         with:
@@ -104,15 +108,18 @@ jobs:
 
   docker-native-build:
     runs-on: ubuntu-latest
-    name: Build with Native Docker
+    strategy:
+      matrix:
+        fastci_enabled: [true, false]
+    name: Build with Native Docker (FastCI: ${{ matrix.fastci_enabled }})
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 10
 
-      - name: Start FastCI Optimization
-        if: inputs.branch == 'dev'
+      - name: Start FastCI Optimization (dev)
+        if: matrix.fastci_enabled == true && inputs.branch == 'dev'
         uses: jfrog-fastci/fastci@dev
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -120,15 +127,15 @@ jobs:
           install_bashi: true
           bashi_log_level: 'debug'
 
-      - name: Start FastCI Optimization
-        if: inputs.branch == 'main'
+      - name: Start FastCI Optimization (main)
+        if: matrix.fastci_enabled == true && inputs.branch == 'main'
         uses: jfrog-fastci/fastci@main
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-      
+          
       - name: Build with Native Docker
         env:
           DOCKER_BUILDKIT: 0
