@@ -34362,7 +34362,7 @@ function createOptimizationConfig(enabledOptimizations) {
             supported_branches_regex: "*",
             supported_binary_versions: "*"
         },
-        docker_buildx_trace_optimization: {
+        docker_build_trace_optimization: {
             is_enabled: false,
             supported_branches_regex: "*",
             supported_binary_versions: "*"
