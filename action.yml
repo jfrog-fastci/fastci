@@ -84,9 +84,6 @@ inputs:
     required: false
     default: 'go_test_junit_optimization,docker_build_trace_optimization'
 
-
-
-
 runs:
   using: 'node20'
   main: 'dist/index.js'
