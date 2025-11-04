@@ -1,4 +1,4 @@
-name: 🧪 [Release-Gate] Docker Buildx CI
+name: "\U0001F9EA [Release-Gate] Docker Buildx CI"
 run-name: Docker Buildx Test
 
 permissions:
@@ -30,6 +30,12 @@ jobs:
       matrix:
         fastci_enabled: [true, false]
     steps:
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.32.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://ingress.coralogix.us:443
+          OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
+        with:
+          secrets_to_redact: '["${{ github.token }}","${{ secrets.FASTCI_TOKEN }}","${{secrets.GITHUB_TOKEN}}"]'
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
@@ -66,7 +72,8 @@ jobs:
             --tag fastci:latest \
             --file Dockerfile \
             .
-
+    permissions:
+      actions: read
   docker-buildx-action:
     name: "Build with Docker Buildx Action FastCI: ${{ matrix.fastci_enabled }}"
     runs-on: ubuntu-latest
@@ -74,6 +81,12 @@ jobs:
       matrix:
         fastci_enabled: [true, false]
     steps:
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.32.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://ingress.coralogix.us:443
+          OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
+        with:
+          secrets_to_redact: '["${{ github.token }}","${{ secrets.FASTCI_TOKEN }}","${{secrets.GITHUB_TOKEN}}"]'
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
@@ -111,7 +124,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: fastci:latest
           push: false
-
+    permissions:
+      actions: read
   docker-native-build:
     name: "Build with Native Docker FastCI: ${{ matrix.fastci_enabled }}"
     runs-on: ubuntu-latest
@@ -119,6 +133,12 @@ jobs:
       matrix:
         fastci_enabled: [true, false]
     steps:
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.32.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://ingress.coralogix.us:443
+          OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
+        with:
+          secrets_to_redact: '["${{ github.token }}","${{ secrets.FASTCI_TOKEN }}","${{secrets.GITHUB_TOKEN}}"]'
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
@@ -153,3 +173,5 @@ jobs:
             --tag fastci:latest \
             --file Dockerfile \
             .
+    permissions:
+      actions: read

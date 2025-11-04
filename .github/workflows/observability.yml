@@ -1,0 +1,25 @@
+
+name: OpenTelemetry
+on:
+  workflow_run:
+    workflows:
+      - PreRelease Sanity Check
+      - Scheduled Sanity Check
+      - Sync Beta Branch
+      - "\U0001F9EA [Release-Gate] Docker Buildx CI"
+      - "\U0001F9EA [Release-Gate] Golang CI"
+      - "\U0001F9EA [Release-Gate] Gradle CI"
+      - Running Copilot
+    types:
+      - completed
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: plengauer/opentelemetry-github/actions/instrument/workflow@v5.32.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://ingress.coralogix.us:443
+          OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
+    container: ghcr.io/plengauer/opentelemetry-github-workflow-instrumentation-runner:v5.32.0
+    permissions:
+      actions: read

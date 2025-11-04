@@ -1,5 +1,4 @@
-name: 🧪 [Release-Gate] Gradle CI
-
+name: "\U0001F9EA [Release-Gate] Gradle CI"
 run-name: FastCI Gradle Test
 
 permissions:
@@ -24,6 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     name: performance-with-fastci
     steps:
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.32.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://ingress.coralogix.us:443
+          OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
+        with:
+          secrets_to_redact: '["${{ github.token }}","${{ secrets.FASTCI_TOKEN }}","${{secrets.GITHUB_TOKEN}}"]'
       - name: Checkout Spring Boot Repository
         uses: actions/checkout@v4
         with:
@@ -84,5 +89,5 @@ jobs:
           TOTAL_DURATION=$((END_TIME - START_TIME))
           echo "total_duration=$TOTAL_DURATION" >> $GITHUB_OUTPUT
           echo "Total workflow duration: $TOTAL_DURATION seconds"
-          
-
+    permissions:
+      actions: read

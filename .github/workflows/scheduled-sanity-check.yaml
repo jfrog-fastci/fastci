@@ -13,6 +13,12 @@ jobs:
   trigger-golang-ci-test:
     runs-on: ubuntu-latest
     steps:
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.32.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://ingress.coralogix.us:443
+          OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
+        with:
+          secrets_to_redact: '["${{ github.token }}","${{ secrets.GITHUB_TOKEN }}"]'
     - name: Checkout repository
       uses: actions/checkout@v3
       
@@ -31,10 +37,17 @@ jobs:
         gh run watch $run_id --exit-status
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  
+    permissions:
+      actions: read
   trigger-docker-buildx-ci-test:
     runs-on: ubuntu-latest
     steps:
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.32.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://ingress.coralogix.us:443
+          OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
+        with:
+          secrets_to_redact: '["${{ github.token }}","${{ secrets.GITHUB_TOKEN }}"]'
     - name: Checkout repository
       uses: actions/checkout@v3
     
@@ -53,5 +66,5 @@ jobs:
         gh run watch $run_id --exit-status
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-  
+    permissions:
+      actions: read

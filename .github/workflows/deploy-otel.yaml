@@ -12,9 +12,17 @@ jobs:
     concurrency:
       group: otel-deploy-job
     steps:
-      - uses: plengauer/Thoth/actions/instrument/deploy@v5.32.0
+      - uses: plengauer/opentelemetry-github/actions/instrument/job@v5.32.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: https://ingress.coralogix.us:443
+          OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
+        with:
+          secrets_to_redact: '["${{ github.token }}","${{ secrets.FASTCI_TOKEN }}","${{ secrets.GTOKEN }}"]'
+      - uses: plengauer/opentelemetry-github/actions/instrument/deploy@v5.32.0
         env:
           OTEL_EXPORTER_OTLP_ENDPOINT: 'https://ingress.coralogix.us:443'
           OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
         with:
           github_token: '${{ secrets.GTOKEN }}' # TODO configure a token that has permissions to push contents and open pull requests
+    permissions:
+      actions: read
