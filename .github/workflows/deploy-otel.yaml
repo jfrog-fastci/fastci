@@ -1,0 +1,20 @@
+name: 'Deploy OpenTelemetry'
+
+on:
+  push:
+    branches: main
+    paths:
+      - .github/workflows/**
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: otel-deploy-job
+    steps:
+      - uses: plengauer/Thoth/actions/instrument/deploy@v5.32.0
+        env:
+          OTEL_EXPORTER_OTLP_ENDPOINT: 'https://ingress.coralogix.us:443'
+          OTEL_EXPORTER_OTLP_HEADERS: 'Authorization: Bearer ${{ secrets.FASTCI_TOKEN }}'
+        with:
+          github_token: '${{ secrets.GTOKEN }}' # TODO configure a token that has permissions to push contents and open pull requests
