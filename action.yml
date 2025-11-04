@@ -27,7 +27,7 @@ inputs:
   version:
     description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
     required: false
-    default: "v0.18.21"
+    default: "v0.19.0"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -82,7 +82,8 @@ inputs:
   enabled_optimizations:
     description: 'Enabled optimizations (go_build_optimization, make_optimization, integration_test_optimization, go_test_junit_optimization, go_test_cache_optimization, docker_build_trace_optimization)'
     required: false
-    default: 'go_test_junit_optimization,docker_build_trace_optimization'
+    default: 'go_test_junit_optimization'
+
 
 runs:
   using: 'node20'
