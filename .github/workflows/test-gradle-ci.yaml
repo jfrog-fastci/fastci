@@ -84,5 +84,50 @@ jobs:
           TOTAL_DURATION=$((END_TIME - START_TIME))
           echo "total_duration=$TOTAL_DURATION" >> $GITHUB_OUTPUT
           echo "Total workflow duration: $TOTAL_DURATION seconds"
+
+  performance-without-fastci:
+    runs-on: ubuntu-latest
+    name: performance-without-fastci
+    steps:
+      - name: Checkout Spring Boot Repository
+        uses: actions/checkout@v4
+        with:
+          repository: spring-projects/spring-boot
+          ref: bf8e0c45a8d84dc473404f033e07858aa3d0d52b
+          fetch-depth: 10
+
+      - name: Record Start Time
+        run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+          
+      - name: Build Spring Boot with Gradle
+        id: gradle_build
+        run: |
+          GRADLE_START=$(date +%s)
+          
+          echo "Building Spring Boot with Gradle..."
+          ./gradlew build -x test --no-daemon --stacktrace
+          
+          GRADLE_END=$(date +%s)
+          GRADLE_DURATION=$((GRADLE_END - GRADLE_START))
+          
+          echo "gradle_duration=$GRADLE_DURATION" >> $GITHUB_OUTPUT
+          echo "Gradle build completed in $GRADLE_DURATION seconds"
+
+      - name: Record End Time and Calculate Duration
+        id: measure_duration
+        run: |
+          END_TIME=$(date +%s)
+          TOTAL_DURATION=$((END_TIME - START_TIME))
+          echo "total_duration=$TOTAL_DURATION" >> $GITHUB_OUTPUT
+          echo "Total workflow duration: $TOTAL_DURATION seconds"
           
 

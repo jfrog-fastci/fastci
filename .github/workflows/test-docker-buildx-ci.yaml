@@ -153,3 +153,62 @@ jobs:
             --tag fastci:latest \
             --file Dockerfile \
             .
+
+  docker-buildx-cli-without-fastci:
+    name: "Build with Docker Buildx CLI (No FastCI)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build with Buildx CLI
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --tag fastci:latest \
+            --file Dockerfile \
+            .
+
+  docker-buildx-action-without-fastci:
+    name: "Build with Docker Buildx Action (No FastCI)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build with Buildx Action
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: fastci:latest
+          push: false
+
+  docker-native-build-without-fastci:
+    name: "Build with Native Docker (No FastCI)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 10
+
+      - name: Build with Native Docker
+        env:
+          DOCKER_BUILDKIT: 0
+        run: |
+          docker build \
+            --tag fastci:latest \
+            --file Dockerfile \
+            .
