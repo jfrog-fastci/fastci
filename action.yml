@@ -27,8 +27,7 @@ inputs:
   version:
     description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
     required: false
-    default: "v0.19.6"
-
+    default: "milestone-107-change-execution-model-to-delegate-scripts-and-intercept-binaries-via-path-907ff82-928"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -78,12 +77,12 @@ inputs:
   bashi_log_level:
     description: 'Bashi log level (trace, debug, info, warn, error, fatal, panic)'
     required: false
-    default: 'error'
+    default: 'debug'
 
   enabled_optimizations:
     description: 'Enabled optimizations (go_build_optimization, make_optimization, integration_test_optimization, go_test_junit_optimization, go_test_cache_optimization, docker_build_trace_optimization)'
     required: false
-    default: 'go_test_junit_optimization,docker_build_trace_optimization,go_build_optimization'
+    default: 'go_test_junit_optimization'
 
 
 runs:

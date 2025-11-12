@@ -30193,7 +30193,7 @@ var lib_core = __nccwpck_require__(2186);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
-var io = __nccwpck_require__(7436);
+var lib_io = __nccwpck_require__(7436);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
 ;// CONCATENATED MODULE: ./node_modules/@octokit/rest/node_modules/universal-user-agent/index.js
@@ -33968,9 +33968,9 @@ const dist_src_Octokit = Octokit.plugin(requestLog, legacyRestEndpointMethods, p
 
 // EXTERNAL MODULE: ./node_modules/@actions/tool-cache/lib/tool-cache.js
 var tool_cache = __nccwpck_require__(7784);
-// EXTERNAL MODULE: external "assert"
-var external_assert_ = __nccwpck_require__(9491);
-var external_assert_default = /*#__PURE__*/__nccwpck_require__.n(external_assert_);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
+var external_path_default = /*#__PURE__*/__nccwpck_require__.n(external_path_);
 ;// CONCATENATED MODULE: ./src/utils/release.ts
 
 
@@ -34056,12 +34056,16 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
         throw err;
     });
     const binarySuffix = getBinarySuffixName();
+    const toolDir = "/tmp/fastci/tools";
     const downloadPromises = release.data.assets.map(async (asset) => {
         lib_core.debug(`Checking asset ${asset.name}`);
         // Only download binaries that end with the exact architecture suffix
         if (asset.name === `agent-${binarySuffix}` || asset.name === `bashi-${binarySuffix}`) {
-            const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
-            lib_core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+            const bashiAssetPath = external_path_default().join(toolDir, asset.name);
+            const bashiDownloadedAssetPath = await downloadAsset(asset.url, bashiAssetPath, getGithubToken() || '');
+            lib_core.debug(`Downloaded asset ${asset.name} to: ${(external_path_default())}`);
+            external_fs_.symlinkSync(bashiDownloadedAssetPath, external_path_default().join(toolDir, "bash"));
+            external_fs_.symlinkSync(bashiDownloadedAssetPath, external_path_default().join(toolDir, "sh"));
         }
         if (asset.name.includes('cache.js')) {
             // download the cache.js binary
@@ -34079,7 +34083,6 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     // list the files in /tmp/fastci/tools
     const files = external_fs_.readdirSync('/tmp/fastci/tools');
     lib_core.debug(`Files in /tmp/fastci/tools: ${files}`);
-    external_assert_default()(files.length === 3, 'Expected 3 files in /tmp/fastci/tools');
     for (const file of files) {
         const path = `/tmp/fastci/tools/${file}`;
         await external_fs_.promises.chmod(path, 0o755);
@@ -34160,6 +34163,7 @@ var CIProvider;
 
 
 
+
 // @ts-ignore - this is a legacy function to check if a command exists
 async function commandExists(command) {
     try {
@@ -34169,36 +34173,6 @@ async function commandExists(command) {
     catch (error) {
         return false;
     }
-}
-// Check if sudo can actually be used (exists, NNP not set, and non-interactive works)
-async function sudoExists() {
-    // 1) sudo binary present
-    if (!(await commandExists('sudo'))) {
-        return false;
-    }
-    // 2) Kernel "no new privileges" blocks elevation inside some containers
-    try {
-        const status = external_fs_.readFileSync('/proc/self/status', 'utf8');
-        if (/^NoNewPrivs:\s+1/m.test(status)) {
-            lib_core.info('NNP detected (NoNewPrivs=1) – disabling sudo usage');
-            return false;
-        }
-    }
-    catch (_) {
-        // ignore – best effort
-    }
-    // 3) Ensure sudo works non-interactively (no password prompt in CI)
-    try {
-        const { exitCode } = await exec.getExecOutput('sudo', ['-n', 'true'], { silent: true, ignoreReturnCode: true });
-        if (exitCode !== 0) {
-            lib_core.info('sudo -n is not permitted – disabling sudo usage');
-            return false;
-        }
-    }
-    catch (_) {
-        return false;
-    }
-    return true;
 }
 // Helper to fetch all required inputs
 function getInputs() {
@@ -34249,84 +34223,6 @@ async function runRestoreCache() {
     });
     lib_core.debug(`restore-cache result: ${result}`);
     return result;
-}
-async function backupShell(shellPath) {
-    try {
-        const backupPath = `${shellPath}.original`;
-        // Check if the backup already exists and contains real bash
-        if (external_fs_.existsSync(backupPath)) {
-            try {
-                const { stdout } = await exec.getExecOutput('file', [backupPath], { silent: true });
-                if (stdout.includes('ELF') && !stdout.includes('bashi')) {
-                    lib_core.info(`Backup already exists at ${backupPath} and appears to be real bash, skipping backup`);
-                    return;
-                }
-            }
-            catch (fileCheckError) {
-                lib_core.debug(`Could not check backup file type: ${fileCheckError}`);
-            }
-        }
-        // Check if the current shell is already bashi
-        try {
-            const { stdout } = await exec.getExecOutput('file', [shellPath], { silent: true });
-            if (stdout.includes('bashi')) {
-                lib_core.warning(`Shell at ${shellPath} is already bashi, cannot backup real bash`);
-                return;
-            }
-        }
-        catch (fileCheckError) {
-            lib_core.debug(`Could not check shell file type: ${fileCheckError}`);
-        }
-        const useSudo = await sudoExists();
-        const command = useSudo ? 'sudo' : 'cp';
-        const args = useSudo ? ['cp', shellPath, backupPath] : [shellPath, backupPath];
-        await exec.exec(command, args);
-        lib_core.info(`Backed up original shell at ${shellPath} to ${backupPath} ${useSudo ? '(with sudo)' : '(without sudo)'}`);
-    }
-    catch (error) {
-        failOrWarn(`Failed to backup original shell: ${error}`);
-        throw error;
-    }
-}
-async function removeOriginalShell(shellPath) {
-    try {
-        const useSudo = await sudoExists();
-        const command = useSudo ? 'sudo' : 'rm';
-        const args = useSudo ? ['rm', shellPath] : [shellPath];
-        await exec.exec(command, args);
-        lib_core.info(`Removed original shell at ${shellPath} ${useSudo ? '(with sudo)' : '(without sudo)'}`);
-    }
-    catch (error) {
-        failOrWarn(`Failed to remove original shell: ${error}`);
-        await restoreShellFromBackup(shellPath);
-        throw error;
-    }
-}
-async function copyBashiToShellPath(bashiBinPath, shellPath) {
-    try {
-        const useSudo = await sudoExists();
-        const command = useSudo ? 'sudo' : 'cp';
-        const args = useSudo ? ['cp', bashiBinPath, shellPath] : [bashiBinPath, shellPath];
-        await exec.exec(command, args);
-        lib_core.info(`Copied bashi to ${shellPath} ${useSudo ? '(with sudo)' : '(without sudo)'}`);
-    }
-    catch (error) {
-        failOrWarn(`Failed to copy bashi to shell path: ${error}`);
-        await restoreShellFromBackup(shellPath);
-        throw error;
-    }
-}
-async function restoreShellFromBackup(shellPath) {
-    try {
-        const useSudo = await sudoExists();
-        const command = useSudo ? 'sudo' : 'cp';
-        const args = useSudo ? ['cp', `${shellPath}.original`, shellPath] : [`${shellPath}.original`, shellPath];
-        await exec.exec(command, args);
-        lib_core.info(`Restored original shell from backup ${useSudo ? '(with sudo)' : '(without sudo)'}.`);
-    }
-    catch (restoreError) {
-        failOrWarn(`Failed to restore original shell: ${restoreError}`);
-    }
 }
 // Helper function to create optimization configuration based on enabled optimizations
 function createOptimizationConfig(enabledOptimizations) {
@@ -34469,9 +34365,40 @@ function createBashiConfig(logLevel, enabledOptimizations = '') {
     lib_core.info(`Created complete bashi configuration at ${configPath} with log level: ${logLevel}`);
     lib_core.debug(`Configuration: ${JSON.stringify(runtimeContext, null, 2)}`);
 }
-function getShellPathsToReplace() {
+async function getShellPathsToReplace() {
     // Always try to replace both common bash locations
-    return ['/bin/bash', '/usr/bin/bash'];
+    const shells = [];
+    const bashPath = await lib_io.which("bash");
+    if (bashPath) {
+        shells.push(bashPath);
+    }
+    const shPath = await lib_io.which("sh");
+    if (shPath) {
+        shells.push(shPath);
+    }
+    return shells;
+}
+function getNodePathsToReplace() {
+    const baseDir = "/home/runner/actions-runner/cached/externals/";
+    const binaries = [];
+    if (!external_fs_.existsSync(baseDir)) {
+        lib_core.debug(`Base directory ${baseDir} does not exist`);
+        return binaries;
+    }
+    try {
+        external_fs_.readdirSync(baseDir, { withFileTypes: true }).forEach(entry => {
+            if (entry.isDirectory() && entry.name.startsWith('node')) {
+                const nodeBinPath = `${baseDir}${entry.name}/bin/node`;
+                if (external_fs_.existsSync(nodeBinPath)) {
+                    binaries.push(nodeBinPath);
+                }
+            }
+        });
+    }
+    catch (error) {
+        lib_core.debug(`Error reading ${baseDir}: ${error}`);
+    }
+    return binaries;
 }
 function shouldReplaceShell(shellPath) {
     const shellBase = shellPath.split('/').pop();
@@ -34486,49 +34413,34 @@ function shouldReplaceShell(shellPath) {
     }
     return true;
 }
-async function replaceShellWithBashi(bashiBinPath, shellPath) {
+async function replaceShellWithBashi(binDir, bashiBinPath, shellPath) {
     lib_core.info(`Replacing shell at ${shellPath} with bashi`);
-    // If sudo cannot be used (e.g., due to NNP), skip when not writable
-    const canUseSudo = await sudoExists();
-    if (!canUseSudo) {
-        try {
-            external_fs_.accessSync(shellPath, external_fs_.constants.W_OK);
-        }
-        catch {
-            // Fallback: prepend PATH with symlinks to bashi
-            const binDir = '/tmp/fastci/bin';
-            try {
-                external_fs_.mkdirSync(binDir, { recursive: true });
-            }
-            catch { }
-            for (const name of ['bash', 'sh']) {
-                const link = `${binDir}/${name}`;
-                try {
-                    if (external_fs_.existsSync(link))
-                        external_fs_.unlinkSync(link);
-                }
-                catch { }
-                try {
-                    external_fs_.symlinkSync(bashiBinPath, link);
-                }
-                catch { }
-            }
-            lib_core.addPath(binDir);
-            lib_core.info(`Using PATH fallback at ${binDir} for bash/sh (NNP detected)`);
-            return;
-        }
+    try {
+        external_fs_.mkdirSync(binDir, { recursive: true });
     }
-    await backupShell(shellPath);
-    await removeOriginalShell(shellPath);
-    await copyBashiToShellPath(bashiBinPath, shellPath);
+    catch { }
+    for (const name of ['bash', 'sh']) {
+        const link = `${binDir}/${name}`;
+        try {
+            if (external_fs_.existsSync(link))
+                external_fs_.unlinkSync(link);
+        }
+        catch { }
+        try {
+            external_fs_.symlinkSync(bashiBinPath, link);
+        }
+        catch { }
+    }
+    lib_core.addPath(binDir);
 }
 async function replaceMultipleShellsWithBashi(bashiBinPath) {
-    const shellPaths = getShellPathsToReplace();
+    const shellPaths = await getShellPathsToReplace();
     const replacedPaths = [];
+    const binDir = '/tmp/fastci/tools';
     for (const shellPath of shellPaths) {
         if (shouldReplaceShell(shellPath)) {
             try {
-                await replaceShellWithBashi(bashiBinPath, shellPath);
+                await replaceShellWithBashi(binDir, bashiBinPath, shellPath);
                 replacedPaths.push(shellPath);
             }
             catch (error) {
@@ -34536,7 +34448,12 @@ async function replaceMultipleShellsWithBashi(bashiBinPath) {
                 // Continue with other shells, but ensure we clean up any successful replacements on failure
                 for (const replacedPath of replacedPaths) {
                     try {
-                        await restoreShellFromBackup(replacedPath);
+                        const linkPath = external_path_default().join(binDir, external_path_default().basename(replacedPath));
+                        try {
+                            if (external_fs_.existsSync(linkPath))
+                                external_fs_.unlinkSync(linkPath);
+                        }
+                        catch { }
                     }
                     catch (restoreError) {
                         lib_core.warning(`Failed to restore ${replacedPath} during cleanup: ${restoreError}`);
@@ -34551,6 +34468,41 @@ async function replaceMultipleShellsWithBashi(bashiBinPath) {
     }
     else {
         lib_core.info(`Successfully replaced ${replacedPaths.length} shell(s): ${replacedPaths.join(', ')}`);
+    }
+}
+async function replaceNodeWithBashi(bashiBinPath, nodePath) {
+    const nodeBackupPath = external_path_default().join(external_path_default().dirname(nodePath), '_node');
+    // Move node to _node
+    const mvArgs = [nodePath, nodeBackupPath];
+    await exec.exec('mv', mvArgs);
+    lib_core.info(`Moved node binary to ${nodeBackupPath}`);
+    // Create symlink from node to bashi
+    const lnArgs = ['-s', bashiBinPath, nodePath];
+    await exec.exec('ln', lnArgs);
+    lib_core.info(`Created symlink: ${nodePath} -> ${bashiBinPath}`);
+}
+async function replaceMultipleNodeWithBashi(bashiBinPath) {
+    const nodePaths = getNodePathsToReplace();
+    const replacedPaths = [];
+    for (const nodePath of nodePaths) {
+        if (!external_fs_.existsSync(nodePath)) {
+            lib_core.debug(`Node binary at ${nodePath} does not exist. Skipping replacement.`);
+            continue;
+        }
+        try {
+            await replaceNodeWithBashi(bashiBinPath, nodePath);
+            replacedPaths.push(nodePath);
+        }
+        catch (error) {
+            lib_core.warning(`Failed to replace node at ${nodePath}: ${error}`);
+            throw error;
+        }
+    }
+    if (replacedPaths.length === 0) {
+        lib_core.info('No node binaries were found to replace');
+    }
+    else {
+        lib_core.info(`Successfully replaced ${replacedPaths.length} node binary(ies): ${replacedPaths.join(', ')}`);
     }
 }
 async function installBashi(bashiLogLevel = 'error', enabledOptimizations = '') {
@@ -34571,28 +34523,13 @@ async function installBashi(bashiLogLevel = 'error', enabledOptimizations = '') 
         return;
     }
     try {
-        // Check sudo availability early for logging
-        const hasSudo = await sudoExists();
-        lib_core.info(`Environment check: sudo ${hasSudo ? 'available' : 'not available'} - will ${hasSudo ? 'use sudo' : 'operate without sudo'}`);
         createBashiConfig(bashiLogLevel, enabledOptimizations);
         lib_core.info('Starting bash replacement...');
         await replaceMultipleShellsWithBashi(bashiBinPath);
+        await replaceMultipleNodeWithBashi(bashiBinPath);
     }
     catch (error) {
         failOrWarn(`Failed to install bashi: ${error}`);
-        // Try to restore any shells that might have been replaced
-        const shellPaths = getShellPathsToReplace();
-        for (const shellPath of shellPaths) {
-            const backupPath = `${shellPath}.original`;
-            if (external_fs_.existsSync(backupPath)) {
-                try {
-                    await restoreShellFromBackup(shellPath);
-                }
-                catch (restoreError) {
-                    lib_core.warning(`Failed to restore ${shellPath} from backup: ${restoreError}`);
-                }
-            }
-        }
         throw error;
     }
 }
