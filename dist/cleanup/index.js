@@ -29987,7 +29987,10 @@ var tool_cache = __nccwpck_require__(7784);
 var external_fs_ = __nccwpck_require__(7147);
 // EXTERNAL MODULE: external "assert"
 var external_assert_ = __nccwpck_require__(9491);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
 ;// CONCATENATED MODULE: ./src/utils/release.ts
+
 
 
 
@@ -30072,12 +30075,16 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
         throw err;
     });
     const binarySuffix = getBinarySuffixName();
+    const toolDir = "/tmp/fastci/tools";
     const downloadPromises = release.data.assets.map(async (asset) => {
         core.debug(`Checking asset ${asset.name}`);
         // Only download binaries that end with the exact architecture suffix
         if (asset.name === `agent-${binarySuffix}` || asset.name === `bashi-${binarySuffix}`) {
-            const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
+            const bashiAssetPath = path.join(toolDir, asset.name);
+            const bashiDownloadedAssetPath = await downloadAsset(asset.url, bashiAssetPath, getGithubToken() || '');
             core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+            fs.symlinkSync(bashiDownloadedAssetPath, path.join(toolDir, "bash"));
+            fs.symlinkSync(bashiDownloadedAssetPath, path.join(toolDir, "sh"));
         }
         if (asset.name.includes('cache.js')) {
             // download the cache.js binary
