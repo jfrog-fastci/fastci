@@ -45,7 +45,6 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-          enabled_optimizations: 'go_test_junit_optimization'
 
       - name: Start FastCI Optimization
         if: inputs.branch == 'main'
@@ -55,7 +54,6 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_bashi: true
           bashi_log_level: 'debug'
-          enabled_optimizations: 'go_test_junit_optimization'
           
 
       - name: Set up Go

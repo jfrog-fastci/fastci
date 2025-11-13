@@ -29985,8 +29985,8 @@ var exec = __nccwpck_require__(1514);
 var tool_cache = __nccwpck_require__(7784);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
-// EXTERNAL MODULE: external "assert"
-var external_assert_ = __nccwpck_require__(9491);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(1017);
 ;// CONCATENATED MODULE: ./src/utils/release.ts
 
 
@@ -30072,12 +30072,16 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
         throw err;
     });
     const binarySuffix = getBinarySuffixName();
+    const toolDir = "/tmp/fastci/tools";
     const downloadPromises = release.data.assets.map(async (asset) => {
         core.debug(`Checking asset ${asset.name}`);
         // Only download binaries that end with the exact architecture suffix
         if (asset.name === `agent-${binarySuffix}` || asset.name === `bashi-${binarySuffix}`) {
-            const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
+            const bashiAssetPath = path.join(toolDir, asset.name);
+            const bashiDownloadedAssetPath = await downloadAsset(asset.url, bashiAssetPath, getGithubToken() || '');
             core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+            fs.symlinkSync(bashiDownloadedAssetPath, path.join(toolDir, "bash"));
+            fs.symlinkSync(bashiDownloadedAssetPath, path.join(toolDir, "sh"));
         }
         if (asset.name.includes('cache.js')) {
             // download the cache.js binary
@@ -30095,7 +30099,6 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     // list the files in /tmp/fastci/tools
     const files = fs.readdirSync('/tmp/fastci/tools');
     core.debug(`Files in /tmp/fastci/tools: ${files}`);
-    assert(files.length === 3, 'Expected 3 files in /tmp/fastci/tools');
     for (const file of files) {
         const path = `/tmp/fastci/tools/${file}`;
         await fs.promises.chmod(path, 0o755);
@@ -30164,69 +30167,6 @@ async function runWithTimeout(operation, timeoutMs, operationName, options) {
 
 
 
-
-// async function createTriggerFile(): Promise<void> {
-//     core.debug('Setting trigger file to stop tracer');
-//     fs.mkdirSync(FASTCI_TEMP_DIR, { recursive: true });
-//     fs.writeFileSync(TRIGGER_FILE_PATH, '');
-// }
-// async function waitForTriggerFileDelete(timeoutSeconds: number): Promise<boolean> {
-//     const startTime = Date.now();
-//     let lastLogTime = 0;
-//     core.debug(`Waiting for tracer process to stop (timeout: ${timeoutSeconds}s)...`);
-//     while (true) {
-//         const currentTime = Date.now();
-//         const elapsedSeconds = Math.floor((currentTime - startTime) / 1000);
-//         // Break out after timeout period
-//         if (elapsedSeconds >= timeoutSeconds) {
-//             core.debug(`Timeout of ${timeoutSeconds}s reached. Stopping wait.`);
-//             return false;
-//         }
-//         // Check if the file exists and has content
-//         if (fs.existsSync(AGENT_STOPED_FILE_PATH)) {
-//             try {
-//                 const stats = fs.readFileSync(AGENT_STOPED_FILE_PATH, 'utf8');
-//                 core.debug(`Agent stoped file content: ${stats}`);
-//                 return true;
-//             } catch (error) {
-//                 core.debug(`Error checking file: ${error}`);
-//                 return true;
-//             }
-//         }
-//         if (currentTime - lastLogTime >= 1000) {
-//             core.debug(`Still waiting for ${AGENT_STOPED_FILE_PATH} to be created (${elapsedSeconds}s elapsed)`);
-//             lastLogTime = currentTime;
-//         }
-//         await new Promise(resolve => setTimeout(resolve, 200));
-//     }
-// }
-// @ts-ignore - this is a legacy function to stop the tracer process
-// async function stopTracerProcess(): Promise<void> {
-//     try {
-//         core.info('Stopping agent process...');
-//         await createTriggerFile();
-//         const timeoutSeconds = 15;
-//         await waitForTriggerFileDelete(timeoutSeconds);
-//         core.info(`Tracer log: ${fs.readFileSync('/tmp/fastci/tracer.log', 'utf8')}`);
-//         core.info(`Tracer err: ${fs.readFileSync('/tmp/fastci/tracer.err', 'utf8')}`);
-//         // await displayProcessTreesFile();
-//     } catch (error) {
-//         core.error(error as any);
-//         core.error('No tracer process found or unable to stop it');
-//     }
-// }
-async function runStoreCache() {
-    lib_core.debug(`Running store-cache`);
-    const bashiBinPath = getBashiBinaryPath();
-    const result = await exec.exec(bashiBinPath, ["store-cache"], {
-        env: { ...process.env, GITHUB_TOKEN: getGithubToken() || '', },
-    }).catch((err) => {
-        failOrWarn(`Failed to store cache: ${err}`);
-        throw err;
-    });
-    lib_core.debug(`store-cache result: ${result}`);
-    return result;
-}
 async function runExportOtel() {
     lib_core.debug(`Running export-otel`);
     const bashiBinPath = getBashiBinaryPath();
@@ -30238,10 +30178,7 @@ async function runExportOtel() {
 }
 async function cleanup() {
     // Get timeout values from inputs (convert from seconds to milliseconds)
-    const storeCacheTimeout = parseInt(lib_core.getInput('store_cache_timeout_seconds') || '30') * 1000;
     const exportOtelTimeout = parseInt(lib_core.getInput('export_otel_timeout_seconds') || '15') * 1000;
-    // Store cache with timeout
-    await runWithTimeout(runStoreCache, storeCacheTimeout, 'store-cache', { continueOnError: true });
     // Export OTEL data with timeout
     await runWithTimeout(runExportOtel, exportOtelTimeout, 'export-otel', { continueOnError: true });
 }
