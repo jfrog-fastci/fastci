@@ -10,6 +10,7 @@ npm-debug.log*
 
 # Build output
 lib/
+dist/*
 
 # Environment variables
 .env
