@@ -30185,7 +30185,7 @@ var __webpack_exports__ = {};
 
 // EXPORTS
 __nccwpck_require__.d(__webpack_exports__, {
-  "g": () => (/* binding */ createBashiConfig)
+  "S": () => (/* binding */ createFastcliConfig)
 });
 
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
@@ -34006,8 +34006,8 @@ function getGHServerUrl() {
 function getGithubToken() {
     return process.env.GITHUB_TOKEN || process.env.INPUT_GITHUB_TOKEN;
 }
-function getBashiBinaryPath() {
-    return `/tmp/fastci/tools/bashi-${getBinarySuffixName()}`;
+function getFastcliBinaryPath() {
+    return `/tmp/fastci/tools/fastcli-${getBinarySuffixName()}`;
 }
 function getCacheJsPath() {
     return `/tmp/fastci/tools/cache.js`;
@@ -34060,12 +34060,12 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     const downloadPromises = release.data.assets.map(async (asset) => {
         lib_core.debug(`Checking asset ${asset.name}`);
         // Only download binaries that end with the exact architecture suffix
-        if (asset.name === `agent-${binarySuffix}` || asset.name === `bashi-${binarySuffix}`) {
-            const bashiAssetPath = external_path_default().join(toolDir, asset.name);
-            const bashiDownloadedAssetPath = await downloadAsset(asset.url, bashiAssetPath, getGithubToken() || '');
+        if (asset.name === `agent-${binarySuffix}` || asset.name === `fastcli-${binarySuffix}`) {
+            const fastcliAssetPath = external_path_default().join(toolDir, asset.name);
+            const fastcliDownloadedAssetPath = await downloadAsset(asset.url, fastcliAssetPath, getGithubToken() || '');
             lib_core.debug(`Downloaded asset ${asset.name} to: ${(external_path_default())}`);
-            external_fs_.symlinkSync(bashiDownloadedAssetPath, external_path_default().join(toolDir, "bash"));
-            external_fs_.symlinkSync(bashiDownloadedAssetPath, external_path_default().join(toolDir, "sh"));
+            external_fs_.symlinkSync(fastcliDownloadedAssetPath, external_path_default().join(toolDir, "bash"));
+            external_fs_.symlinkSync(fastcliDownloadedAssetPath, external_path_default().join(toolDir, "sh"));
         }
         if (asset.name.includes('cache.js')) {
             // download the cache.js binary
@@ -34184,8 +34184,8 @@ function getInputs() {
         trackFiles: lib_core.getInput('tracer_track_files'),
         fullRepoName: lib_core.getInput('full_repo_name'),
         jobNameForTestsOnly: lib_core.getInput('job_name_for_tests_only'),
-        installBashi: lib_core.getInput('install_bashi', { required: false }),
-        bashiLogLevel: lib_core.getInput('bashi_log_level', { required: false }) || 'error',
+        installFastcli: lib_core.getInput('install_fastcli', { required: false }),
+        fastcliLogLevel: lib_core.getInput('fastcli_log_level', { required: false }) || 'error',
         enabledOptimizations: lib_core.getInput('enabled_optimizations', { required: false }) || '',
     };
 }
@@ -34249,7 +34249,7 @@ function createOptimizationConfig(enabledOptimizations) {
         ...allOptimizations
     };
 }
-function createBashiConfig(logLevel, enabledOptimizations = '') {
+function createFastcliConfig(logLevel, enabledOptimizations = '') {
     // Get inputs
     const inputs = getInputs();
     // Extract organization and repository name from GITHUB_REPOSITORY (format: "owner/repo")
@@ -34327,7 +34327,7 @@ function createBashiConfig(logLevel, enabledOptimizations = '') {
     };
     const configPath = '/tmp/fastci/config.json';
     external_fs_.writeFileSync(configPath, JSON.stringify(runtimeContext, null, 2));
-    lib_core.info(`Created complete bashi configuration at ${configPath} with log level: ${logLevel}`);
+    lib_core.info(`Created complete fastcli configuration at ${configPath} with log level: ${logLevel}`);
     lib_core.debug(`Configuration: ${JSON.stringify(runtimeContext, null, 2)}`);
 }
 async function getShellPathsToReplace() {
@@ -34378,8 +34378,8 @@ function shouldReplaceShell(shellPath) {
     }
     return true;
 }
-async function replaceShellWithBashi(binDir, bashiBinPath, shellPath) {
-    lib_core.info(`Replacing shell at ${shellPath} with bashi`);
+async function replaceShellWithFastcli(binDir, fastcliBinPath, shellPath) {
+    lib_core.info(`Replacing shell at ${shellPath} with fastcli`);
     try {
         external_fs_.mkdirSync(binDir, { recursive: true });
     }
@@ -34392,20 +34392,20 @@ async function replaceShellWithBashi(binDir, bashiBinPath, shellPath) {
         }
         catch { }
         try {
-            external_fs_.symlinkSync(bashiBinPath, link);
+            external_fs_.symlinkSync(fastcliBinPath, link);
         }
         catch { }
     }
     lib_core.addPath(binDir);
 }
-async function replaceMultipleShellsWithBashi(bashiBinPath) {
+async function replaceMultipleShellsWithFastcli(fastcliBinPath) {
     const shellPaths = await getShellPathsToReplace();
     const replacedPaths = [];
     const binDir = '/tmp/fastci/tools';
     for (const shellPath of shellPaths) {
         if (shouldReplaceShell(shellPath)) {
             try {
-                await replaceShellWithBashi(binDir, bashiBinPath, shellPath);
+                await replaceShellWithFastcli(binDir, fastcliBinPath, shellPath);
                 replacedPaths.push(shellPath);
             }
             catch (error) {
@@ -34435,18 +34435,18 @@ async function replaceMultipleShellsWithBashi(bashiBinPath) {
         lib_core.info(`Successfully replaced ${replacedPaths.length} shell(s): ${replacedPaths.join(', ')}`);
     }
 }
-async function replaceNodeWithBashi(bashiBinPath, nodePath) {
+async function replaceNodeWithfastcli(fastcliBinPath, nodePath) {
     const nodeBackupPath = external_path_default().join(external_path_default().dirname(nodePath), '_node');
     // Move node to _node
     const mvArgs = [nodePath, nodeBackupPath];
     await exec.exec('mv', mvArgs);
     lib_core.info(`Moved node binary to ${nodeBackupPath}`);
-    // Create symlink from node to bashi
-    const lnArgs = ['-s', bashiBinPath, nodePath];
+    // Create symlink from node to fastcli
+    const lnArgs = ['-s', fastcliBinPath, nodePath];
     await exec.exec('ln', lnArgs);
-    lib_core.info(`Created symlink: ${nodePath} -> ${bashiBinPath}`);
+    lib_core.info(`Created symlink: ${nodePath} -> ${fastcliBinPath}`);
 }
-async function replaceMultipleNodeWithBashi(bashiBinPath) {
+async function replaceMultipleNodeWithfastcli(fastcliBinPath) {
     const nodePaths = getNodePathsToReplace();
     const replacedPaths = [];
     for (const nodePath of nodePaths) {
@@ -34455,7 +34455,7 @@ async function replaceMultipleNodeWithBashi(bashiBinPath) {
             continue;
         }
         try {
-            await replaceNodeWithBashi(bashiBinPath, nodePath);
+            await replaceNodeWithfastcli(fastcliBinPath, nodePath);
             replacedPaths.push(nodePath);
         }
         catch (error) {
@@ -34470,13 +34470,13 @@ async function replaceMultipleNodeWithBashi(bashiBinPath) {
         lib_core.info(`Successfully replaced ${replacedPaths.length} node binary(ies): ${replacedPaths.join(', ')}`);
     }
 }
-async function installBashi(bashiLogLevel = 'error', enabledOptimizations = '') {
-    lib_core.debug(`Installing bashi`);
-    const bashiBinPath = getBashiBinaryPath();
-    lib_core.info(`Looking for bashi binary at: ${bashiBinPath}`);
-    // Check if bashi binary exists
-    if (!external_fs_.existsSync(bashiBinPath)) {
-        lib_core.warning(`Bashi binary not found at ${bashiBinPath}, skipping bashi installation`);
+async function installFastcli(fastcliLogLevel = 'error', enabledOptimizations = '') {
+    lib_core.debug(`Installing fastcli`);
+    const fastcliBinPath = getFastcliBinaryPath();
+    lib_core.info(`Looking for fastcli binary at: ${fastcliBinPath}`);
+    // Check if fastcli binary exists
+    if (!external_fs_.existsSync(fastcliBinPath)) {
+        lib_core.warning(`fastcli binary not found at ${fastcliBinPath}, skipping fastcli installation`);
         // List files in the directory to debug
         try {
             const files = external_fs_.readdirSync('/tmp/fastci/tools');
@@ -34488,18 +34488,18 @@ async function installBashi(bashiLogLevel = 'error', enabledOptimizations = '') 
         return;
     }
     try {
-        createBashiConfig(bashiLogLevel, enabledOptimizations);
+        createFastcliConfig(fastcliLogLevel, enabledOptimizations);
         lib_core.info('Starting bash replacement...');
-        await replaceMultipleShellsWithBashi(bashiBinPath);
-        await replaceMultipleNodeWithBashi(bashiBinPath);
+        await replaceMultipleShellsWithFastcli(fastcliBinPath);
+        await replaceMultipleNodeWithfastcli(fastcliBinPath);
     }
     catch (error) {
-        failOrWarn(`Failed to install bashi: ${error}`);
+        failOrWarn(`Failed to install fastcli: ${error}`);
         throw error;
     }
 }
 async function performSetup() {
-    const { version, fullRepoName, jobNameForTestsOnly, installBashi: installBashiInput, bashiLogLevel, enabledOptimizations } = getInputs();
+    const { version, fullRepoName, jobNameForTestsOnly, installFastcli: installFastcliInput, fastcliLogLevel, enabledOptimizations } = getInputs();
     // Override job name for test scenarios if provided
     if (jobNameForTestsOnly && jobNameForTestsOnly.trim() !== '') {
         process.env.GITHUB_JOB = jobNameForTestsOnly;
@@ -34509,10 +34509,10 @@ async function performSetup() {
     if (version !== 'local') {
         await DonwloadReleaseAssets(version, fullRepoName);
     }
-    if (installBashiInput === 'true') {
-        // Set the BASHI_LOG_LEVEL environment variable
-        lib_core.exportVariable('BASHI_LOG_LEVEL', bashiLogLevel);
-        await installBashi(bashiLogLevel, enabledOptimizations);
+    if (installFastcliInput === 'true') {
+        // Set the fastcli_LOG_LEVEL environment variable
+        lib_core.exportVariable('fastcli_LOG_LEVEL', fastcliLogLevel);
+        await installFastcli(fastcliLogLevel, enabledOptimizations);
     }
 }
 async function RunSetup() {
@@ -34534,5 +34534,5 @@ RunSetup();
 
 })();
 
-var __webpack_exports__createBashiConfig = __webpack_exports__.g;
-export { __webpack_exports__createBashiConfig as createBashiConfig };
+var __webpack_exports__createFastcliConfig = __webpack_exports__.S;
+export { __webpack_exports__createFastcliConfig as createFastcliConfig };
