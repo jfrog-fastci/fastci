@@ -25,10 +25,9 @@ inputs:
     required: true
 
   version:
-    description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
+    description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.19.6"
-
+    default: "v0.20.3"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -70,20 +69,20 @@ inputs:
     required: false
     default: '1000'
   
-  install_bashi:
-    description: 'Install bashi'
+  install_fastcli:
+    description: 'Install fastcli'
     required: false
     default: true
   
-  bashi_log_level:
-    description: 'Bashi log level (trace, debug, info, warn, error, fatal, panic)'
+  fastcli_log_level:
+    description: 'fastcli log level (trace, debug, info, warn, error, fatal, panic)'
     required: false
     default: 'error'
 
   enabled_optimizations:
     description: 'Enabled optimizations (go_build_optimization, make_optimization, integration_test_optimization, go_test_junit_optimization, go_test_cache_optimization, docker_build_trace_optimization)'
     required: false
-    default: 'go_test_junit_optimization,docker_build_trace_optimization'
+    default: 'go_test_junit_optimization,docker_build_trace_optimization,go_build_optimization'
 
 
 runs:
