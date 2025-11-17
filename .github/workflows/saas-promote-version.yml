@@ -47,7 +47,7 @@ jobs:
       - name: Fetch all refs
         run: git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
 
-      - name: Check and auto-resolve merge conflicts (release -> dev)
+      - name: Check merge conflicts (release -> dev)
         shell: bash
         run: |
           set -euo pipefail
@@ -55,21 +55,16 @@ jobs:
           git config user.name "fastci-bot"
           git config user.email "bot@fastci.local"
           
-          if [ "${{ inputs.auto_resolve_conflicts }}" = "true" ]; then
-            echo "Auto-resolve conflicts enabled: using release branch code for all conflicted files"
-            set +e
-            git merge --no-commit --no-ff "origin/${{ inputs.release_branch }}"
-            status=$?
-            set -e
+          set +e
+          git merge --no-commit --no-ff "origin/${{ inputs.release_branch }}"
+          status=$?
+          set -e
+          
+          if [ $status -ne 0 ]; then
+            echo "Merge conflicts detected between ${{ inputs.release_branch }} and dev"
             
-            if [ $status -eq 0 ]; then
-              echo "Merge successful with no conflicts"
-              echo "HAS_CONFLICTS_RELEASE_TO_DEV=false" >> "$GITHUB_ENV"
-              echo "AUTO_RESOLVED=true" >> "$GITHUB_ENV"
-              git commit -m "Auto-merge ${{ inputs.release_branch }} into dev"
-              git push origin temp-dev:dev
-            else
-              echo "Conflicts detected - resolving by taking release branch version for all conflicted files"
+            if [ "${{ inputs.auto_resolve_conflicts }}" = "true" ]; then
+              echo "Auto-resolve enabled: resolving conflicts by taking release branch version"
               # Get list of conflicted files
               conflicted_files=$(git diff --name-only --diff-filter=U)
               if [ -n "$conflicted_files" ]; then
@@ -78,30 +73,20 @@ jobs:
                 # Checkout each conflicted file from release branch
                 echo "$conflicted_files" | xargs git checkout --theirs
                 git add .
-                echo "HAS_CONFLICTS_RELEASE_TO_DEV=false" >> "$GITHUB_ENV"
-                echo "AUTO_RESOLVED=true" >> "$GITHUB_ENV"
-                git commit -m "Auto-merge ${{ inputs.release_branch }} into dev (conflicts resolved using release branch code)"
-                git push origin temp-dev:dev
+                echo "Conflicts resolved - will create PR with resolved conflicts"
+                echo "HAS_CONFLICTS_RELEASE_TO_DEV=resolved" >> "$GITHUB_ENV"
               else
-                echo "Merge failed but no conflicted files found"
+                echo "No conflicted files found"
                 if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
                 echo "HAS_CONFLICTS_RELEASE_TO_DEV=true" >> "$GITHUB_ENV"
-                echo "AUTO_RESOLVED=false" >> "$GITHUB_ENV"
               fi
+            else
+              if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
+              echo "HAS_CONFLICTS_RELEASE_TO_DEV=true" >> "$GITHUB_ENV"
             fi
           else
-            set +e
-            git merge --no-commit --no-ff "origin/${{ inputs.release_branch }}"
-            status=$?
-            if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
-            set -e
-            if [ $status -ne 0 ]; then
-              echo "Merge conflicts detected between ${{ inputs.release_branch }} and dev"
-              echo "HAS_CONFLICTS_RELEASE_TO_DEV=true" >> "$GITHUB_ENV"
-            else
-              echo "HAS_CONFLICTS_RELEASE_TO_DEV=false" >> "$GITHUB_ENV"
-            fi
-            echo "AUTO_RESOLVED=false" >> "$GITHUB_ENV"
+            echo "No conflicts detected"
+            echo "HAS_CONFLICTS_RELEASE_TO_DEV=false" >> "$GITHUB_ENV"
           fi
 
       - name: Create PR release -> dev (idempotent)
@@ -119,12 +104,6 @@ jobs:
             echo "Error: FASTCI_GITHUB_PR_TOKEN is invalid or expired. Please regenerate the token."
             exit 1
           fi
-          # If auto-resolved, no PR needed - merge already pushed to dev
-          if [ "${AUTO_RESOLVED:-false}" = "true" ]; then
-            echo "Conflicts were auto-resolved and merged directly to dev. No PR needed."
-            exit 0
-          fi
-          
           # If PR already exists, exit successfully
           existing=$(gh pr list --base dev --head "${{ inputs.release_branch }}" --json url -q '.[0].url // ""')
           if [ -n "$existing" ]; then
@@ -135,8 +114,10 @@ jobs:
           VERSION="${RELEASE#release/}"
           TITLE="[PROMO] Release ${RELEASE} -> dev"
           CONFLICT_NOTE=""
-          if [ "${HAS_CONFLICTS_RELEASE_TO_DEV:-false}" = "true" ]; then
-            CONFLICT_NOTE="\n\nNote: Merge conflicts detected between ${RELEASE} and dev. Manual resolution will be required."
+          if [ "${HAS_CONFLICTS_RELEASE_TO_DEV}" = "resolved" ]; then
+            CONFLICT_NOTE="\n\n✅ Conflicts were automatically resolved by taking the release branch version for all conflicted files."
+          elif [ "${HAS_CONFLICTS_RELEASE_TO_DEV}" = "true" ]; then
+            CONFLICT_NOTE="\n\n⚠️ Merge conflicts detected between ${RELEASE} and dev. Manual resolution will be required."
           fi
           BODY="Promoting version ${VERSION} to the dev branch.${CONFLICT_NOTE}"
           if ! gh pr create --base dev --head "${RELEASE}" --title "$TITLE" --body "$BODY"; then
