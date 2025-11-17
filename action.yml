@@ -25,7 +25,7 @@ inputs:
     required: true
 
   version:
-    description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
+    description: "Version of the bashi binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/bashi-{ARCH}}"
     required: false
     default: "v0.20.3"
 
@@ -69,13 +69,13 @@ inputs:
     required: false
     default: '1000'
   
-  install_fastcli:
-    description: 'Install fastcli'
+  install_bashi:
+    description: 'Install bashi'
     required: false
     default: true
   
-  fastcli_log_level:
-    description: 'fastcli log level (trace, debug, info, warn, error, fatal, panic)'
+  bashi_log_level:
+    description: 'Bashi log level (trace, debug, info, warn, error, fatal, panic)'
     required: false
     default: 'error'
 
