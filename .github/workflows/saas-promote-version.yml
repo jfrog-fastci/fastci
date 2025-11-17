@@ -1,4 +1,4 @@
-name: ➡️ [Release-Gate] saas-promote-version
+name: ➡️ [Release-Gate] SaaS-promote-version
 
 on:
   workflow_dispatch:
@@ -48,12 +48,17 @@ jobs:
           git checkout -B temp-dev origin/dev
           git config user.name "fastci-bot"
           git config user.email "bot@fastci.local"
-          if ! git merge --no-commit --no-ff "origin/${{ inputs.release_branch }}"; then
-            echo "Merge conflicts detected between ${{ inputs.release_branch }} and dev"
-            if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
-            exit 1
-          fi
+          set +e
+          git merge --no-commit --no-ff "origin/${{ inputs.release_branch }}"
+          status=$?
           if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
+          set -e
+          if [ $status -ne 0 ]; then
+            echo "Merge conflicts detected between ${{ inputs.release_branch }} and dev"
+            echo "HAS_CONFLICTS_RELEASE_TO_DEV=true" >> "$GITHUB_ENV"
+          else
+            echo "HAS_CONFLICTS_RELEASE_TO_DEV=false" >> "$GITHUB_ENV"
+          fi
 
       - name: Create PR release -> dev (idempotent)
         shell: bash
@@ -68,7 +73,11 @@ jobs:
           RELEASE="${{ inputs.release_branch }}"
           VERSION="${RELEASE#release/}"
           TITLE="[PROMO] Release ${RELEASE} -> dev"
-          BODY="Promoting version ${VERSION} to the dev branch."
+          CONFLICT_NOTE=""
+          if [ "${HAS_CONFLICTS_RELEASE_TO_DEV:-false}" = "true" ]; then
+            CONFLICT_NOTE="\n\nNote: Merge conflicts detected between ${RELEASE} and dev. Manual resolution will be required."
+          fi
+          BODY="Promoting version ${VERSION} to the dev branch.${CONFLICT_NOTE}"
           if ! gh pr create --base dev --head "${RELEASE}" --title "$TITLE" --body "$BODY"; then
             echo "gh pr create failed. If a PR already exists or conflicts occur, treat as skipped."
             exit 0
@@ -123,12 +132,17 @@ jobs:
           git checkout -B temp-main origin/main
           git config user.name "fastci-bot"
           git config user.email "bot@fastci.local"
-          if ! git merge --no-commit --no-ff origin/dev; then
-            echo "Merge conflicts detected between dev and main"
-            if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
-            exit 1
-          fi
+          set +e
+          git merge --no-commit --no-ff origin/dev
+          status=$?
           if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
+          set -e
+          if [ $status -ne 0 ]; then
+            echo "Merge conflicts detected between dev and main"
+            echo "HAS_CONFLICTS_DEV_TO_MAIN=true" >> "$GITHUB_ENV"
+          else
+            echo "HAS_CONFLICTS_DEV_TO_MAIN=false" >> "$GITHUB_ENV"
+          fi
 
       - name: Create PR dev -> main (idempotent)
         shell: bash
@@ -141,7 +155,11 @@ jobs:
             exit 0
           fi
           TITLE="[PROMO] Promote dev -> main (includes ${{ inputs.release_branch }})"
-          BODY="Promoting dev to main. This promotion includes the merged ${{ inputs.release_branch }}."
+          CONFLICT_NOTE=""
+          if [ "${HAS_CONFLICTS_DEV_TO_MAIN:-false}" = "true" ]; then
+            CONFLICT_NOTE="\n\nNote: Merge conflicts detected between dev and main. Manual resolution will be required."
+          fi
+          BODY="Promoting dev to main. This promotion includes the merged ${{ inputs.release_branch }}.${CONFLICT_NOTE}"
           if ! gh pr create --base main --head dev --title "$TITLE" --body "$BODY"; then
             echo "gh pr create failed. If a PR already exists or conflicts occur, treat as skipped."
             exit 0
