@@ -1,0 +1,155 @@
+name: saas-promote-version
+
+on:
+  workflow_dispatch:
+    inputs:
+      promotion_stage:
+        description: "Select the promotion stage."
+        required: true
+        type: choice
+        options:
+          - release-to-dev
+          - dev-to-main
+      release_branch:
+        description: "The full release branch name (e.g., release/v1.2.3)."
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  GH_TOKEN: ${{ github.token }}
+
+jobs:
+  release_to_dev:
+    if: ${{ inputs.promotion_stage == 'release-to-dev' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate release branch format
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${{ inputs.release_branch }}" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "release_branch must match release/v<semver> (e.g., release/v1.2.3)"; exit 1; }
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all refs
+        run: git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
+
+      - name: Run integration tests (release -> dev)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -x scripts/test-release-to-dev.sh ]; then
+            bash scripts/test-release-to-dev.sh
+          elif [ -f package.json ] && command -v npm >/dev/null 2>&1 && grep -q '"test:integration"' package.json; then
+            npm ci
+            npm run test:integration
+          else
+            echo "No integration tests found. Skipping."
+          fi
+
+      - name: Check merge conflicts (release -> dev)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout -B temp-dev origin/dev
+          if ! git merge --no-commit --no-ff "origin/${{ inputs.release_branch }}"; then
+            echo "Merge conflicts detected between ${{ inputs.release_branch }} and dev"
+            git merge --abort || true
+            exit 1
+          fi
+
+      - name: Create PR release -> dev (idempotent)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # If PR already exists, exit successfully
+          existing=$(gh pr list --base dev --head "${{ inputs.release_branch }}" --json url -q '.[0].url // ""')
+          if [ -n "$existing" ]; then
+            echo "PR already exists: $existing"
+            exit 0
+          fi
+          RELEASE="${{ inputs.release_branch }}"
+          VERSION="${RELEASE#release/}"
+          TITLE="[PROMO] Release ${RELEASE} -> dev"
+          BODY="Promoting version ${VERSION} to the dev branch."
+          if ! gh pr create --base dev --head "${RELEASE}" --title "$TITLE" --body "$BODY"; then
+            echo "gh pr create failed. If a PR already exists or conflicts occur, treat as skipped."
+            exit 0
+          fi
+
+  dev_to_main:
+    if: ${{ inputs.promotion_stage == 'dev-to-main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate release branch format
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "${{ inputs.release_branch }}" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "release_branch must match release/v<semver> (e.g., release/v1.2.3)"; exit 1; }
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all refs
+        run: git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
+
+      - name: Verify release is merged into dev
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git merge-base --is-ancestor "origin/${{ inputs.release_branch }}" origin/dev; then
+            echo "Release branch ${{ inputs.release_branch }} is not merged into dev. Aborting."
+            exit 1
+          fi
+
+      - name: Run smoke tests (dev -> main)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -x scripts/test-dev-to-main.sh ]; then
+            bash scripts/test-dev-to-main.sh
+          elif [ -f package.json ] && command -v npm >/dev/null 2>&1 && grep -q '"test:smoke"' package.json; then
+            npm ci
+            npm run test:smoke
+          else
+            echo "No smoke tests found. Skipping."
+          fi
+
+      - name: Check merge conflicts (dev -> main)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git checkout -B temp-main origin/main
+          if ! git merge --no-commit --no-ff origin/dev; then
+            echo "Merge conflicts detected between dev and main"
+            git merge --abort || true
+            exit 1
+          fi
+
+      - name: Create PR dev -> main (idempotent)
+        shell: bash
+        run: |
+          set -euo pipefail
+          # If PR already exists, exit successfully
+          existing=$(gh pr list --base main --head dev --json url -q '.[0].url // ""')
+          if [ -n "$existing" ]; then
+            echo "PR already exists: $existing"
+            exit 0
+          fi
+          TITLE="[PROMO] Promote dev -> main (includes ${{ inputs.release_branch }})"
+          BODY="Promoting dev to main. This promotion includes the merged ${{ inputs.release_branch }}."
+          if ! gh pr create --base main --head dev --title "$TITLE" --body "$BODY"; then
+            echo "gh pr create failed. If a PR already exists or conflicts occur, treat as skipped."
+            exit 0
+          fi
+
+
