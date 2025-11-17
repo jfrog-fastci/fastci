@@ -30113,7 +30113,7 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
  * @param message - The error message to display
  */
 function failOrWarn(message) {
-    const failOnError = lib_core.getInput('fail_on_error') === 'true';
+    const failOnError = lib_core.getBooleanInput('fail_on_error', { required: false });
     if (failOnError) {
         lib_core.setFailed(message);
     }
