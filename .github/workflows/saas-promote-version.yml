@@ -62,6 +62,8 @@ jobs:
 
       - name: Create PR release -> dev (idempotent)
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.FASTCI_GITHUB_PR_TOKEN }}
         run: |
           set -euo pipefail
           # If PR already exists, exit successfully
@@ -146,6 +148,8 @@ jobs:
 
       - name: Create PR dev -> main (idempotent)
         shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.FASTCI_GITHUB_PR_TOKEN }}
         run: |
           set -euo pipefail
           # If PR already exists, exit successfully
