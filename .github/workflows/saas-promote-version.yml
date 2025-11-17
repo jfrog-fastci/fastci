@@ -1,4 +1,4 @@
-name: ➡️✨ saas-promote-version
+name: ➡️ [Release-Gate] saas-promote-version
 
 on:
   workflow_dispatch:
@@ -41,29 +41,19 @@ jobs:
       - name: Fetch all refs
         run: git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
 
-      - name: Run integration tests (release -> dev)
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -x scripts/test-release-to-dev.sh ]; then
-            bash scripts/test-release-to-dev.sh
-          elif [ -f package.json ] && command -v npm >/dev/null 2>&1 && grep -q '"test:integration"' package.json; then
-            npm ci
-            npm run test:integration
-          else
-            echo "No integration tests found. Skipping."
-          fi
-
       - name: Check merge conflicts (release -> dev)
         shell: bash
         run: |
           set -euo pipefail
           git checkout -B temp-dev origin/dev
+          git config user.name "fastci-bot"
+          git config user.email "bot@fastci.local"
           if ! git merge --no-commit --no-ff "origin/${{ inputs.release_branch }}"; then
             echo "Merge conflicts detected between ${{ inputs.release_branch }} and dev"
-            git merge --abort || true
+            if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
             exit 1
           fi
+          if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
 
       - name: Create PR release -> dev (idempotent)
         shell: bash
@@ -117,11 +107,13 @@ jobs:
           set -euo pipefail
           if [ -x scripts/test-dev-to-main.sh ]; then
             bash scripts/test-dev-to-main.sh
-          elif [ -f package.json ] && command -v npm >/dev/null 2>&1 && grep -q '"test:smoke"' package.json; then
+          elif [ -x scripts/test-integration.sh ]; then
+            bash scripts/test-integration.sh
+          elif [ -f package.json ] && command -v npm >/dev/null 2>&1 && grep -q '"test:integration"' package.json; then
             npm ci
-            npm run test:smoke
+            npm run test:integration
           else
-            echo "No smoke tests found. Skipping."
+            echo "No integration tests found. Skipping."
           fi
 
       - name: Check merge conflicts (dev -> main)
@@ -129,11 +121,14 @@ jobs:
         run: |
           set -euo pipefail
           git checkout -B temp-main origin/main
+          git config user.name "fastci-bot"
+          git config user.email "bot@fastci.local"
           if ! git merge --no-commit --no-ff origin/dev; then
             echo "Merge conflicts detected between dev and main"
-            git merge --abort || true
+            if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
             exit 1
           fi
+          if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
 
       - name: Create PR dev -> main (idempotent)
         shell: bash
