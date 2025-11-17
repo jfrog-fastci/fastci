@@ -14,6 +14,11 @@ on:
         description: "The full release branch name (e.g., release/v1.2.3)."
         required: true
         type: string
+      auto_resolve_conflicts:
+        description: "Auto-resolve conflicts by taking release branch code (release-to-dev only)"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -42,22 +47,51 @@ jobs:
       - name: Fetch all refs
         run: git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
 
-      - name: Check merge conflicts (release -> dev)
+      - name: Check and resolve merge conflicts (release -> dev)
         shell: bash
         run: |
           set -euo pipefail
-          git checkout -B temp-dev origin/dev
           git config user.name "fastci-bot"
           git config user.email "bot@fastci.local"
+          
+          # Check for conflicts by attempting merge
+          git checkout -B temp-check origin/dev
           set +e
           git merge --no-commit --no-ff "origin/${{ inputs.release_branch }}"
           status=$?
-          if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
           set -e
+          
           if [ $status -ne 0 ]; then
             echo "Merge conflicts detected between ${{ inputs.release_branch }} and dev"
-            echo "HAS_CONFLICTS_RELEASE_TO_DEV=true" >> "$GITHUB_ENV"
+            
+            if [ "${{ inputs.auto_resolve_conflicts }}" = "true" ]; then
+              echo "Auto-resolve enabled: creating resolved merge in temporary branch"
+              # Get list of conflicted files
+              conflicted_files=$(git diff --name-only --diff-filter=U)
+              if [ -n "$conflicted_files" ]; then
+                echo "Conflicted files:"
+                echo "$conflicted_files"
+                # Checkout each conflicted file from release branch
+                echo "$conflicted_files" | xargs git checkout --theirs
+                git add .
+                # Commit the resolved merge
+                git commit -m "Merge ${{ inputs.release_branch }} into dev (conflicts resolved using release version)"
+                # Push to a temporary branch for PR
+                TEMP_BRANCH="auto-merge/${{ inputs.release_branch }}-to-dev"
+                git push -f origin "temp-check:${TEMP_BRANCH}"
+                echo "RESOLVED_BRANCH=${TEMP_BRANCH}" >> "$GITHUB_ENV"
+                echo "HAS_CONFLICTS_RELEASE_TO_DEV=resolved" >> "$GITHUB_ENV"
+              else
+                echo "No conflicted files found"
+                if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
+                echo "HAS_CONFLICTS_RELEASE_TO_DEV=true" >> "$GITHUB_ENV"
+              fi
+            else
+              if [ -f .git/MERGE_HEAD ]; then git merge --abort || true; fi
+              echo "HAS_CONFLICTS_RELEASE_TO_DEV=true" >> "$GITHUB_ENV"
+            fi
           else
+            echo "No conflicts detected"
             echo "HAS_CONFLICTS_RELEASE_TO_DEV=false" >> "$GITHUB_ENV"
           fi
 
@@ -76,21 +110,39 @@ jobs:
             echo "Error: FASTCI_GITHUB_PR_TOKEN is invalid or expired. Please regenerate the token."
             exit 1
           fi
-          # If PR already exists, exit successfully
-          existing=$(gh pr list --base dev --head "${{ inputs.release_branch }}" --json url -q '.[0].url // ""')
-          if [ -n "$existing" ]; then
-            echo "PR already exists: $existing"
-            exit 0
-          fi
           RELEASE="${{ inputs.release_branch }}"
           VERSION="${RELEASE#release/}"
-          TITLE="[PROMO] Release ${RELEASE} -> dev"
-          CONFLICT_NOTE=""
-          if [ "${HAS_CONFLICTS_RELEASE_TO_DEV:-false}" = "true" ]; then
-            CONFLICT_NOTE="\n\nNote: Merge conflicts detected between ${RELEASE} and dev. Manual resolution will be required."
+          
+          # Determine which branch to use for the PR
+          if [ "${HAS_CONFLICTS_RELEASE_TO_DEV}" = "resolved" ]; then
+            # Use the temporary resolved branch
+            PR_HEAD="${RESOLVED_BRANCH}"
+            # Check if PR already exists from temp branch
+            existing=$(gh pr list --base dev --head "${PR_HEAD}" --json url -q '.[0].url // ""')
+            if [ -n "$existing" ]; then
+              echo "PR already exists: $existing"
+              exit 0
+            fi
+            TITLE="[PROMO] Release ${RELEASE} -> dev (conflicts auto-resolved)"
+            CONFLICT_NOTE="\n\n✅ Conflicts were automatically resolved by taking the release branch version for all conflicted files.\n\nThis PR merges from temporary branch \`${PR_HEAD}\` which contains the resolved merge."
+          else
+            # Use the original release branch
+            PR_HEAD="${RELEASE}"
+            # Check if PR already exists from release branch
+            existing=$(gh pr list --base dev --head "${PR_HEAD}" --json url -q '.[0].url // ""')
+            if [ -n "$existing" ]; then
+              echo "PR already exists: $existing"
+              exit 0
+            fi
+            TITLE="[PROMO] Release ${RELEASE} -> dev"
+            CONFLICT_NOTE=""
+            if [ "${HAS_CONFLICTS_RELEASE_TO_DEV}" = "true" ]; then
+              CONFLICT_NOTE="\n\n⚠️ Merge conflicts detected between ${RELEASE} and dev. Manual resolution will be required."
+            fi
           fi
+          
           BODY="Promoting version ${VERSION} to the dev branch.${CONFLICT_NOTE}"
-          if ! gh pr create --base dev --head "${RELEASE}" --title "$TITLE" --body "$BODY"; then
+          if ! gh pr create --base dev --head "${PR_HEAD}" --title "$TITLE" --body "$BODY"; then
             echo "gh pr create failed. If a PR already exists or conflicts occur, treat as skipped."
             exit 0
           fi
