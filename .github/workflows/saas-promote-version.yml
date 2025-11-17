@@ -1,4 +1,4 @@
-name: saas-promote-version
+name: ➡️✨ saas-promote-version
 
 on:
   workflow_dispatch:
