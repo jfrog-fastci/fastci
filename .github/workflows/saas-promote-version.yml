@@ -26,6 +26,7 @@ jobs:
   release_to_dev:
     if: ${{ inputs.promotion_stage == 'release-to-dev' }}
     runs-on: ubuntu-latest
+    environment: GitHub
     steps:
       - name: Validate release branch format
         shell: bash
@@ -88,6 +89,7 @@ jobs:
   dev_to_main:
     if: ${{ inputs.promotion_stage == 'dev-to-main' }}
     runs-on: ubuntu-latest
+    environment: GitHub
     steps:
       - name: Validate release branch format
         shell: bash
