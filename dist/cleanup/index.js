@@ -30022,8 +30022,8 @@ function getGHServerUrl() {
 function getGithubToken() {
     return process.env.GITHUB_TOKEN || process.env.INPUT_GITHUB_TOKEN;
 }
-function getBashiBinaryPath() {
-    return `/tmp/fastci/tools/bashi-${getBinarySuffixName()}`;
+function getFastcliBinaryPath() {
+    return `/tmp/fastci/tools/fastcli-${getBinarySuffixName()}`;
 }
 function getCacheJsPath() {
     return `/tmp/fastci/tools/cache.js`;
@@ -30076,12 +30076,12 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
     const downloadPromises = release.data.assets.map(async (asset) => {
         core.debug(`Checking asset ${asset.name}`);
         // Only download binaries that end with the exact architecture suffix
-        if (asset.name === `agent-${binarySuffix}` || asset.name === `bashi-${binarySuffix}`) {
-            const bashiAssetPath = path.join(toolDir, asset.name);
-            const bashiDownloadedAssetPath = await downloadAsset(asset.url, bashiAssetPath, getGithubToken() || '');
+        if (asset.name === `agent-${binarySuffix}` || asset.name === `fastcli-${binarySuffix}`) {
+            const fastcliAssetPath = path.join(toolDir, asset.name);
+            const fastcliDownloadedAssetPath = await downloadAsset(asset.url, fastcliAssetPath, getGithubToken() || '');
             core.debug(`Downloaded asset ${asset.name} to: ${path}`);
-            fs.symlinkSync(bashiDownloadedAssetPath, path.join(toolDir, "bash"));
-            fs.symlinkSync(bashiDownloadedAssetPath, path.join(toolDir, "sh"));
+            fs.symlinkSync(fastcliDownloadedAssetPath, path.join(toolDir, "bash"));
+            fs.symlinkSync(fastcliDownloadedAssetPath, path.join(toolDir, "sh"));
         }
         if (asset.name.includes('cache.js')) {
             // download the cache.js binary
@@ -30169,8 +30169,8 @@ async function runWithTimeout(operation, timeoutMs, operationName, options) {
 
 async function runExportOtel() {
     lib_core.debug(`Running export-otel`);
-    const bashiBinPath = getBashiBinaryPath();
-    const result = await exec.exec(bashiBinPath, ["export-otel"], {
+    const fastcliBinPath = getFastcliBinaryPath();
+    const result = await exec.exec(fastcliBinPath, ["export-otel"], {
         env: { ...process.env, GITHUB_TOKEN: getGithubToken() || '', },
     });
     lib_core.debug(`export-otel result: ${result}`);
