@@ -67,6 +67,15 @@ jobs:
           GH_TOKEN: ${{ secrets.FASTCI_GITHUB_PR_TOKEN }}
         run: |
           set -euo pipefail
+          # Verify token is valid
+          if [ -z "$GH_TOKEN" ]; then
+            echo "Error: FASTCI_GITHUB_PR_TOKEN secret is not set in the GitHub environment"
+            exit 1
+          fi
+          if ! gh auth status; then
+            echo "Error: FASTCI_GITHUB_PR_TOKEN is invalid or expired. Please regenerate the token."
+            exit 1
+          fi
           # If PR already exists, exit successfully
           existing=$(gh pr list --base dev --head "${{ inputs.release_branch }}" --json url -q '.[0].url // ""')
           if [ -n "$existing" ]; then
@@ -154,6 +163,15 @@ jobs:
           GH_TOKEN: ${{ secrets.FASTCI_GITHUB_PR_TOKEN }}
         run: |
           set -euo pipefail
+          # Verify token is valid
+          if [ -z "$GH_TOKEN" ]; then
+            echo "Error: FASTCI_GITHUB_PR_TOKEN secret is not set in the GitHub environment"
+            exit 1
+          fi
+          if ! gh auth status; then
+            echo "Error: FASTCI_GITHUB_PR_TOKEN is invalid or expired. Please regenerate the token."
+            exit 1
+          fi
           # If PR already exists, exit successfully
           existing=$(gh pr list --base main --head dev --json url -q '.[0].url // ""')
           if [ -n "$existing" ]; then
