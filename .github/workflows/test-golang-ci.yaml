@@ -19,10 +19,11 @@ on:
           - main
           - disabled
           
-# This will also run the workflow automatically on every push to the 'dev' branch
+# This will also run the workflow automatically on every push to the 'dev' or 'main' branch
   push:
     branches:
       - dev
+      - main
       
 jobs:
   performance-with-fastci:
@@ -38,7 +39,7 @@ jobs:
         run: echo "START_TIME=$(date +%s)" >> $GITHUB_ENV
 
       - name: Start FastCI Optimization
-        if: inputs.branch == 'dev'
+        if: inputs.branch == 'dev' || (github.event_name == 'push' && github.ref == 'refs/heads/dev')
         uses: jfrog-fastci/fastci@dev
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -47,7 +48,7 @@ jobs:
           fastcli_log_level: 'debug'
 
       - name: Start FastCI Optimization
-        if: inputs.branch == 'main'
+        if: inputs.branch == 'main' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         uses: jfrog-fastci/fastci@main
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
