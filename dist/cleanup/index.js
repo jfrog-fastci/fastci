@@ -29968,6 +29968,35 @@ module.exports = parseParams
 /******/ }
 /******/ 
 /************************************************************************/
+/******/ /* webpack/runtime/compat get default export */
+/******/ (() => {
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__nccwpck_require__.n = (module) => {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			() => (module['default']) :
+/******/ 			() => (module);
+/******/ 		__nccwpck_require__.d(getter, { a: getter });
+/******/ 		return getter;
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/define property getters */
+/******/ (() => {
+/******/ 	// define getter functions for harmony exports
+/******/ 	__nccwpck_require__.d = (exports, definition) => {
+/******/ 		for(var key in definition) {
+/******/ 			if(__nccwpck_require__.o(definition, key) && !__nccwpck_require__.o(exports, key)) {
+/******/ 				Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 			}
+/******/ 		}
+/******/ 	};
+/******/ })();
+/******/ 
+/******/ /* webpack/runtime/hasOwnProperty shorthand */
+/******/ (() => {
+/******/ 	__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ })();
+/******/ 
 /******/ /* webpack/runtime/compat */
 /******/ 
 /******/ if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = new URL('.', import.meta.url).pathname.slice(import.meta.url.match(/^file:\/\/\/\w:/) ? 1 : 0, -1) + "/";
@@ -29985,9 +30014,13 @@ var exec = __nccwpck_require__(1514);
 var tool_cache = __nccwpck_require__(7784);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
+// EXTERNAL MODULE: ./node_modules/@actions/io/lib/io.js
+var io = __nccwpck_require__(7436);
 // EXTERNAL MODULE: external "path"
 var external_path_ = __nccwpck_require__(1017);
+var external_path_default = /*#__PURE__*/__nccwpck_require__.n(external_path_);
 ;// CONCATENATED MODULE: ./src/utils/release.ts
+
 
 
 
@@ -30022,11 +30055,45 @@ function getGHServerUrl() {
 function getGithubToken() {
     return process.env.GITHUB_TOKEN || process.env.INPUT_GITHUB_TOKEN;
 }
+function getFastCliToolsDir() {
+    return `/tmp/fastci/tools`;
+}
 function getFastcliBinaryPath() {
     return `/tmp/fastci/tools/fastcli-${getBinarySuffixName()}`;
 }
+function getFastcliConfigPath() {
+    return '/tmp/fastci/config.json';
+}
 function getCacheJsPath() {
     return `/tmp/fastci/tools/cache.js`;
+}
+// Check if fastCli installed
+async function isFastCliInstalled() {
+    // If fastcli binary not exists, fastcli is not installed
+    if (!external_fs_.existsSync(getFastcliBinaryPath())) {
+        return false;
+    }
+    // If fastcli binary exists, that might mean that only the artifacts are present
+    //  but there is no symlink from shell to fastcli
+    const potentialShells = await getShellNamesToLink();
+    for (const potentialShell of potentialShells) {
+        // If at least one symlink present we will consider this scenario as installed
+        if (external_fs_.existsSync(external_path_default().join(getFastCliToolsDir(), potentialShell))) {
+            return true;
+        }
+    }
+    return false;
+}
+async function getShellNamesToLink() {
+    const shells = [];
+    const shellsToSearchFor = ['bash', 'sh'];
+    for (const shellToSearch of shellsToSearchFor) {
+        const shellPath = await io.which(shellToSearch);
+        if (shellPath) {
+            shells.push(external_path_default().basename(shellPath));
+        }
+    }
+    return shells;
 }
 function getBinarySuffixName() {
     // Possible values are: `'arm'`, `'arm64'`, `'ia32'`, `'loong64'`, `'mips'`, `'mipsel'`, `'ppc'`, `'ppc64'`, `'riscv64'`, `'s390'`, `'s390x'`, and `'x64'`.
@@ -30072,37 +30139,33 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
         throw err;
     });
     const binarySuffix = getBinarySuffixName();
-    const toolDir = "/tmp/fastci/tools";
     const downloadPromises = release.data.assets.map(async (asset) => {
         core.debug(`Checking asset ${asset.name}`);
         // Only download binaries that end with the exact architecture suffix
-        if (asset.name === `agent-${binarySuffix}` || asset.name === `fastcli-${binarySuffix}`) {
-            const fastcliAssetPath = path.join(toolDir, asset.name);
-            const fastcliDownloadedAssetPath = await downloadAsset(asset.url, fastcliAssetPath, getGithubToken() || '');
-            core.debug(`Downloaded asset ${asset.name} to: ${path}`);
-            fs.symlinkSync(fastcliDownloadedAssetPath, path.join(toolDir, "bash"));
-            fs.symlinkSync(fastcliDownloadedAssetPath, path.join(toolDir, "sh"));
+        if (asset.name === `fastcli-${binarySuffix}`) {
+            const fastcliAssetPath = path.join(getFastCliToolsDir(), asset.name);
+            const downloadedPath = await downloadAsset(asset.url, fastcliAssetPath, getGithubToken() || '');
+            core.debug(`Downloaded asset ${asset.name} to: ${downloadedPath}`);
         }
         if (asset.name.includes('cache.js')) {
             // download the cache.js binary
-            const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
-            core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+            const downloadedPath = await downloadAsset(asset.url, path.join(getFastCliToolsDir(), asset.name), getGithubToken() || '');
+            core.debug(`Downloaded asset ${asset.name} to: ${downloadedPath}`);
         }
         if (asset.name.includes('gotestsum') && asset.name.includes(binarySuffix)) {
-            const path = await downloadAsset(asset.url, `/tmp/fastci/tools/gotestsum`, getGithubToken() || '');
-            core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+            const downloadedPath = await downloadAsset(asset.url, path.join(getFastCliToolsDir(), "gotestsum"), getGithubToken() || '');
+            core.debug(`Downloaded asset ${asset.name} to: ${downloadedPath}`);
         }
     });
     // Wait for all downloads to complete
     await Promise.all(downloadPromises);
     // check if the binaries are downloaded and make them executable
-    // list the files in /tmp/fastci/tools
-    const files = fs.readdirSync('/tmp/fastci/tools');
-    core.debug(`Files in /tmp/fastci/tools: ${files}`);
+    const files = fs.readdirSync(getFastCliToolsDir());
+    core.debug(`Files in tools: ${files}`);
     for (const file of files) {
-        const path = `/tmp/fastci/tools/${file}`;
-        await fs.promises.chmod(path, 0o755);
-        core.debug(`${file} is present and chmodded at: ${path}`);
+        const pathToChmod = path.join(getFastCliToolsDir(), file);
+        await fs.promises.chmod(pathToChmod, 0o755);
+        core.debug(`${file} is present and chmodded at: ${pathToChmod}`);
     }
 }
 
@@ -30113,7 +30176,7 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
  * @param message - The error message to display
  */
 function failOrWarn(message) {
-    const failOnError = lib_core.getInput('fail_on_error') === 'true';
+    const failOnError = lib_core.getBooleanInput('fail_on_error', { required: false });
     if (failOnError) {
         lib_core.setFailed(message);
     }
@@ -30179,6 +30242,11 @@ async function runExportOtel() {
 async function cleanup() {
     // Get timeout values from inputs (convert from seconds to milliseconds)
     const exportOtelTimeout = parseInt(lib_core.getInput('export_otel_timeout_seconds') || '15') * 1000;
+    const isInstalled = await isFastCliInstalled();
+    if (!isInstalled) {
+        lib_core.debug("FastCLI not installed, skipping cleanup");
+        return;
+    }
     // Export OTEL data with timeout
     await runWithTimeout(runExportOtel, exportOtelTimeout, 'export-otel', { continueOnError: true });
 }
