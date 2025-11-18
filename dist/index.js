@@ -33977,6 +33977,7 @@ var external_path_default = /*#__PURE__*/__nccwpck_require__.n(external_path_);
 
 
 
+
 async function findReleaseByName(serverUrl, owner, repo, releaseName, githubToken) {
     let apiUrl = `${serverUrl}/api/v3/repos/${owner}/${repo}/releases`;
     if (serverUrl.includes('github.com')) {
@@ -34006,11 +34007,45 @@ function getGHServerUrl() {
 function getGithubToken() {
     return process.env.GITHUB_TOKEN || process.env.INPUT_GITHUB_TOKEN;
 }
+function getFastCliToolsDir() {
+    return `/tmp/fastci/tools`;
+}
 function getFastcliBinaryPath() {
     return `/tmp/fastci/tools/fastcli-${getBinarySuffixName()}`;
 }
+function getFastcliConfigPath() {
+    return '/tmp/fastci/config.json';
+}
 function getCacheJsPath() {
     return `/tmp/fastci/tools/cache.js`;
+}
+// Check if fastCli installed
+async function isFastCliInstalled() {
+    // If fastcli binary not exists, fastcli is not installed
+    if (!external_fs_.existsSync(getFastcliBinaryPath())) {
+        return false;
+    }
+    // If fastcli binary exists, that might mean that only the artifacts are present
+    //  but there is no symlink from shell to fastcli
+    const potentialShells = await getShellNamesToLink();
+    for (const potentialShell of potentialShells) {
+        // If at least one symlink present we will consider this scenario as installed
+        if (external_fs_.existsSync(external_path_default().join(getFastCliToolsDir(), potentialShell))) {
+            return true;
+        }
+    }
+    return false;
+}
+async function getShellNamesToLink() {
+    const shells = [];
+    const shellsToSearchFor = ['bash', 'sh'];
+    for (const shellToSearch of shellsToSearchFor) {
+        const shellPath = await lib_io.which(shellToSearch);
+        if (shellPath) {
+            shells.push(external_path_default().basename(shellPath));
+        }
+    }
+    return shells;
 }
 function getBinarySuffixName() {
     // Possible values are: `'arm'`, `'arm64'`, `'ia32'`, `'loong64'`, `'mips'`, `'mipsel'`, `'ppc'`, `'ppc64'`, `'riscv64'`, `'s390'`, `'s390x'`, and `'x64'`.
@@ -34056,37 +34091,33 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
         throw err;
     });
     const binarySuffix = getBinarySuffixName();
-    const toolDir = "/tmp/fastci/tools";
     const downloadPromises = release.data.assets.map(async (asset) => {
         lib_core.debug(`Checking asset ${asset.name}`);
         // Only download binaries that end with the exact architecture suffix
-        if (asset.name === `agent-${binarySuffix}` || asset.name === `fastcli-${binarySuffix}`) {
-            const fastcliAssetPath = external_path_default().join(toolDir, asset.name);
-            const fastcliDownloadedAssetPath = await downloadAsset(asset.url, fastcliAssetPath, getGithubToken() || '');
-            lib_core.debug(`Downloaded asset ${asset.name} to: ${(external_path_default())}`);
-            external_fs_.symlinkSync(fastcliDownloadedAssetPath, external_path_default().join(toolDir, "bash"));
-            external_fs_.symlinkSync(fastcliDownloadedAssetPath, external_path_default().join(toolDir, "sh"));
+        if (asset.name === `fastcli-${binarySuffix}`) {
+            const fastcliAssetPath = external_path_default().join(getFastCliToolsDir(), asset.name);
+            const downloadedPath = await downloadAsset(asset.url, fastcliAssetPath, getGithubToken() || '');
+            lib_core.debug(`Downloaded asset ${asset.name} to: ${downloadedPath}`);
         }
         if (asset.name.includes('cache.js')) {
             // download the cache.js binary
-            const path = await downloadAsset(asset.url, `/tmp/fastci/tools/${asset.name}`, getGithubToken() || '');
-            lib_core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+            const downloadedPath = await downloadAsset(asset.url, external_path_default().join(getFastCliToolsDir(), asset.name), getGithubToken() || '');
+            lib_core.debug(`Downloaded asset ${asset.name} to: ${downloadedPath}`);
         }
         if (asset.name.includes('gotestsum') && asset.name.includes(binarySuffix)) {
-            const path = await downloadAsset(asset.url, `/tmp/fastci/tools/gotestsum`, getGithubToken() || '');
-            lib_core.debug(`Downloaded asset ${asset.name} to: ${path}`);
+            const downloadedPath = await downloadAsset(asset.url, external_path_default().join(getFastCliToolsDir(), "gotestsum"), getGithubToken() || '');
+            lib_core.debug(`Downloaded asset ${asset.name} to: ${downloadedPath}`);
         }
     });
     // Wait for all downloads to complete
     await Promise.all(downloadPromises);
     // check if the binaries are downloaded and make them executable
-    // list the files in /tmp/fastci/tools
-    const files = external_fs_.readdirSync('/tmp/fastci/tools');
-    lib_core.debug(`Files in /tmp/fastci/tools: ${files}`);
+    const files = external_fs_.readdirSync(getFastCliToolsDir());
+    lib_core.debug(`Files in tools: ${files}`);
     for (const file of files) {
-        const path = `/tmp/fastci/tools/${file}`;
-        await external_fs_.promises.chmod(path, 0o755);
-        lib_core.debug(`${file} is present and chmodded at: ${path}`);
+        const pathToChmod = external_path_default().join(getFastCliToolsDir(), file);
+        await external_fs_.promises.chmod(pathToChmod, 0o755);
+        lib_core.debug(`${file} is present and chmodded at: ${pathToChmod}`);
     }
 }
 
@@ -34325,23 +34356,9 @@ function createFastcliConfig(logLevel, enabledOptimizations = '') {
             }
         }
     };
-    const configPath = '/tmp/fastci/config.json';
-    external_fs_.writeFileSync(configPath, JSON.stringify(runtimeContext, null, 2));
-    lib_core.info(`Created complete fastcli configuration at ${configPath} with log level: ${logLevel}`);
+    external_fs_.writeFileSync(getFastcliConfigPath(), JSON.stringify(runtimeContext, null, 2));
+    lib_core.info(`Created complete fastcli configuration with log level: ${logLevel}`);
     lib_core.debug(`Configuration: ${JSON.stringify(runtimeContext, null, 2)}`);
-}
-async function getShellPathsToReplace() {
-    // Always try to replace both common bash locations
-    const shells = [];
-    const bashPath = await lib_io.which("bash");
-    if (bashPath) {
-        shells.push(bashPath);
-    }
-    const shPath = await lib_io.which("sh");
-    if (shPath) {
-        shells.push(shPath);
-    }
-    return shells;
 }
 function getNodePathsToReplace() {
     const baseDir = "/home/runner/actions-runner/cached/externals/";
@@ -34353,7 +34370,7 @@ function getNodePathsToReplace() {
     try {
         external_fs_.readdirSync(baseDir, { withFileTypes: true }).forEach(entry => {
             if (entry.isDirectory() && entry.name.startsWith('node')) {
-                const nodeBinPath = `${baseDir}${entry.name}/bin/node`;
+                const nodeBinPath = external_path_default().join(baseDir, entry.name, 'bin', 'node');
                 if (external_fs_.existsSync(nodeBinPath)) {
                     binaries.push(nodeBinPath);
                 }
@@ -34365,97 +34382,55 @@ function getNodePathsToReplace() {
     }
     return binaries;
 }
-function shouldReplaceShell(shellPath) {
-    const shellBase = shellPath.split('/').pop();
-    if (shellBase !== 'bash' && shellBase !== 'sh') {
-        lib_core.info(`Shell is '${shellBase}', not 'bash' or 'sh'. Skipping replacement.`);
-        return false;
-    }
-    // Check if the shell path actually exists
-    if (!external_fs_.existsSync(shellPath)) {
-        lib_core.info(`Shell path ${shellPath} does not exist. Skipping replacement.`);
+function shouldReplaceShell(shellName) {
+    if (shellName !== 'bash' && shellName !== 'sh') {
+        lib_core.info(`Shell is '${shellName}', not 'bash' or 'sh'. Skipping replacement.`);
         return false;
     }
     return true;
 }
-async function replaceShellWithFastcli(binDir, fastcliBinPath, shellPath) {
-    lib_core.info(`Replacing shell at ${shellPath} with fastcli`);
-    try {
-        external_fs_.mkdirSync(binDir, { recursive: true });
-    }
-    catch { }
-    for (const name of ['bash', 'sh']) {
-        const link = `${binDir}/${name}`;
-        try {
-            if (external_fs_.existsSync(link))
-                external_fs_.unlinkSync(link);
-        }
-        catch { }
-        try {
-            external_fs_.symlinkSync(fastcliBinPath, link);
-        }
-        catch { }
-    }
-    lib_core.addPath(binDir);
-}
-async function replaceMultipleShellsWithFastcli(fastcliBinPath) {
-    const shellPaths = await getShellPathsToReplace();
+async function replaceMultipleShellsWithFastcli() {
+    const shellNamesToLink = await getShellNamesToLink();
     const replacedPaths = [];
-    const binDir = '/tmp/fastci/tools';
-    for (const shellPath of shellPaths) {
-        if (shouldReplaceShell(shellPath)) {
-            try {
-                await replaceShellWithFastcli(binDir, fastcliBinPath, shellPath);
-                replacedPaths.push(shellPath);
-            }
-            catch (error) {
-                lib_core.warning(`Failed to replace shell at ${shellPath}: ${error}`);
-                // Continue with other shells, but ensure we clean up any successful replacements on failure
-                for (const replacedPath of replacedPaths) {
-                    try {
-                        const linkPath = external_path_default().join(binDir, external_path_default().basename(replacedPath));
-                        try {
-                            if (external_fs_.existsSync(linkPath))
-                                external_fs_.unlinkSync(linkPath);
-                        }
-                        catch { }
-                    }
-                    catch (restoreError) {
-                        lib_core.warning(`Failed to restore ${replacedPath} during cleanup: ${restoreError}`);
-                    }
-                }
-                throw error;
+    try {
+        for (const shellNameToLink of shellNamesToLink) {
+            if (shouldReplaceShell(shellNameToLink)) {
+                external_fs_.symlinkSync(getFastcliBinaryPath(), external_path_default().join(getFastCliToolsDir(), shellNameToLink));
+                replacedPaths.push(shellNameToLink);
             }
         }
     }
-    if (replacedPaths.length === 0) {
-        lib_core.warning('No bash shells were found to replace');
+    catch (error) {
+        lib_core.warning(`Failed to replace shell: ${error}, terminating fastcli installation`);
+        for (const replacedPath of replacedPaths) {
+            const linkPath = external_path_default().join(getFastCliToolsDir(), external_path_default().basename(replacedPath));
+            // Best effort
+            try {
+                if (external_fs_.existsSync(linkPath))
+                    external_fs_.unlinkSync(linkPath);
+            }
+            catch { }
+        }
+        throw error;
     }
-    else {
-        lib_core.info(`Successfully replaced ${replacedPaths.length} shell(s): ${replacedPaths.join(', ')}`);
-    }
+    lib_core.info(`Successfully replaced ${replacedPaths.length} shell(s): ${replacedPaths.join(', ')}`);
 }
-async function replaceNodeWithfastcli(fastcliBinPath, nodePath) {
+async function replaceNodeWithfastcli(nodePath) {
     const nodeBackupPath = external_path_default().join(external_path_default().dirname(nodePath), '_node');
     // Move node to _node
     const mvArgs = [nodePath, nodeBackupPath];
     await exec.exec('mv', mvArgs);
     lib_core.info(`Moved node binary to ${nodeBackupPath}`);
     // Create symlink from node to fastcli
-    const lnArgs = ['-s', fastcliBinPath, nodePath];
-    await exec.exec('ln', lnArgs);
-    lib_core.info(`Created symlink: ${nodePath} -> ${fastcliBinPath}`);
+    external_fs_.symlinkSync(getFastcliBinaryPath(), nodePath);
+    lib_core.info(`Created symlink for ${nodePath}}`);
 }
-async function replaceMultipleNodeWithfastcli(fastcliBinPath) {
+async function replaceMultipleNodeWithfastcli() {
     const nodePaths = getNodePathsToReplace();
     const replacedPaths = [];
     for (const nodePath of nodePaths) {
-        if (!external_fs_.existsSync(nodePath)) {
-            lib_core.debug(`Node binary at ${nodePath} does not exist. Skipping replacement.`);
-            continue;
-        }
         try {
-            await replaceNodeWithfastcli(fastcliBinPath, nodePath);
+            await replaceNodeWithfastcli(nodePath);
             replacedPaths.push(nodePath);
         }
         catch (error) {
@@ -34479,19 +34454,19 @@ async function installFastcli(fastcliLogLevel = 'error', enabledOptimizations = 
         lib_core.warning(`fastcli binary not found at ${fastcliBinPath}, skipping fastcli installation`);
         // List files in the directory to debug
         try {
-            const files = external_fs_.readdirSync('/tmp/fastci/tools');
-            lib_core.info(`Files in /tmp/fastci/tools: ${files.join(', ')}`);
+            const files = external_fs_.readdirSync(getFastcliConfigPath());
+            lib_core.info(`Files in tools: ${files.join(', ')}`);
         }
         catch (error) {
-            lib_core.warning(`Could not list files in /tmp/fastci/tools: ${error}`);
+            lib_core.warning(`Could not list files in tools: ${error}`);
         }
         return;
     }
     try {
         createFastcliConfig(fastcliLogLevel, enabledOptimizations);
         lib_core.info('Starting bash replacement...');
-        await replaceMultipleShellsWithFastcli(fastcliBinPath);
-        await replaceMultipleNodeWithfastcli(fastcliBinPath);
+        await replaceMultipleShellsWithFastcli();
+        await replaceMultipleNodeWithfastcli();
     }
     catch (error) {
         failOrWarn(`Failed to install fastcli: ${error}`);
@@ -34499,23 +34474,34 @@ async function installFastcli(fastcliLogLevel = 'error', enabledOptimizations = 
     }
 }
 async function performSetup() {
+    const isInstalled = await isFastCliInstalled();
+    if (isInstalled) {
+        lib_core.debug('FastCLI already installed skipping');
+        return;
+    }
     const { version, fullRepoName, jobNameForTestsOnly, installFastcli: installFastcliInput, fastcliLogLevel, enabledOptimizations } = getInputs();
+    if (!installFastcliInput) {
+        lib_core.debug(`Skipping fastcli installation due to explicit request by action input`);
+        return;
+    }
     // Override job name for test scenarios if provided
     if (jobNameForTestsOnly && jobNameForTestsOnly.trim() !== '') {
         process.env.GITHUB_JOB = jobNameForTestsOnly;
         process.env.JOB_NAME_FOR_TESTS_ONLY = jobNameForTestsOnly;
         lib_core.info(`Overriding GITHUB_JOB with job_name_for_tests_only value: ${jobNameForTestsOnly}`);
     }
-    if (version !== 'local') {
-        await DonwloadReleaseAssets(version, fullRepoName);
-    }
-    if (installFastcliInput) {
+    try {
+        // Start with installation
+        if (version !== 'local') {
+            await DonwloadReleaseAssets(version, fullRepoName);
+        }
         // Set the FASTCLI_LOG_LEVEL environment variable
         lib_core.exportVariable('FASTCLI_LOG_LEVEL', fastcliLogLevel);
         await installFastcli(fastcliLogLevel, enabledOptimizations);
+        lib_core.addPath(getFastCliToolsDir());
     }
-    else {
-        lib_core.debug(`Skipping fastcli installation`);
+    catch (error) {
+        // Do not do nothing here explicitly since we do not want to make the whole pipeline fail
     }
 }
 async function RunSetup() {
