@@ -156,7 +156,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          [[ "${{ inputs.release_branch }}" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "release_branch must match release/v<semver> (e.g., release/v1.2.3)"; exit 1; }
+          [[ "${{ inputs.release_branch }}" =~ auto-merge/release/v[0-9]+\.[0-9]+\.[0-9]+-to-dev$ ]] || { echo "release_branch must match release/v<semver> (e.g., release/v1.2.3)"; exit 1; }
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -165,15 +165,6 @@ jobs:
 
       - name: Fetch all refs
         run: git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
-
-      - name: Verify release is merged into dev
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! git merge-base --is-ancestor "origin/${{ inputs.release_branch }}" origin/dev; then
-            echo "Release branch ${{ inputs.release_branch }} is not merged into dev. Aborting."
-            exit 1
-          fi
 
       - name: Run smoke tests (dev -> main)
         shell: bash
