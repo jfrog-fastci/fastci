@@ -34097,7 +34097,7 @@ async function DonwloadReleaseAssets(tag, fullRepoName = 'jfrog-fastci/fastci') 
  * @param message - The error message to display
  */
 function failOrWarn(message) {
-    const failOnError = lib_core.getInput('fail_on_error') === 'true';
+    const failOnError = lib_core.getBooleanInput('fail_on_error', { required: false });
     if (failOnError) {
         lib_core.setFailed(message);
     }
@@ -34184,7 +34184,7 @@ function getInputs() {
         trackFiles: lib_core.getInput('tracer_track_files'),
         fullRepoName: lib_core.getInput('full_repo_name'),
         jobNameForTestsOnly: lib_core.getInput('job_name_for_tests_only'),
-        installFastcli: lib_core.getInput('install_fastcli', { required: false }),
+        installFastcli: lib_core.getBooleanInput('install_fastcli', { required: false }),
         fastcliLogLevel: lib_core.getInput('fastcli_log_level', { required: false }) || 'error',
         enabledOptimizations: lib_core.getInput('enabled_optimizations', { required: false }) || '',
     };
@@ -34509,10 +34509,13 @@ async function performSetup() {
     if (version !== 'local') {
         await DonwloadReleaseAssets(version, fullRepoName);
     }
-    if (installFastcliInput === 'true') {
-        // Set the fastcli_LOG_LEVEL environment variable
-        lib_core.exportVariable('fastcli_LOG_LEVEL', fastcliLogLevel);
+    if (installFastcliInput) {
+        // Set the FASTCLI_LOG_LEVEL environment variable
+        lib_core.exportVariable('FASTCLI_LOG_LEVEL', fastcliLogLevel);
         await installFastcli(fastcliLogLevel, enabledOptimizations);
+    }
+    else {
+        lib_core.debug(`Skipping fastcli installation`);
     }
 }
 async function RunSetup() {
