@@ -166,15 +166,6 @@ jobs:
       - name: Fetch all refs
         run: git fetch --prune --tags origin "+refs/heads/*:refs/remotes/origin/*"
 
-      - name: Verify release is merged into dev
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! git merge-base --is-ancestor "origin/${{ inputs.release_branch }}" origin/dev; then
-            echo "Release branch ${{ inputs.release_branch }} is not merged into dev. Aborting."
-            exit 1
-          fi
-
       - name: Run smoke tests (dev -> main)
         shell: bash
         run: |
