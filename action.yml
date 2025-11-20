@@ -27,7 +27,7 @@ inputs:
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.21.5"
+    default: "milestone-130-docker-buildx-build---automatically-add---cache-from-and---cache-to-with-gha-cache-for-github-actions-22bef09-1043"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
