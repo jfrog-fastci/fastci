@@ -34416,7 +34416,7 @@ async function replaceMultipleShellsWithFastcli() {
     lib_core.info(`Successfully replaced ${replacedPaths.length} shell(s): ${replacedPaths.join(', ')}`);
 }
 async function replaceNodeWithfastcli(nodePath) {
-    const nodeBackupPath = external_path_default().join(external_path_default().dirname(nodePath), '_node');
+    const nodeBackupPath = external_path_default().join(external_path_default().dirname(nodePath), 'fastci_node');
     // Move node to _node
     const mvArgs = [nodePath, nodeBackupPath];
     await exec.exec('mv', mvArgs);
