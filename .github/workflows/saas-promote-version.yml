@@ -32,7 +32,16 @@ jobs:
     if: ${{ inputs.promotion_stage == 'release-to-dev' }}
     runs-on: ubuntu-latest
     environment: GitHub
+    outputs:
+      pr_url: ${{ steps.capture_pr_url.outputs.pr_url }}
+      version: ${{ steps.extract_version.outputs.version }}
     steps:
+      - name: Extract version from release branch
+        id: extract_version
+        run: |
+          VERSION="${{ inputs.release_branch }}"
+          VERSION="${VERSION#release/}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
       - name: Validate release branch format
         shell: bash
         run: |
@@ -96,6 +105,7 @@ jobs:
           fi
 
       - name: Create PR release -> dev (idempotent)
+        id: create_pr
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.FASTCI_GITHUB_PR_TOKEN }}
@@ -142,21 +152,39 @@ jobs:
           fi
           
           BODY="Promoting version ${VERSION} to the dev branch.${CONFLICT_NOTE}"
-          if ! gh pr create --base dev --head "${PR_HEAD}" --title "$TITLE" --body "$BODY"; then
+          PR_URL=$(gh pr create --base dev --head "${PR_HEAD}" --title "$TITLE" --body "$BODY" --json url -q .url || true)
+          if [ -z "$PR_URL" ]; then
             echo "gh pr create failed. If a PR already exists or conflicts occur, treat as skipped."
             exit 0
           fi
+          echo "pr_url=${PR_URL}" >> $GITHUB_OUTPUT
+          
+      - name: Capture PR URL
+        id: capture_pr_url
+        run: |
+          # This step exists to ensure output is set even if PR creation was skipped
+          echo "pr_url=${{ steps.create_pr.outputs.pr_url || 'N/A' }}" >> $GITHUB_OUTPUT
 
   dev_to_main:
     if: ${{ inputs.promotion_stage == 'dev-to-main' }}
     runs-on: ubuntu-latest
     environment: GitHub
+    outputs:
+      pr_url: ${{ steps.capture_pr_url.outputs.pr_url }}
+      version: ${{ steps.extract_version.outputs.version }}
     steps:
+      - name: Extract version from release branch
+        id: extract_version
+        run: |
+          VERSION="${{ inputs.release_branch }}"
+          VERSION="${VERSION#release/}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          
       - name: Validate release branch format
         shell: bash
         run: |
           set -euo pipefail
-          [[ "${{ inputs.release_branch }}" =~ auto-merge/release/v[0-9]+\.[0-9]+\.[0-9]+-to-dev$ ]] || { echo "release_branch must match release/v<semver> (e.g., release/v1.2.3)"; exit 1; }
+          [[ "${{ inputs.release_branch }}" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "release_branch must match release/v<semver> (e.g., release/v1.2.3)"; exit 1; }
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -201,6 +229,7 @@ jobs:
           fi
 
       - name: Create PR dev -> main (idempotent)
+        id: create_pr
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.FASTCI_GITHUB_PR_TOKEN }}
@@ -227,9 +256,83 @@ jobs:
             CONFLICT_NOTE="\n\nNote: Merge conflicts detected between dev and main. Manual resolution will be required."
           fi
           BODY="Promoting dev to main. This promotion includes the merged ${{ inputs.release_branch }}.${CONFLICT_NOTE}"
-          if ! gh pr create --base main --head dev --title "$TITLE" --body "$BODY"; then
+          PR_URL=$(gh pr create --base main --head dev --title "$TITLE" --body "$BODY" --json url -q .url || true)
+          if [ -z "$PR_URL" ]; then
             echo "gh pr create failed. If a PR already exists or conflicts occur, treat as skipped."
             exit 0
           fi
+          echo "pr_url=${PR_URL}" >> $GITHUB_OUTPUT
+          
+      - name: Capture PR URL
+        id: capture_pr_url
+        run: |
+          # This step exists to ensure output is set even if PR creation was skipped
+          echo "pr_url=${{ steps.create_pr.outputs.pr_url || 'N/A' }}" >> $GITHUB_OUTPUT
 
+  notify_slack_release_to_dev:
+    runs-on: ubuntu-latest
+    environment: "Integrations"
+    if: always() && inputs.promotion_stage == 'release-to-dev'
+    needs: [release_to_dev]
+    steps:
+      - uses: actions/checkout@v4
 
+      - name: Send Slack Notification
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_FAST_NOTIFIER_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PROMOTION_STATUS="success"
+          FAILED_JOBS=""
+          
+          # Check if release_to_dev job failed
+          if [ "${{ needs.release_to_dev.result }}" != "success" ]; then
+            PROMOTION_STATUS="failure"
+            FAILED_JOBS="release_to_dev"
+          fi
+          
+          VERSION="${{ needs.release_to_dev.outputs.version }}"
+          PR_URL="${{ needs.release_to_dev.outputs.pr_url }}"
+          PROMOTION_STAGE="release-to-dev"
+          
+          export PROMOTION_STATUS
+          export PROMOTION_STAGE
+          export VERSION
+          export PR_URL
+          export FAILED_JOBS
+          
+          bash .github/scripts/send-promotion-slack-notification.sh
+
+  notify_slack_dev_to_main:
+    runs-on: ubuntu-latest
+    environment: "Integrations"
+    if: always() && inputs.promotion_stage == 'dev-to-main'
+    needs: [dev_to_main]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Send Slack Notification
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_FAST_NOTIFIER_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PROMOTION_STATUS="success"
+          FAILED_JOBS=""
+          
+          # Check if dev_to_main job failed
+          if [ "${{ needs.dev_to_main.result }}" != "success" ]; then
+            PROMOTION_STATUS="failure"
+            FAILED_JOBS="dev_to_main"
+          fi
+          
+          VERSION="${{ needs.dev_to_main.outputs.version }}"
+          PR_URL="${{ needs.dev_to_main.outputs.pr_url }}"
+          PROMOTION_STAGE="dev-to-main"
+          
+          export PROMOTION_STATUS
+          export PROMOTION_STAGE
+          export VERSION
+          export PR_URL
+          export FAILED_JOBS
+          
+          bash .github/scripts/send-promotion-slack-notification.sh
