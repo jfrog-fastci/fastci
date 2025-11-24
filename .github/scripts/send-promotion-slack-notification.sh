@@ -43,10 +43,10 @@ if [ "$PROMOTION_STATUS" == "success" ]; then
     # Blue for dev, Yellow for main
     if [ "$PROMOTION_STAGE" == "release-to-dev" ]; then
         COLOR="#0000FF"  # Blue
-        EMOJI="🔵"
+        EMOJI="📦 → 🧪"
     else
-        COLOR="#FFD700"  # Yellow/Gold
-        EMOJI="🟡"
+        COLOR="#0000FF"  # Yellow/Gold
+        EMOJI="📦 → 🚢"
     fi
     
     MAIN_TEXT="${EMOJI} Version ${VERSION} promoted to ${ENVIRONMENT}"
