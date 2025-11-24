@@ -53,28 +53,44 @@ if [ "$PROMOTION_STATUS" == "success" ]; then
     HEADER_TEXT="${EMOJI} Promotion Succeeded: ${VERSION} → ${ENVIRONMENT}"
     STATUS_MSG="Version ${VERSION} successfully promoted from ${STAGE_TEXT}."
     
-    # For success, show PR and workflow buttons
-    ACTIONS_ELEMENTS=$(jq -n --arg pr_url "$PR_URL" --arg workflow_url "$WORKFLOW_URL" '[
-        {
-            "type": "button",
-            "text": {
-                "type": "plain_text",
-                "text": "View Pull Request",
-                "emoji": true
+    # For success, show PR and workflow buttons (only include PR button if URL is valid)
+    if [ -n "$PR_URL" ] && [ "$PR_URL" != "N/A" ]; then
+        ACTIONS_ELEMENTS=$(jq -n --arg pr_url "$PR_URL" --arg workflow_url "$WORKFLOW_URL" '[
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "View Pull Request",
+                    "emoji": true
+                },
+                "url": $pr_url,
+                "style": "primary"
             },
-            "url": $pr_url,
-            "style": "primary"
-        },
-        {
-            "type": "button",
-            "text": {
-                "type": "plain_text",
-                "text": "View Workflow",
-                "emoji": true
-            },
-            "url": $workflow_url
-        }
-    ]')
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "View Workflow",
+                    "emoji": true
+                },
+                "url": $workflow_url
+            }
+        ]')
+    else
+        # Only show workflow button if PR URL is not available
+        ACTIONS_ELEMENTS=$(jq -n --arg workflow_url "$WORKFLOW_URL" '[
+            {
+                "type": "button",
+                "text": {
+                    "type": "plain_text",
+                    "text": "View Workflow",
+                    "emoji": true
+                },
+                "url": $workflow_url,
+                "style": "primary"
+            }
+        ]')
+    fi
 else
     COLOR="#ff0000"  # Red for failure
     MAIN_TEXT="🚨 Failed to promote version ${VERSION} to ${ENVIRONMENT}"

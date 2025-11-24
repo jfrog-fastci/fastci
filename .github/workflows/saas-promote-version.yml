@@ -152,12 +152,26 @@ jobs:
           fi
           
           BODY="Promoting version ${VERSION} to the dev branch.${CONFLICT_NOTE}"
-          PR_URL=$(gh pr create --base dev --head "${PR_HEAD}" --title "$TITLE" --body "$BODY" --json url -q .url || true)
-          if [ -z "$PR_URL" ]; then
+          set +e
+          PR_URL=$(gh pr create --base dev --head "${PR_HEAD}" --title "$TITLE" --body "$BODY" 2>&1)
+          CREATE_STATUS=$?
+          set -e
+          
+          if [ $CREATE_STATUS -eq 0 ]; then
+            echo "PR created successfully: ${PR_URL}"
+            echo "pr_url=${PR_URL}" >> $GITHUB_OUTPUT
+          else
             echo "gh pr create failed. If a PR already exists or conflicts occur, treat as skipped."
-            exit 0
+            echo "Error: ${PR_URL}"
+            # Try to find existing PR
+            existing=$(gh pr list --base dev --head "${PR_HEAD}" --json url -q '.[0].url // ""' 2>/dev/null || echo "")
+            if [ -n "$existing" ]; then
+              echo "Found existing PR: ${existing}"
+              echo "pr_url=${existing}" >> $GITHUB_OUTPUT
+            else
+              echo "pr_url=N/A" >> $GITHUB_OUTPUT
+            fi
           fi
-          echo "pr_url=${PR_URL}" >> $GITHUB_OUTPUT
           
       - name: Capture PR URL
         id: capture_pr_url
@@ -256,12 +270,26 @@ jobs:
             CONFLICT_NOTE="\n\nNote: Merge conflicts detected between dev and main. Manual resolution will be required."
           fi
           BODY="Promoting dev to main. This promotion includes the merged ${{ inputs.release_branch }}.${CONFLICT_NOTE}"
-          PR_URL=$(gh pr create --base main --head dev --title "$TITLE" --body "$BODY" --json url -q .url || true)
-          if [ -z "$PR_URL" ]; then
+          set +e
+          PR_URL=$(gh pr create --base main --head dev --title "$TITLE" --body "$BODY" 2>&1)
+          CREATE_STATUS=$?
+          set -e
+          
+          if [ $CREATE_STATUS -eq 0 ]; then
+            echo "PR created successfully: ${PR_URL}"
+            echo "pr_url=${PR_URL}" >> $GITHUB_OUTPUT
+          else
             echo "gh pr create failed. If a PR already exists or conflicts occur, treat as skipped."
-            exit 0
+            echo "Error: ${PR_URL}"
+            # Try to find existing PR
+            existing=$(gh pr list --base main --head dev --json url -q '.[0].url // ""' 2>/dev/null || echo "")
+            if [ -n "$existing" ]; then
+              echo "Found existing PR: ${existing}"
+              echo "pr_url=${existing}" >> $GITHUB_OUTPUT
+            else
+              echo "pr_url=N/A" >> $GITHUB_OUTPUT
+            fi
           fi
-          echo "pr_url=${PR_URL}" >> $GITHUB_OUTPUT
           
       - name: Capture PR URL
         id: capture_pr_url
