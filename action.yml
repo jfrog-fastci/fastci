@@ -27,7 +27,7 @@ inputs:
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.21.10"
+    default: "v0.21.18"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -83,6 +83,11 @@ inputs:
     description: 'Enabled optimizations (go_build_optimization, make_optimization, integration_test_optimization, go_test_junit_optimization, go_test_cache_optimization, docker_build_trace_optimization)'
     required: false
     default: 'go_test_junit_optimization,docker_build_trace_optimization,go_build_optimization'
+  
+  create_log_artifact_on_error:
+    description: 'Create log artifact upon fastci installation error'
+    required: false
+    default: 'false'
 
 
 runs:
