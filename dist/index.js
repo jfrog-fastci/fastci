@@ -34234,11 +34234,6 @@ function createOptimizationConfig(enabledOptimizations) {
             supported_branches_regex: "*",
             supported_binary_versions: "*"
         },
-        make_optimization: {
-            is_enabled: false,
-            supported_branches_regex: "*",
-            supported_binary_versions: "*"
-        },
         integration_test_optimization: {
             is_enabled: false,
             supported_branches_regex: "*",
