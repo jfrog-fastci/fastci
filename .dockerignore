@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+npm-debug.log
+
+
+# Build outputs
+dist/
+build/
+
+# Testing
+coverage/
+jest/
+__tests__/
+*.test.ts
+*.spec.ts
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# GitHub
+.github/
+.gitmodules
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.env.local
+.env*.local
+
+# CI/CD
+.circleci/
+.travis.yml
+
+# Documentation
+README.md
+CHANGELOG.md
+LICENSE
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Root config files
+.prettierrc*
+.editorconfig
+
+# Scripts
+scripts/
+utils/
+
+# Misc
+.cursor/
+*.md
+!README.md
+src/
