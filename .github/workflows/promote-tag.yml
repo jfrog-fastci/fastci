@@ -10,7 +10,7 @@ on:
         options:
           - v0
       release_tag:
-        description: "The full tag version (e.g., release/v1.2.3)."
+        description: "The full tag version (e.g. v1.2.3)."
         required: true
         type: string
 
