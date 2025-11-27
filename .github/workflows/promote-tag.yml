@@ -1,0 +1,23 @@
+name: Promote Tag to Latest Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  promote-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get latest release tag
+        id: get_latest_release
+        run: |
+          LATEST_TAG=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo "latest_tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Move v0 tag to latest release
+        run: |
+          git tag -f v0 ${{ steps.get_latest_release.outputs.latest_tag }}
+          git push origin v0 --force
+
