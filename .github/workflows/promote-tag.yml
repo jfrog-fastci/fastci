@@ -1,0 +1,39 @@
+name: Promote Tag to Latest Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_to_update:
+        description: "Select the signed tag to update."
+        required: true
+        type: choice
+        options:
+          - v0
+      release_tag:
+        description: "The full tag version (e.g. v1.2.3)."
+        required: true
+        type: string
+
+jobs:
+  promote-tag:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if provided release_tag exists
+        run: |
+          if ! git rev-parse "refs/tags/${{ inputs.release_tag }}" >/dev/null 2>&1; then
+            echo "Error: Tag '${{ inputs.release_tag }}' does not exist."
+            exit 1
+          fi
+
+      - name: Move ${{ inputs.tag_to_update }} tag to ${{ inputs.release_tag }}
+        run: |
+          git tag -f ${{ inputs.tag_to_update }} ${{ inputs.release_tag }}
+          git push origin ${{ inputs.tag_to_update }} --force
+
