@@ -2,6 +2,7 @@ name: Promote Tag to Latest Release
 
 on:
   workflow_dispatch:
+  push:
 
 jobs:
   promote-tag:
