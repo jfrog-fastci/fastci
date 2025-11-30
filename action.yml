@@ -14,7 +14,7 @@ inputs:
   fastci_otel_endpoint:
     description: "OpenTelemetry Endpoint that will receive the traces. If 'file://<path>', the OTel will be written to the file path"
     required: false
-    default: "ingress.coralogix.us:443"
+    default: "ingress.coralogix.us"
 
   github_token:
     description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
@@ -27,7 +27,7 @@ inputs:
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.21.20"
+    default: "v0.21.26"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
