@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_to_update:
-        description: "Select the signed tag to update."
+        description: "Select the signed tag to update, **When releasing major add to promote-tag.yml the new major version**"
         required: true
         type: choice
         options:
