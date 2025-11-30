@@ -25,6 +25,28 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: 🔍 Validate Semantic Version Format
+        id: validation_step
+        shell: bash
+        run: |
+          # Define the input version tag
+          VERSION_INPUT="${{ inputs.release_tag }}"
+
+          # Regular expression for vX.Y.Z (e.g., v1.0.0 or v10.25.3)
+          # ^v : starts with 'v'
+          # \d+ : one or more digits
+          # (\.\d+){2} : exactly two occurrences of '.NUMBER'
+          # $ : end of the string
+          SEMVER_REGEX="^v\d+(\.\d+){2}$"
+
+          # Use a conditional structure to check the format
+          if [[ $VERSION_INPUT =~ $SEMVER_REGEX ]]; then
+            echo "✅ Input version '$VERSION_INPUT' matches the required format vX.Y.Z"
+          else
+            echo "❌ Input version '$VERSION_INPUT' does NOT match the required format vX.Y.Z"
+            exit 1 
+          fi
+
       - name: Check if provided release_tag exists
         run: |
           if ! git rev-parse "refs/tags/${{ inputs.release_tag }}" >/dev/null 2>&1; then
@@ -36,4 +58,3 @@ jobs:
         run: |
           git tag -f ${{ inputs.tag_to_update }} ${{ inputs.release_tag }}
           git push origin ${{ inputs.tag_to_update }} --force
-
