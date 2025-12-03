@@ -1,0 +1,66 @@
+name: Promote Tag to Latest Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_to_update:
+        description: "Select the signed tag to update, **When releasing major add to promote-tag.yml the new major version**"
+        required: true
+        type: choice
+        options:
+          - v0
+      release_tag:
+        description: "The full tag version (e.g. v1.2.3)."
+        required: true
+        type: string
+
+jobs:
+  promote-tag:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Validate Semantic Version Format
+        id: validation_step
+        shell: bash
+        run: |
+          # Define the input version tag
+          VERSION_INPUT="${{ inputs.release_tag }}"
+
+          # Regular expression for vX.Y.Z (e.g., v1.0.0 or v10.25.3)
+          #   ^v                       # MUST start with the literal character 'v'.
+          #   (0|[1-9][0-9]*)          # The first component (Major):
+          #     0                      #   - Can be the single digit 0.
+          #     |                      #   - OR
+          #     [1-9][0-9]* #   - A digit 1-9 followed by zero or more digits (1, 10, 100, etc.).
+          #   \.                       # MUST be followed by a literal dot.
+          #   (0|[1-9][0-9]*)          # The second component (Minor) - same logic as Major.
+          #   \.                       # MUST be followed by a literal dot.
+          #   (0|[1-9][0-9]*)          # The third component (Patch) - same logic as Major/Minor.
+          #   $                        # MUST be the end of the string.
+          SEMVER_REGEX="^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$"
+
+          # Use a conditional structure to check the format
+          if [[ $VERSION_INPUT =~ $SEMVER_REGEX ]]; then
+            echo "✅ Input version '$VERSION_INPUT' matches the required format vX.Y.Z"
+          else
+            echo "❌ Input version '$VERSION_INPUT' does NOT match the required format vX.Y.Z"
+            exit 1 
+          fi
+
+      - name: Check if provided release_tag exists
+        run: |
+          if ! git rev-parse "refs/tags/${{ inputs.release_tag }}" >/dev/null 2>&1; then
+            echo "Error: Tag '${{ inputs.release_tag }}' does not exist."
+            exit 1
+          fi
+
+      - name: Move ${{ inputs.tag_to_update }} tag to ${{ inputs.release_tag }}
+        run: |
+          git tag -f ${{ inputs.tag_to_update }} ${{ inputs.release_tag }}
+          git push origin ${{ inputs.tag_to_update }} --force
