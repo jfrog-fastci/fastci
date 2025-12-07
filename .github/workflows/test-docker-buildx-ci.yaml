@@ -65,92 +65,92 @@ jobs:
             --file Dockerfile \
             .
 
-  docker-buildx-action:
-    name: "Build with Docker Buildx Action FastCI: ${{ matrix.fastci_enabled }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        fastci_enabled: [true, false]
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 10
+  # docker-buildx-action:
+  #   name: "Build with Docker Buildx Action FastCI: ${{ matrix.fastci_enabled }}"
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       fastci_enabled: [true, false]
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 10
 
-      - name: Start FastCI Optimization (dev)
-        # Check for dispatch input OR a push event
-        if: matrix.fastci_enabled == true && (inputs.branch == 'dev' || github.event_name == 'push')
-        uses: jfrog-fastci/fastci@dev
-        with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
-          install_fastcli: true
-          fastcli_log_level: 'debug'
+  #     - name: Start FastCI Optimization (dev)
+  #       # Check for dispatch input OR a push event
+  #       if: matrix.fastci_enabled == true && (inputs.branch == 'dev' || github.event_name == 'push')
+  #       uses: jfrog-fastci/fastci@dev
+  #       with:
+  #         github_token: ${{secrets.GITHUB_TOKEN}}
+  #         fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
+  #         install_fastcli: true
+  #         fastcli_log_level: 'debug'
 
-      - name: Start FastCI Optimization (main)
-        # This will correctly only run on dispatch
-        if: matrix.fastci_enabled == true && inputs.branch == 'main'
-        uses: jfrog-fastci/fastci@main
-        with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
-          install_fastcli: true
-          fastcli_log_level: 'debug'
+  #     - name: Start FastCI Optimization (main)
+  #       # This will correctly only run on dispatch
+  #       if: matrix.fastci_enabled == true && inputs.branch == 'main'
+  #       uses: jfrog-fastci/fastci@main
+  #       with:
+  #         github_token: ${{secrets.GITHUB_TOKEN}}
+  #         fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
+  #         install_fastcli: true
+  #         fastcli_log_level: 'debug'
 
-      # --- FIXED INDENTATION ---
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+  #     # --- FIXED INDENTATION ---
+  #     - name: Set up QEMU
+  #       uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
 
-      - name: Build with Buildx Action
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64
-          tags: fastci:latest
-          push: false
+  #     - name: Build with Buildx Action
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: ./Dockerfile
+  #         platforms: linux/amd64,linux/arm64
+  #         tags: fastci:latest
+  #         push: false
 
-  docker-native-build:
-    name: "Build with Native Docker FastCI: ${{ matrix.fastci_enabled }}"
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        fastci_enabled: [true, false]
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 10
+  # docker-native-build:
+  #   name: "Build with Native Docker FastCI: ${{ matrix.fastci_enabled }}"
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       fastci_enabled: [true, false]
+  #   steps:
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 10
 
-      - name: Start FastCI Optimization (dev)
-        # Check for dispatch input OR a push event
-        if: matrix.fastci_enabled == true && (inputs.branch == 'dev' || github.event_name == 'push')
-        uses: jfrog-fastci/fastci@dev
-        with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
-          install_fastcli: true
-          fastcli_log_level: 'debug'
+  #     - name: Start FastCI Optimization (dev)
+  #       # Check for dispatch input OR a push event
+  #       if: matrix.fastci_enabled == true && (inputs.branch == 'dev' || github.event_name == 'push')
+  #       uses: jfrog-fastci/fastci@dev
+  #       with:
+  #         github_token: ${{secrets.GITHUB_TOKEN}}
+  #         fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
+  #         install_fastcli: true
+  #         fastcli_log_level: 'debug'
 
-      - name: Start FastCI Optimization (main)
-        # This will correctly only run on dispatch
-        if: matrix.fastci_enabled == true && inputs.branch == 'main'
-        uses: jfrog-fastci/fastci@main
-        with:
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
-          install_fastcli: true
-          fastcli_log_level: 'debug'
+  #     - name: Start FastCI Optimization (main)
+  #       # This will correctly only run on dispatch
+  #       if: matrix.fastci_enabled == true && inputs.branch == 'main'
+  #       uses: jfrog-fastci/fastci@main
+  #       with:
+  #         github_token: ${{secrets.GITHUB_TOKEN}}
+  #         fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
+  #         install_fastcli: true
+  #         fastcli_log_level: 'debug'
 
-      # --- FIXED INDENTATION ---
-      - name: Build with Native Docker
-        env:
-          DOCKER_BUILDKIT: 0
-        run: |
-          docker build \
-            --tag fastci:latest \
-            --file Dockerfile \
-            .
+  #     # --- FIXED INDENTATION ---
+  #     - name: Build with Native Docker
+  #       env:
+  #         DOCKER_BUILDKIT: 0
+  #       run: |
+  #         docker build \
+  #           --tag fastci:latest \
+  #           --file Dockerfile \
+  #           .
