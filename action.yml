@@ -17,8 +17,9 @@ inputs:
     default: "ingress.coralogix.us:443"
 
   github_token:
-    description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
-    required: true
+    description: "GitHub Token used for authentication. Defaults to the automatically provided GitHub Actions token."
+    required: false
+    default: ${{ github.token }}
 
   fastci_otel_token:
     description: "OpenTelemetry token"
@@ -27,7 +28,7 @@ inputs:
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.21.38"
+    default: "milestone-245-make-github_token-input-optional-by-defaulting-to-githubtoken-7aac1e3-1475"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
