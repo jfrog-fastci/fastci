@@ -1,0 +1,262 @@
+name: Test Docker Containerd Storage (DooD Aware)
+
+run-name: Test Docker Containerd Snapshotter - DooD Scenario
+
+permissions:
+  actions: read
+  contents: read
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-containerd-storage:
+    runs-on: ubuntu-latest
+    name: Test Containerd Storage Driver (DooD)
+    container:
+      image: docker:24-cli
+      options: --privileged
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Detect Docker Environment
+        id: detect
+        run: |
+          echo "=== Detecting Docker Environment ==="
+          
+          # Check if we're running inside a container
+          IS_CONTAINER="false"
+          if [ -f /.dockerenv ]; then
+            IS_CONTAINER="true"
+            echo "✅ Running inside a Docker container (/.dockerenv exists)"
+          elif grep -q docker /proc/1/cgroup 2>/dev/null; then
+            IS_CONTAINER="true"
+            echo "✅ Running inside a Docker container (cgroup check)"
+          elif grep -q containerd /proc/1/cgroup 2>/dev/null; then
+            IS_CONTAINER="true"
+            echo "✅ Running inside a container (containerd cgroup)"
+          else
+            echo "❌ Not running inside a container"
+          fi
+          echo "is_container=$IS_CONTAINER" >> $GITHUB_OUTPUT
+          
+          # Check if Docker socket is mounted (DooD indicator)
+          IS_DOOD="false"
+          if [ -S /var/run/docker.sock ]; then
+            # Check if it's a mount from the host
+            if mount | grep -q "docker.sock"; then
+              IS_DOOD="true"
+              echo "✅ Docker socket is mounted (DooD scenario)"
+            elif [ "$IS_CONTAINER" = "true" ]; then
+              IS_DOOD="true"
+              echo "✅ Docker socket present in container (likely DooD)"
+            fi
+          fi
+          echo "is_dood=$IS_DOOD" >> $GITHUB_OUTPUT
+          
+          # Check if we have DinD (Docker-in-Docker) - usually has its own dockerd
+          IS_DIND="false"
+          if pgrep -x dockerd >/dev/null 2>&1; then
+            DOCKERD_PID=$(pgrep -x dockerd)
+            # In DinD, dockerd runs inside the container (PID namespace)
+            if [ "$IS_CONTAINER" = "true" ] && [ -n "$DOCKERD_PID" ]; then
+              IS_DIND="true"
+              echo "✅ Docker daemon running inside container (DinD scenario)"
+            fi
+          fi
+          echo "is_dind=$IS_DIND" >> $GITHUB_OUTPUT
+          
+          echo ""
+          echo "=== Environment Summary ==="
+          echo "Is Container: $IS_CONTAINER"
+          echo "Is DooD: $IS_DOOD"
+          echo "Is DinD: $IS_DIND"
+
+      - name: Show Current Docker Configuration
+        id: before
+        run: |
+          echo "=== Docker Info ==="
+          docker info
+          
+          echo ""
+          echo "=== Storage Driver ==="
+          STORAGE_DRIVER=$(docker info --format '{{.Driver}}')
+          echo "Storage Driver: $STORAGE_DRIVER"
+          echo "storage_driver=$STORAGE_DRIVER" >> $GITHUB_OUTPUT
+          
+          echo ""
+          echo "=== Docker Root Dir ==="
+          DOCKER_ROOT=$(docker info --format '{{.DockerRootDir}}')
+          echo "Docker Root: $DOCKER_ROOT"
+          echo "docker_root=$DOCKER_ROOT" >> $GITHUB_OUTPUT
+          
+          echo ""
+          echo "=== Containerd Snapshotter Status ==="
+          if docker info 2>&1 | grep -qi "containerd snapshotter"; then
+            echo "✅ Containerd snapshotter is ENABLED"
+            echo "snapshotter_enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Containerd snapshotter is NOT enabled"
+            echo "snapshotter_enabled=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo ""
+          echo "=== Current daemon.json (if accessible) ==="
+          cat /etc/docker/daemon.json 2>/dev/null || echo "daemon.json not accessible (expected in DooD)"
+
+      - name: DooD Suicide Warning
+        if: steps.detect.outputs.is_dood == 'true' && steps.detect.outputs.is_dind != 'true'
+        run: |
+          echo "⚠️  =============================================="
+          echo "⚠️  WARNING: DooD (Docker-out-of-Docker) DETECTED"
+          echo "⚠️  =============================================="
+          echo ""
+          echo "This CI runner is running inside a container that mounts"
+          echo "the host's Docker socket (/var/run/docker.sock)."
+          echo ""
+          echo "🚨 THE SUICIDE SCENARIO:"
+          echo "   If we run 'systemctl restart docker', we would:"
+          echo "   1. Kill the HOST's Docker daemon"
+          echo "   2. Since this runner IS a container on that daemon..."
+          echo "   3. We would kill ourselves! 💀"
+          echo ""
+          echo "   Result: 100% chance of CI job failure/hang"
+          echo ""
+          echo "✅ SAFE ACTIONS IN DooD:"
+          echo "   - Read Docker configuration (docker info)"
+          echo "   - Run containers (they run on the host)"
+          echo "   - Build images"
+          echo "   - Pull/push images"
+          echo ""
+          echo "❌ UNSAFE ACTIONS IN DooD:"
+          echo "   - systemctl restart docker"
+          echo "   - Modifying /etc/docker/daemon.json (host's config)"
+          echo "   - Any operation that restarts the Docker daemon"
+          echo ""
+          echo "📋 RECOMMENDATION:"
+          echo "   To change Docker daemon settings (like enabling containerd"
+          echo "   snapshotter), you must configure the HOST machine before"
+          echo "   starting the CI runners, not from within a CI job."
+
+      - name: Attempt Configuration Change (DinD only)
+        id: configure
+        if: steps.detect.outputs.is_dind == 'true'
+        run: |
+          echo "=== DinD detected - Safe to modify Docker daemon ==="
+          
+          # In DinD, we have our own Docker daemon, so we can safely restart it
+          echo "Enabling containerd snapshotter..."
+          
+          if [ -f /etc/docker/daemon.json ]; then
+            echo "Merging with existing daemon.json..."
+            apt-get update && apt-get install -y jq 2>/dev/null || true
+            EXISTING=$(cat /etc/docker/daemon.json)
+            echo "$EXISTING" | jq '. + {"features": {"containerd-snapshotter": true}}' | tee /etc/docker/daemon.json
+          else
+            echo '{"features": {"containerd-snapshotter": true}}' | tee /etc/docker/daemon.json
+          fi
+          
+          echo ""
+          echo "Restarting Docker daemon..."
+          if command -v systemctl >/dev/null 2>&1; then
+            systemctl restart docker
+          else
+            # DinD often uses direct dockerd management
+            pkill dockerd || true
+            sleep 2
+            dockerd &
+            sleep 5
+          fi
+          
+          # Wait for Docker to be ready
+          timeout 60 bash -c 'until docker info >/dev/null 2>&1; do sleep 1; done'
+          echo "✅ Docker daemon restarted successfully!"
+          echo "configured=true" >> $GITHUB_OUTPUT
+
+      - name: Skip Configuration (DooD)
+        if: steps.detect.outputs.is_dood == 'true' && steps.detect.outputs.is_dind != 'true'
+        run: |
+          echo "⏭️  Skipping Docker daemon configuration change"
+          echo ""
+          echo "In DooD mode, we cannot safely restart the Docker daemon."
+          echo "The host's Docker daemon configuration must be changed"
+          echo "at the infrastructure level, not from within CI jobs."
+
+      - name: Verify Final Storage Configuration
+        id: after
+        run: |
+          echo "=== Final Docker Storage Configuration ==="
+          
+          STORAGE_DRIVER=$(docker info --format '{{.Driver}}')
+          echo "Storage Driver: $STORAGE_DRIVER"
+          echo "storage_driver=$STORAGE_DRIVER" >> $GITHUB_OUTPUT
+          
+          echo ""
+          if docker info 2>&1 | grep -qi "containerd snapshotter"; then
+            echo "✅ Containerd snapshotter: ENABLED"
+            echo "snapshotter_enabled=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Containerd snapshotter: NOT enabled"
+            echo "snapshotter_enabled=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo ""
+          echo "=== Full Docker Info ==="
+          docker info
+
+      - name: Test Docker Functionality
+        run: |
+          echo "=== Testing Docker functionality ==="
+          
+          echo "Pulling test image..."
+          docker pull alpine:latest
+          
+          echo ""
+          echo "Running test container..."
+          docker run --rm alpine:latest echo "Docker is working!"
+          
+          echo ""
+          echo "✅ Docker is functional"
+
+      - name: Create Summary
+        run: |
+          {
+            echo "## 🐳 Docker Containerd Snapshotter Test (DooD Aware)"
+            echo ""
+            echo "### Environment Detection"
+            echo "| Check | Result |"
+            echo "|-------|--------|"
+            echo "| Running in Container | ${{ steps.detect.outputs.is_container }} |"
+            echo "| DooD (Docker-out-of-Docker) | ${{ steps.detect.outputs.is_dood }} |"
+            echo "| DinD (Docker-in-Docker) | ${{ steps.detect.outputs.is_dind }} |"
+            echo ""
+            echo "### Storage Configuration"
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+            echo "| Storage Driver | ${{ steps.after.outputs.storage_driver }} |"
+            echo "| Containerd Snapshotter | ${{ steps.after.outputs.snapshotter_enabled }} |"
+            echo "| Docker Root | ${{ steps.before.outputs.docker_root }} |"
+            echo ""
+            if [ "${{ steps.detect.outputs.is_dood }}" = "true" ] && [ "${{ steps.detect.outputs.is_dind }}" != "true" ]; then
+              echo "### ⚠️ DooD Scenario Detected"
+              echo ""
+              echo "**Cannot modify Docker daemon configuration from within this CI job.**"
+              echo ""
+              echo "The 'Suicide Scenario' applies:"
+              echo "- This runner is a container using the host's Docker socket"
+              echo "- Running \`systemctl restart docker\` would kill the host daemon"
+              echo "- This would terminate our own CI job (100% failure rate)"
+              echo ""
+              echo "**Solution:** Configure containerd snapshotter on the HOST machine"
+              echo "before starting CI runners."
+            else
+              echo "### ✅ DinD Scenario"
+              echo ""
+              echo "Docker daemon runs inside this container, so we can safely"
+              echo "modify its configuration without affecting other workloads."
+            fi
+          } >> $GITHUB_STEP_SUMMARY
+
