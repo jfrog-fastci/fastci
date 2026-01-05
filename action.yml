@@ -9,7 +9,22 @@ inputs:
   jfrog_password_writer:
     description: "JFrog Password Writer"
     required: false
-    
+
+  jf_url:
+    description: "JFrog Artifactory URL (e.g., https://your-instance.jfrog.io). Used for Artifactory cache integration."
+    required: false
+
+  jf_access_token:
+    description: "JFrog Access Token for authentication. Preferred over username/password."
+    required: false
+
+  jf_user:
+    description: "JFrog username for Basic authentication. Use with jf_password."
+    required: false
+
+  jf_password:
+    description: "JFrog password for Basic authentication. Use with jf_user."
+    required: false
 
   fastci_otel_endpoint:
     description: "OpenTelemetry Endpoint that will receive the traces. If 'file://<path>', the OTel will be written to the file path"
@@ -27,7 +42,7 @@ inputs:
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.21.42"
+    default: "v0.21.52"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -84,12 +99,26 @@ inputs:
     required: false
     default: 'go_test_junit_optimization,docker_build_trace_optimization,go_build_optimization'
   
+  cache_enabled_optimizations:
+    description: 'Enabled cache optimizations'
+    required: false
+    default: ''
+  
   create_log_artifact_on_error:
     description: 'Create log artifact upon fastci installation error'
     required: false
     default: 'false'
+  
+  env_to_conceal:
+    description: 'Defines which environment variable names indicate that their associated data sensitive.'
+    required: false
+    default: '*_TOKEN,*_SECRET,*_PASSWORD,*_KEY,*_API_KEY,AWS_*,SLACK_*'
 
-
+  default_ci_branch:
+    description: 'Defines the default branch in CI'
+    default: ${{ github.event.repository.default_branch }}
+    required: false
+    
 runs:
   using: 'node20'
   main: 'dist/index.js'
