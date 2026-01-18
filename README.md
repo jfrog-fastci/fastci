@@ -20,14 +20,14 @@ jobs:
     runs-on: ubuntu-latest  
     steps:
       - name: Checkout Repository  
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
 
       # Add FastCI step after checkout in each job
       - name: Start FastCI Optimization
-        uses: jfrog-fastci/fastci@main
+        uses: jfrog-fastci/fastci@v0
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
-          fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}  # Will be provided to you
+          fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}  # Will be provided to you (Optional)
 
       # ... rest of your workflow steps
 ```

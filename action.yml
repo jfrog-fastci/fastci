@@ -42,7 +42,7 @@ inputs:
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.21.76"
+    default: "v0.21.82"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
