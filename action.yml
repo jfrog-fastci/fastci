@@ -1,35 +1,20 @@
-name: "Tracer Action"
+name: 'Tracer Action'
 description: Tracer description
 author: FastCI Tracer
 inputs:
   jfrog_user_writer:
     description: "JFrog User Writer"
     required: false
-
+    
   jfrog_password_writer:
     description: "JFrog Password Writer"
     required: false
-
-  jf_url:
-    description: "JFrog Artifactory URL (e.g., https://your-instance.jfrog.io). Used for Artifactory cache integration."
-    required: false
-
-  jf_access_token:
-    description: "JFrog Access Token for authentication. Preferred over username/password."
-    required: false
-
-  jf_user:
-    description: "JFrog username for Basic authentication. Use with jf_password."
-    required: false
-
-  jf_password:
-    description: "JFrog password for Basic authentication. Use with jf_user."
-    required: false
+    
 
   fastci_otel_endpoint:
-    description: "OpenTelemetry Endpoint that will receive the traces. If 'file://<path>', the OTel will be written to the file path"
+    description: "OpenTelemetry Endpoint that will receive the traces"
     required: false
-    default: "ingress.coralogix.us:443"
+    default: "ingress.coralogix.us"
 
   github_token:
     description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
@@ -39,87 +24,18 @@ inputs:
     description: "OpenTelemetry token"
     required: true
 
-  version:
-    description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
+  tracer_version:
+    description: "Version of the tracer binary to use"
     required: false
-    default: "v0.21.94"
-
-  job_name_for_tests_only:
-    description: "Override job name for tests only (used in CI tests)"
-    required: false
-    default: ""
+    default: "v0.7.1"
 
   extra_attributes:
     description: "Extra attributes to add to the trace"
     required: false
     default: "cx.subsystem.name=${{github.repository}},cx.application.name=${{github.repository_owner}},cicd.pipeline.name=${{github.workflow}},cicd.pipeline.run_id=${{github.run_id}},cicd.pipeline.repository=${{github.repository}},cicd.pipeline.repository_owner=${{github.repository_owner}}"
 
-  full_repo_name:
-    description: "Full repository name"
-    required: false
-    default: "jfrog-fastci/fastci"
-
-  fail_on_error:
-    description: "Fail the CI if an error is detected"
-    required: false
-    default: "false"
-
-  setup_timeout_seconds:
-    description: "Timeout for the setup phase in seconds"
-    required: false
-    default: "30"
-
-  store_cache_timeout_seconds:
-    description: "Timeout for storing cache in seconds"
-    required: false
-    default: "60"
-
-  export_otel_timeout_seconds:
-    description: "Timeout for exporting OpenTelemetry data in seconds"
-    required: false
-    default: "15"
-
-  otel_export_timeout:
-    description: "OpenTelemetry export timeout in milliseconds for batch operations"
-    required: false
-    default: "1000"
-
-  install_fastcli:
-    description: "Install fastcli"
-    required: false
-    default: "true"
-
-  fastcli_log_level:
-    description: "fastcli log level (trace, debug, info, warn, error, fatal, panic)"
-    required: false
-    default: "error"
-
-  enabled_optimizations:
-    description: "Enabled optimizations (go_build_optimization, make_optimization, integration_test_optimization, go_test_junit_optimization, go_test_cache_optimization, docker_build_trace_optimization, gradle_optimization)"
-    required: false
-    default: "go_test_junit_optimization,docker_build_trace_optimization,go_build_optimization, gradle_optimization"
-
-  cache_enabled_optimizations:
-    description: "Enabled cache optimizations"
-    required: false
-    default: ""
-
-  create_log_artifact_on_error:
-    description: "Create log artifact upon fastci installation error"
-    required: false
-    default: "false"
-
-  env_to_conceal:
-    description: "Defines which environment variable names indicate that their associated data sensitive."
-    required: false
-    default: "*_TOKEN,*_SECRET,*_PASSWORD,*_KEY,*_API_KEY,AWS_*,SLACK_*"
-
-  default_ci_branch:
-    description: "Defines the default branch in CI"
-    default: ${{ github.event.repository.default_branch }}
-    required: false
 
 runs:
-  using: "node20"
-  main: "dist/index.js"
-  post: "dist/cleanup/index.js"
+  using: 'node20'
+  main: 'dist/index.js'
+  post: 'dist/cleanup/index.js' 
