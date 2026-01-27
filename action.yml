@@ -42,7 +42,7 @@ inputs:
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.21.94"
+    default: "milestone-bugfix/token-too-long-5f66f3af-2592"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -118,6 +118,16 @@ inputs:
     description: "Defines the default branch in CI"
     default: ${{ github.event.repository.default_branch }}
     required: false
+
+  create_issues_from_insights:
+    description: "Create GitHub issues from detected CI insights (e.g., missing .dockerignore)"
+    required: false
+    default: "false"
+
+  insight_issue_labels:
+    description: "Comma-separated list of additional labels to add to insight issues"
+    required: false
+    default: ""
 
 runs:
   using: "node20"
