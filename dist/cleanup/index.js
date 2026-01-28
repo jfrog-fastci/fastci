@@ -37542,7 +37542,7 @@ function generateIssueMarker(insightIssueId) {
 }
 
 // EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var github = __nccwpck_require__(5438);
+var lib_github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/insights/utils.ts
 /**
  * Shared utilities for insights module
@@ -37568,7 +37568,7 @@ const BEST_PRACTICES_LINKS = {
 /**
  * Gets the best practices link for an insight
  */
-function getBestPracticesLink(insight) {
+function utils_getBestPracticesLink(insight) {
     const techLinks = BEST_PRACTICES_LINKS[insight.technology];
     if (techLinks) {
         return techLinks[insight.id] || techLinks['default'] || insight.skillLink;
@@ -37578,7 +37578,7 @@ function getBestPracticesLink(insight) {
 /**
  * Formats duration in a human-readable format
  */
-function formatDuration(ms) {
+function utils_formatDuration(ms) {
     if (ms === undefined)
         return '-';
     if (ms < 1000)
@@ -37621,7 +37621,7 @@ function getCommandInfo(insight) {
  * Generates a complete, self-contained AI prompt for fixing an insight
  * This prompt is identical in both PR comments and issues
  */
-function generateAIPrompt(insight) {
+function utils_generateAIPrompt(insight) {
     const lines = [];
     lines.push(`You are fixing a CI/CD optimization issue that was automatically detected.`);
     lines.push('');
@@ -37661,7 +37661,7 @@ function generateAIPrompt(insight) {
         lines.push('');
     }
     // Add best practices reference
-    const bestPracticesLink = getBestPracticesLink(insight);
+    const bestPracticesLink = utils_getBestPracticesLink(insight);
     if (bestPracticesLink) {
         lines.push(`## Reference Documentation`);
         lines.push(`For detailed guidance, see: ${bestPracticesLink}`);
@@ -37678,7 +37678,7 @@ function generateAIPrompt(insight) {
 /**
  * Formats an error for logging with full context
  */
-function formatError(error) {
+function utils_formatError(error) {
     if (error instanceof Error) {
         return error.stack || error.message;
     }
@@ -37696,7 +37696,7 @@ function formatError(error) {
  * Validates repository format (owner/repo)
  * @returns Object with owner and repo, or undefined if invalid
  */
-function parseRepository(repository) {
+function utils_parseRepository(repository) {
     if (!repository) {
         return undefined;
     }
@@ -37734,7 +37734,7 @@ const TECHNOLOGY_CONFIG = {
  */
 function formatIssueBody(insight, insightIssueId, workflowUrl) {
     const marker = generateIssueMarker(insightIssueId);
-    const bestPracticesLink = getBestPracticesLink(insight);
+    const bestPracticesLink = utils_getBestPracticesLink(insight);
     const commandInfo = getCommandInfo(insight);
     const lines = [];
     // Hidden marker for duplicate detection
@@ -37760,11 +37760,11 @@ function formatIssueBody(insight, insightIssueId, workflowUrl) {
     }
     // Add job duration if available
     if (insight.ciContext?.job?.durationMs) {
-        lines.push(`| **Job Duration** | ${formatDuration(insight.ciContext.job.durationMs)} |`);
+        lines.push(`| **Job Duration** | ${utils_formatDuration(insight.ciContext.job.durationMs)} |`);
     }
     // Add step duration if available
     if (insight.ciContext?.step?.durationSeconds) {
-        lines.push(`| **Step Duration** | ${formatDuration(insight.ciContext.step.durationSeconds * 1000)} |`);
+        lines.push(`| **Step Duration** | ${utils_formatDuration(insight.ciContext.step.durationSeconds * 1000)} |`);
     }
     lines.push('');
     // Location info
@@ -37835,7 +37835,7 @@ function formatIssueBody(insight, insightIssueId, workflowUrl) {
     lines.push('Copy this prompt to your AI coding assistant to fix this issue:');
     lines.push('');
     lines.push('```');
-    lines.push(generateAIPrompt(insight));
+    lines.push(utils_generateAIPrompt(insight));
     lines.push('```');
     return lines.join('\n');
 }
@@ -37877,7 +37877,7 @@ async function findExistingIssue(octokit, repository, insightIssueId) {
         return { exists: false };
     }
     catch (error) {
-        lib_core.warning(`Failed to search for existing issues: ${formatError(error)}`);
+        lib_core.warning(`Failed to search for existing issues: ${utils_formatError(error)}`);
         return { exists: false };
     }
 }
@@ -37918,7 +37918,7 @@ async function ensureLabelsExist(octokit, owner, repo, labels) {
                     lib_core.debug(`Created label: ${label}`);
                 }
                 catch (createError) {
-                    lib_core.debug(`Failed to create label ${label}: ${formatError(createError)}`);
+                    lib_core.debug(`Failed to create label ${label}: ${utils_formatError(createError)}`);
                 }
             }
         }
@@ -37931,12 +37931,12 @@ async function createIssueForInsight(insight, config) {
     if (!config.enabled) {
         return { created: false, skipped: true, reason: 'Issue creation is disabled' };
     }
-    const repoInfo = parseRepository(config.repository);
+    const repoInfo = utils_parseRepository(config.repository);
     if (!repoInfo) {
         return { created: false, skipped: true, reason: 'Invalid repository format (expected owner/repo)' };
     }
     const { owner, repo } = repoInfo;
-    const octokit = github.getOctokit(config.githubToken);
+    const octokit = lib_github.getOctokit(config.githubToken);
     const insightIssueId = generateInsightIssueId(config.repository, insight);
     // Check for existing issue
     const existing = await findExistingIssue(octokit, config.repository, insightIssueId);
@@ -37974,8 +37974,8 @@ async function createIssueForInsight(insight, config) {
         return { created: true, issueUrl: issue.html_url };
     }
     catch (error) {
-        lib_core.error(`Failed to create issue for insight ${insight.id}: ${formatError(error)}`);
-        return { created: false, reason: formatError(error) };
+        lib_core.error(`Failed to create issue for insight ${insight.id}: ${utils_formatError(error)}`);
+        return { created: false, reason: utils_formatError(error) };
     }
 }
 /**
@@ -38059,24 +38059,24 @@ const DEFAULT_BRANCH_NAMES = new Set([
 function shouldSearchForPR(eventName, branchName) {
     // Never search for explicitly non-PR events
     if (eventName && NON_PR_EVENTS.has(eventName)) {
-        lib_core.debug(`Event type '${eventName}' does not support PR association`);
+        core.debug(`Event type '${eventName}' does not support PR association`);
         return false;
     }
     // For workflow_dispatch, only search if explicitly targeting a feature branch
     if (eventName === "workflow_dispatch") {
         if (!branchName || DEFAULT_BRANCH_NAMES.has(branchName)) {
-            lib_core.debug(`workflow_dispatch on default branch '${branchName}' - skipping PR search`);
+            core.debug(`workflow_dispatch on default branch '${branchName}' - skipping PR search`);
             return false;
         }
     }
     // For push events, skip PR search on default branches
     if (eventName === "push" && branchName && DEFAULT_BRANCH_NAMES.has(branchName)) {
-        lib_core.debug(`Push to default branch '${branchName}' - skipping PR search`);
+        core.debug(`Push to default branch '${branchName}' - skipping PR search`);
         return false;
     }
     // Must have a branch name to search
     if (!branchName) {
-        lib_core.debug("No branch name available - skipping PR search");
+        core.debug("No branch name available - skipping PR search");
         return false;
     }
     return true;
@@ -38088,22 +38088,22 @@ async function getPullRequestNumber(octokit) {
     // Check github context first
     const prNumber = github.context.payload.pull_request?.number;
     if (prNumber) {
-        lib_core.debug(`Found PR number from context: ${prNumber}`);
+        core.debug(`Found PR number from context: ${prNumber}`);
         return prNumber;
     }
     // Try to read from GITHUB_EVENT_PATH
     const eventPath = process.env.GITHUB_EVENT_PATH;
-    if (eventPath && external_fs_.existsSync(eventPath)) {
+    if (eventPath && fs.existsSync(eventPath)) {
         try {
-            const eventData = JSON.parse(external_fs_.readFileSync(eventPath, "utf-8"));
+            const eventData = JSON.parse(fs.readFileSync(eventPath, "utf-8"));
             const eventPrNumber = eventData.pull_request?.number || eventData.number;
             if (eventPrNumber) {
-                lib_core.debug(`Found PR number from event file: ${eventPrNumber}`);
+                core.debug(`Found PR number from event file: ${eventPrNumber}`);
                 return eventPrNumber;
             }
         }
         catch (error) {
-            lib_core.debug(`Failed to parse event file: ${formatError(error)}`);
+            core.debug(`Failed to parse event file: ${formatError(error)}`);
         }
     }
     // For push/workflow_dispatch events, try to find an open PR for the current branch
@@ -38113,7 +38113,7 @@ async function getPullRequestNumber(octokit) {
         const headRef = process.env.GITHUB_HEAD_REF;
         const eventName = process.env.GITHUB_EVENT_NAME;
         const currentSha = process.env.GITHUB_SHA;
-        lib_core.info(`Looking for open PR - GITHUB_REF: ${ref}, GITHUB_HEAD_REF: ${headRef}, GITHUB_EVENT_NAME: ${eventName}`);
+        core.info(`Looking for open PR - GITHUB_REF: ${ref}, GITHUB_HEAD_REF: ${headRef}, GITHUB_EVENT_NAME: ${eventName}`);
         // Get branch name from ref (refs/heads/branch-name -> branch-name)
         let branchName = headRef;
         if (!branchName && ref) {
@@ -38121,14 +38121,14 @@ async function getPullRequestNumber(octokit) {
         }
         // Check if we should search for a PR based on event type and branch
         if (!shouldSearchForPR(eventName, branchName)) {
-            lib_core.info("Skipping PR search based on event context");
+            core.info("Skipping PR search based on event context");
             return undefined;
         }
-        lib_core.info(`Searching for open PRs with head branch: ${branchName}`);
+        core.info(`Searching for open PRs with head branch: ${branchName}`);
         if (repository && branchName) {
             const repoInfo = parseRepository(repository);
             if (!repoInfo) {
-                lib_core.debug("Invalid repository format, cannot search for PRs");
+                core.debug("Invalid repository format, cannot search for PRs");
                 return undefined;
             }
             const { owner, repo } = repoInfo;
@@ -38137,29 +38137,29 @@ async function getPullRequestNumber(octokit) {
                 let prs = await searchForPRs(octokit, owner, repo, `${owner}:${branchName}`);
                 // If not found, try without owner prefix (cross-fork PRs)
                 if (prs.length === 0) {
-                    lib_core.debug(`No same-repo PR found, searching for cross-fork PRs with branch: ${branchName}`);
+                    core.debug(`No same-repo PR found, searching for cross-fork PRs with branch: ${branchName}`);
                     prs = await searchForPRs(octokit, owner, repo, branchName);
                 }
                 if (prs.length > 0) {
                     const pr = prs[0];
                     // Verify the PR's head SHA matches the current commit to avoid stale associations
                     if (currentSha && pr.head_sha && pr.head_sha !== currentSha) {
-                        lib_core.info(`Found PR #${pr.number} but head SHA (${pr.head_sha}) doesn't match current SHA (${currentSha}) - skipping`);
+                        core.info(`Found PR #${pr.number} but head SHA (${pr.head_sha}) doesn't match current SHA (${currentSha}) - skipping`);
                         return undefined;
                     }
-                    lib_core.info(`Found open PR #${pr.number} for branch ${branchName}`);
+                    core.info(`Found open PR #${pr.number} for branch ${branchName}`);
                     return pr.number;
                 }
                 else {
-                    lib_core.info(`No open PRs found for branch ${branchName}`);
+                    core.info(`No open PRs found for branch ${branchName}`);
                 }
             }
             catch (error) {
-                lib_core.warning(`Failed to search for PRs: ${formatError(error)}`);
+                core.warning(`Failed to search for PRs: ${formatError(error)}`);
             }
         }
     }
-    lib_core.info("No associated pull request found");
+    core.info("No associated pull request found");
     return undefined;
 }
 /**
@@ -38338,7 +38338,7 @@ async function findExistingComment(octokit, owner, repo, prNumber) {
         }
     }
     catch (error) {
-        lib_core.debug(`Failed to list PR comments: ${formatError(error)}`);
+        core.debug(`Failed to list PR comments: ${formatError(error)}`);
     }
     return undefined;
 }
@@ -38348,12 +38348,12 @@ async function findExistingComment(octokit, owner, repo, prNumber) {
 async function commentOnPullRequest(insights, issueResults, githubToken) {
     const repository = process.env.GITHUB_REPOSITORY;
     if (!repository) {
-        lib_core.debug("Repository not determined, skipping PR comment");
+        core.debug("Repository not determined, skipping PR comment");
         return { commented: false };
     }
     const repoInfo = parseRepository(repository);
     if (!repoInfo) {
-        lib_core.debug("Invalid repository format, skipping PR comment");
+        core.debug("Invalid repository format, skipping PR comment");
         return { commented: false };
     }
     const { owner, repo } = repoInfo;
@@ -38361,10 +38361,10 @@ async function commentOnPullRequest(insights, issueResults, githubToken) {
     // Get PR number (may search for open PRs on push events)
     const prNumber = await getPullRequestNumber(octokit);
     if (!prNumber) {
-        lib_core.debug("No associated pull request found, skipping PR comment");
+        core.debug("No associated pull request found, skipping PR comment");
         return { commented: false };
     }
-    lib_core.info(`Found associated PR #${prNumber}`);
+    core.info(`Found associated PR #${prNumber}`);
     // Get workflow URL
     const workflowUrl = process.env.GITHUB_SERVER_URL && process.env.GITHUB_RUN_ID
         ? `${process.env.GITHUB_SERVER_URL}/${repository}/actions/runs/${process.env.GITHUB_RUN_ID}`
@@ -38382,7 +38382,7 @@ async function commentOnPullRequest(insights, issueResults, githubToken) {
                 comment_id: existingComment.id,
                 body,
             });
-            lib_core.info(`Updated PR comment: ${comment.html_url}`);
+            core.info(`Updated PR comment: ${comment.html_url}`);
             return { commented: true, commentUrl: comment.html_url };
         }
         else {
@@ -38393,12 +38393,12 @@ async function commentOnPullRequest(insights, issueResults, githubToken) {
                 issue_number: prNumber,
                 body,
             });
-            lib_core.info(`Created PR comment: ${comment.html_url}`);
+            core.info(`Created PR comment: ${comment.html_url}`);
             return { commented: true, commentUrl: comment.html_url };
         }
     }
     catch (error) {
-        lib_core.warning(`Failed to comment on PR: ${formatError(error)}`);
+        core.warning(`Failed to comment on PR: ${formatError(error)}`);
         return { commented: false };
     }
 }
@@ -38444,7 +38444,7 @@ async function waitForTraceFile(filePath, maxWaitMs = 2000) {
                 }
             }
             catch (error) {
-                lib_core.debug(`Error checking trace file: ${formatError(error)}`);
+                lib_core.debug(`Error checking trace file: ${utils_formatError(error)}`);
             }
         }
         // Wait before checking again
@@ -38477,7 +38477,7 @@ async function finalizeTraces() {
         }
     }
     catch (error) {
-        lib_core.warning(`Failed to finalize traces: ${formatError(error)}`);
+        lib_core.warning(`Failed to finalize traces: ${utils_formatError(error)}`);
     }
 }
 /**
@@ -38490,7 +38490,7 @@ function getIssueCreationConfig() {
     const githubToken = lib_core.getInput('github_token', { required: false }) || process.env.GITHUB_TOKEN || '';
     // Validate repository format early
     if (enabled && repository) {
-        const repoInfo = parseRepository(repository);
+        const repoInfo = utils_parseRepository(repository);
         if (!repoInfo) {
             lib_core.warning(`Invalid repository format: "${repository}" (expected owner/repo)`);
             return undefined;
@@ -38535,48 +38535,59 @@ async function processInsights() {
     await finalizeTraces();
     // Parse the trace file for insights
     const insights = parseTraceFileForInsights(POST_ACTION_TRACE_FILE_PATH);
+    // Initialize results - will be populated if there are insights
+    let results = {
+        total: 0,
+        created: 0,
+        skipped: 0,
+        failed: 0,
+        issues: [],
+    };
     if (insights.length === 0) {
         lib_core.info('No insights found in trace file');
-        return;
     }
-    lib_core.info(`Found ${insights.length} insight(s) in trace file`);
-    // Create issues for each insight
-    const results = await createIssuesForInsights(insights, config);
-    // Log summary
-    lib_core.info(`Insight issue creation summary:`);
-    lib_core.info(`  - Total insights: ${results.total}`);
-    lib_core.info(`  - Issues created: ${results.created}`);
-    lib_core.info(`  - Skipped (already exist): ${results.skipped}`);
-    lib_core.info(`  - Failed: ${results.failed}`);
-    // Set outputs
-    lib_core.setOutput('insights_found', results.total);
-    lib_core.setOutput('issues_created', results.created);
-    lib_core.setOutput('issues_skipped', results.skipped);
-    // Log individual results
-    for (const { insight, result } of results.issues) {
-        if (result.created) {
-            lib_core.info(`  Created issue for "${insight.title}": ${result.issueUrl}`);
-        }
-        else if (result.skipped) {
-            lib_core.debug(`  Skipped "${insight.title}": ${result.reason}`);
-        }
-        else {
-            lib_core.warning(`  Failed to create issue for "${insight.title}": ${result.reason}`);
+    else {
+        lib_core.info(`Found ${insights.length} insight(s) in trace file`);
+        // Create issues for each insight
+        results = await createIssuesForInsights(insights, config);
+        // Log summary
+        lib_core.info(`Insight issue creation summary:`);
+        lib_core.info(`  - Total insights: ${results.total}`);
+        lib_core.info(`  - Issues created: ${results.created}`);
+        lib_core.info(`  - Skipped (already exist): ${results.skipped}`);
+        lib_core.info(`  - Failed: ${results.failed}`);
+        // Set outputs
+        lib_core.setOutput('insights_found', results.total);
+        lib_core.setOutput('issues_created', results.created);
+        lib_core.setOutput('issues_skipped', results.skipped);
+        // Log individual results
+        for (const { insight, result } of results.issues) {
+            if (result.created) {
+                lib_core.info(`  Created issue for "${insight.title}": ${result.issueUrl}`);
+            }
+            else if (result.skipped) {
+                lib_core.debug(`  Skipped "${insight.title}": ${result.reason}`);
+            }
+            else {
+                lib_core.warning(`  Failed to create issue for "${insight.title}": ${result.reason}`);
+            }
         }
     }
+    /*
     // Comment on PR if this is a PR-triggered workflow
-    if (results.total > 0) {
-        const issueResults = results.issues.map(({ insight, result }) => ({
-            insight,
-            issueUrl: result.issueUrl,
-            created: result.created,
-        }));
-        const prResult = await commentOnPullRequest(insights, issueResults, config.githubToken);
-        if (prResult.commented) {
-            lib_core.info(`  PR comment: ${prResult.commentUrl}`);
-            lib_core.setOutput('pr_comment_url', prResult.commentUrl);
-        }
+    // Always attempt to comment, even when there are no insights, to show the checks summary
+    const issueResults = results.issues.map(({ insight, result }) => ({
+        insight,
+        issueUrl: result.issueUrl,
+        created: result.created,
+    }));
+    
+    const prResult = await commentOnPullRequest(insights, issueResults, config.githubToken);
+    if (prResult.commented) {
+        core.info(`  PR comment: ${prResult.commentUrl}`);
+        core.setOutput('pr_comment_url', prResult.commentUrl);
     }
+    */
 }
 async function cleanup() {
     const isInstalled = await isFastCliInstalled();
@@ -38589,7 +38600,7 @@ async function cleanup() {
         await processInsights();
     }
     catch (error) {
-        lib_core.warning(`Failed to process insights: ${formatError(error)}`);
+        lib_core.warning(`Failed to process insights: ${utils_formatError(error)}`);
     }
 }
 cleanup();
