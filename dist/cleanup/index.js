@@ -38535,47 +38535,55 @@ async function processInsights() {
     await finalizeTraces();
     // Parse the trace file for insights
     const insights = parseTraceFileForInsights(POST_ACTION_TRACE_FILE_PATH);
+    // Initialize results - will be populated if there are insights
+    let results = {
+        total: 0,
+        created: 0,
+        skipped: 0,
+        failed: 0,
+        issues: [],
+    };
     if (insights.length === 0) {
         lib_core.info('No insights found in trace file');
-        return;
     }
-    lib_core.info(`Found ${insights.length} insight(s) in trace file`);
-    // Create issues for each insight
-    const results = await createIssuesForInsights(insights, config);
-    // Log summary
-    lib_core.info(`Insight issue creation summary:`);
-    lib_core.info(`  - Total insights: ${results.total}`);
-    lib_core.info(`  - Issues created: ${results.created}`);
-    lib_core.info(`  - Skipped (already exist): ${results.skipped}`);
-    lib_core.info(`  - Failed: ${results.failed}`);
-    // Set outputs
-    lib_core.setOutput('insights_found', results.total);
-    lib_core.setOutput('issues_created', results.created);
-    lib_core.setOutput('issues_skipped', results.skipped);
-    // Log individual results
-    for (const { insight, result } of results.issues) {
-        if (result.created) {
-            lib_core.info(`  Created issue for "${insight.title}": ${result.issueUrl}`);
-        }
-        else if (result.skipped) {
-            lib_core.debug(`  Skipped "${insight.title}": ${result.reason}`);
-        }
-        else {
-            lib_core.warning(`  Failed to create issue for "${insight.title}": ${result.reason}`);
+    else {
+        lib_core.info(`Found ${insights.length} insight(s) in trace file`);
+        // Create issues for each insight
+        results = await createIssuesForInsights(insights, config);
+        // Log summary
+        lib_core.info(`Insight issue creation summary:`);
+        lib_core.info(`  - Total insights: ${results.total}`);
+        lib_core.info(`  - Issues created: ${results.created}`);
+        lib_core.info(`  - Skipped (already exist): ${results.skipped}`);
+        lib_core.info(`  - Failed: ${results.failed}`);
+        // Set outputs
+        lib_core.setOutput('insights_found', results.total);
+        lib_core.setOutput('issues_created', results.created);
+        lib_core.setOutput('issues_skipped', results.skipped);
+        // Log individual results
+        for (const { insight, result } of results.issues) {
+            if (result.created) {
+                lib_core.info(`  Created issue for "${insight.title}": ${result.issueUrl}`);
+            }
+            else if (result.skipped) {
+                lib_core.debug(`  Skipped "${insight.title}": ${result.reason}`);
+            }
+            else {
+                lib_core.warning(`  Failed to create issue for "${insight.title}": ${result.reason}`);
+            }
         }
     }
     // Comment on PR if this is a PR-triggered workflow
-    if (results.total > 0) {
-        const issueResults = results.issues.map(({ insight, result }) => ({
-            insight,
-            issueUrl: result.issueUrl,
-            created: result.created,
-        }));
-        const prResult = await commentOnPullRequest(insights, issueResults, config.githubToken);
-        if (prResult.commented) {
-            lib_core.info(`  PR comment: ${prResult.commentUrl}`);
-            lib_core.setOutput('pr_comment_url', prResult.commentUrl);
-        }
+    // Always attempt to comment, even when there are no insights, to show the checks summary
+    const issueResults = results.issues.map(({ insight, result }) => ({
+        insight,
+        issueUrl: result.issueUrl,
+        created: result.created,
+    }));
+    const prResult = await commentOnPullRequest(insights, issueResults, config.githubToken);
+    if (prResult.commented) {
+        lib_core.info(`  PR comment: ${prResult.commentUrl}`);
+        lib_core.setOutput('pr_comment_url', prResult.commentUrl);
     }
 }
 async function cleanup() {
