@@ -33,10 +33,16 @@ jobs:
       # ... rest of your workflow steps
 ```
 
+## Beta Agreement
+
+FastCI is currently in beta. By using this action, you agree to the [FastCI Beta Agreement](https://github.com/jfrog-fastci/fastci/blob/main/BETA_AGREEMENT.md).
+To use FastCI, non-JFrog organizations must explicitly accept the beta terms by setting `accept_terms: true` in the action configuration.
+
 ## Requirements
 
 - **Permissions**: Ensure the `actions:read` permission is added to each job using FastCI
 - **Token Setup**: Configure the `FASTCI_TOKEN` in your repository or organization GitHub secrets
+- **Beta Agreement**: Set `accept_terms: true` to accept the [Beta Agreement](https://github.com/jfrog-fastci/fastci/blob/main/BETA_AGREEMENT.md) (required for non-JFrog organizations)
 
 ## Debugging
 
