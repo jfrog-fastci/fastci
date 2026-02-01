@@ -28,6 +28,7 @@ jobs:
         with:
           github_token: ${{secrets.GITHUB_TOKEN}}
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}  # Will be provided to you (Optional)
+          accept_terms: 'true'
 
       # ... rest of your workflow steps
 ```
