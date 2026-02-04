@@ -19,7 +19,7 @@ CI maintenance is often neglected until it becomes a critical bottleneck. FastCI
 
 > **IMPORTANT:** If you have a previous FastCI installation, ignore those instructions and use these updated steps.
 
-Add FastCI as the **first step** in each job of your GitHub Actions workflows.
+**FastCI must be the very first step in each job** - it should run before any other steps, including `actions/checkout`.
 
 **Required Permission:** This workflow requires `issues: write` permission at the workflow level to create issues.
 
