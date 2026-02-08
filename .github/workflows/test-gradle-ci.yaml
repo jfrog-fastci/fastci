@@ -42,7 +42,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_fastcli: true
           fastcli_log_level: 'debug'
-
+          accept_terms: 'yes'
 
       - name: Start FastCI Optimization
         if: inputs.branch == 'main'
@@ -52,7 +52,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_fastcli: true
           fastcli_log_level: 'debug'
-          
+          accept_terms: 'yes' 
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4

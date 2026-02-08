@@ -39,6 +39,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_fastcli: true
           fastcli_log_level: 'debug'
+          accept_terms: 'yes'
 
       - name: Start FastCI Optimization (main)
         # This will correctly only run on dispatch
@@ -49,6 +50,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_fastcli: true
           fastcli_log_level: 'debug'
+          accept_terms: 'yes'
 
       # --- FIXED INDENTATION ---
       - name: Set up QEMU

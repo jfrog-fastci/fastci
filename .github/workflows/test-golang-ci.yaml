@@ -46,6 +46,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_fastcli: true
           fastcli_log_level: 'debug'
+          accept_terms: 'yes'
 
       - name: Start FastCI Optimization
         if: inputs.branch == 'main' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
@@ -55,7 +56,7 @@ jobs:
           fastci_otel_token: ${{ secrets.FASTCI_TOKEN }}
           install_fastcli: true
           fastcli_log_level: 'debug'
-          
+          accept_terms: 'yes'
 
       - name: Set up Go
         uses: actions/setup-go@v5
