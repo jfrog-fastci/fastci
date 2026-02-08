@@ -2,11 +2,6 @@ name: "Tracer Action"
 description: Tracer description
 author: FastCI Tracer
 inputs:
-  accept_terms:
-    description: "Accept the FastCI Beta Agreement (https://github.com/jfrog-fastci/fastci/blob/main/BETA_AGREEMENT.md). Set to 'yes' to accept. Required for non-JFrog organizations."
-    required: false
-    default: "no"
-
   jfrog_user_writer:
     description: "JFrog User Writer"
     required: false
@@ -47,7 +42,7 @@ inputs:
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.22.7"
+    default: "v0.22.2"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
