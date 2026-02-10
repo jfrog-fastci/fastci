@@ -37094,6 +37094,7 @@ const INSIGHT_ATTRIBUTES = {
     INSIGHT_SKILL_LINK: 'insight.skill_link',
     INSIGHT_REMEDIATION_PROMPT: 'insight.remediation_prompt',
     INSIGHT_COUNT: 'insight.count',
+    INSIGHT_REMEDIATION_TYPE: 'insight.remediation_type',
 };
 /**
  * Span type values
@@ -37423,6 +37424,7 @@ function spanToInsight(span, allSpans) {
         implemented: span.attributes[INSIGHT_ATTRIBUTES.INSIGHT_IMPLEMENTED] === true,
         skillLink: String(span.attributes[INSIGHT_ATTRIBUTES.INSIGHT_SKILL_LINK] || ''),
         remediationPrompt: String(span.attributes[INSIGHT_ATTRIBUTES.INSIGHT_REMEDIATION_PROMPT] || ''),
+        remediationType: String(span.attributes[INSIGHT_ATTRIBUTES.INSIGHT_REMEDIATION_TYPE] || 'agentic'),
         contextAttributes: { ...contextAttributes, ...additionalContext },
         parentSpan: parentSpan ? {
             name: parentSpan.name,
@@ -38236,6 +38238,14 @@ function getIssueLabels(insight, config) {
             labels.push(techConfig.label);
         }
     }
+    // Add remediation type label
+    const remediationType = insight.remediationType || 'agentic';
+    if (remediationType === 'manual') {
+        labels.push('manual-remediation');
+    }
+    else {
+        labels.push('agentic-remediation');
+    }
     return [...new Set(labels)]; // Deduplicate
 }
 /**
@@ -38289,6 +38299,14 @@ async function ensureLabelsExist(octokit, owner, repo, labels) {
                     color = '0366d6';
                     const tech = label.split(': ')[1];
                     description = `${tech.charAt(0).toUpperCase() + tech.slice(1)} related insight`;
+                }
+                else if (label === 'agentic-remediation') {
+                    color = '0e8a16';
+                    description = 'Can be automatically remediated by a coding agent';
+                }
+                else if (label === 'manual-remediation') {
+                    color = 'e4e669';
+                    description = 'Requires manual human remediation';
                 }
                 try {
                     await octokit.rest.issues.createLabel({
