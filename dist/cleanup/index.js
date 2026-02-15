@@ -37094,6 +37094,7 @@ const INSIGHT_ATTRIBUTES = {
     INSIGHT_SKILL_LINK: 'insight.skill_link',
     INSIGHT_REMEDIATION_PROMPT: 'insight.remediation_prompt',
     INSIGHT_COUNT: 'insight.count',
+    INSIGHT_REMEDIATION_TYPE: 'insight.remediation_type',
 };
 /**
  * Span type values
@@ -37423,6 +37424,7 @@ function spanToInsight(span, allSpans) {
         implemented: span.attributes[INSIGHT_ATTRIBUTES.INSIGHT_IMPLEMENTED] === true,
         skillLink: String(span.attributes[INSIGHT_ATTRIBUTES.INSIGHT_SKILL_LINK] || ''),
         remediationPrompt: String(span.attributes[INSIGHT_ATTRIBUTES.INSIGHT_REMEDIATION_PROMPT] || ''),
+        remediationType: String(span.attributes[INSIGHT_ATTRIBUTES.INSIGHT_REMEDIATION_TYPE] || 'agentic'),
         contextAttributes: { ...contextAttributes, ...additionalContext },
         parentSpan: parentSpan ? {
             name: parentSpan.name,
@@ -37451,79 +37453,21 @@ function parseTraceFileForInsights(filePath = POST_ACTION_TRACE_FILE_PATH) {
     return extractInsights(spans);
 }
 
-// EXTERNAL MODULE: external "crypto"
-var external_crypto_ = __nccwpck_require__(6113);
+// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
+var lib_github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/insights/issue-id-generator.ts
 /**
- * Deterministic issue ID generator
+ * Issue ID utilities for GitHub issue deduplication
  *
- * Generates unique, deterministic identifiers for insights that can be used
- * to prevent duplicate GitHub issues across multiple CI invocations.
+ * Note: Deterministic insight ID generation is handled by the Go binary
+ * (internal/insights/types.go GenerateID method) and passed through OTEL
+ * trace spans as the `insight.id` attribute. The TypeScript code reads
+ * this pre-generated ID from parsed trace spans.
  *
- * The ID is generated based on:
- * - Repository (owner/repo)
- * - Insight Name (e.g., "dockerignore")
- * - Key context attributes that make the insight unique
- *
- * This ensures that the same insight for the same configuration will always
- * have the same unique ID, regardless of when or how many times the CI runs.
+ * This module provides utilities for:
+ * - Searching for existing issues by insight ID
+ * - Generating HTML comment markers for duplicate detection
  */
-
-/**
- * Context keys that should be included in the deterministic ID calculation
- * for each technology. These are the attributes that make an insight unique
- * within a repository.
- */
-const UNIQUE_CONTEXT_KEYS = {
-    docker: ['path_to_dockerfile'],
-    gradle: ['project_path', 'task_name'],
-    go: ['package_path', 'test_name'],
-    npm: ['package_json_path'],
-    python: ['requirements_path'],
-    // Default: use all context attributes
-    default: [],
-};
-/**
- * Generates a deterministic unique ID for an insight
- *
- * @param repository - The GitHub repository (owner/repo format)
- * @param insight - The parsed insight
- * @returns A deterministic unique ID string
- */
-function generateInsightId(repository, insight) {
-    // Build the components that make this insight unique
-    const components = [
-        repository.toLowerCase(),
-        insight.name,
-        insight.technology,
-    ];
-    // Add relevant context attributes based on technology
-    const contextKeys = UNIQUE_CONTEXT_KEYS[insight.technology] || UNIQUE_CONTEXT_KEYS.default;
-    if (contextKeys.length > 0) {
-        // Use specific keys for this technology
-        for (const key of contextKeys) {
-            if (insight.contextAttributes[key]) {
-                components.push(`${key}:${insight.contextAttributes[key]}`);
-            }
-        }
-    }
-    else {
-        // Use all context attributes (sorted for determinism)
-        const sortedKeys = Object.keys(insight.contextAttributes)
-            .filter(k => !k.startsWith('ci_')) // Exclude CI-specific context
-            .sort();
-        for (const key of sortedKeys) {
-            components.push(`${key}:${insight.contextAttributes[key]}`);
-        }
-    }
-    // Create a deterministic hash
-    const hashInput = components.join('|');
-    const hash = crypto.createHash('sha256').update(hashInput).digest('hex');
-    // Return a human-readable ID with a short hash suffix
-    // Format: fastci-{technology}-{insight-name}-{short-hash}
-    const shortHash = hash.substring(0, 8);
-    return `fastci-${insight.technology}-${insight.name}-${shortHash}`;
-}
 /**
  * Generates a search query to find existing OPEN issues with the same insight ID
  *
@@ -37545,8 +37489,6 @@ function generateIssueMarker(insightIssueId) {
     return `<!-- fastci-insight-id: ${insightIssueId} -->`;
 }
 
-// EXTERNAL MODULE: ./node_modules/@actions/github/lib/github.js
-var lib_github = __nccwpck_require__(5438);
 ;// CONCATENATED MODULE: ./src/insights/utils.ts
 /**
  * Shared utilities for insights module
@@ -37632,9 +37574,9 @@ const SPECIAL_CONTEXT_KEYS_AI = new Set([
     'bash_script_content',
 ]);
 /**
- * Formats a context attribute key for display in AI prompt (converts snake_case to readable format)
+ * Formats a context attribute key for display (converts snake_case to Title Case)
  */
-function formatContextKeyForAI(key) {
+function formatContextKey(key) {
     return key
         .split('_')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -37669,7 +37611,7 @@ function utils_generateAIPrompt(insight) {
     if (contextAttributes.length > 0) {
         lines.push('**Insight Context:**');
         for (const [key, value] of contextAttributes) {
-            const displayKey = formatContextKeyForAI(key);
+            const displayKey = formatContextKey(key);
             // For comma-separated values, list them clearly
             if (value.includes(',')) {
                 const items = value.split(',').map(s => s.trim());
@@ -38021,15 +37963,6 @@ const SPECIAL_CONTEXT_KEYS = new Set([
     'bash_script_content',
 ]);
 /**
- * Formats a context attribute key for display (converts snake_case to Title Case)
- */
-function formatContextKey(key) {
-    return key
-        .split('_')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-}
-/**
  * Builds the overview section with title and description
  */
 function buildOverviewSection(insight) {
@@ -38236,6 +38169,14 @@ function getIssueLabels(insight, config) {
             labels.push(techConfig.label);
         }
     }
+    // Add remediation type label
+    const remediationType = insight.remediationType || 'agentic';
+    if (remediationType === 'manual') {
+        labels.push('manual-remediation');
+    }
+    else {
+        labels.push('agentic-remediation');
+    }
     return [...new Set(labels)]; // Deduplicate
 }
 /**
@@ -38289,6 +38230,14 @@ async function ensureLabelsExist(octokit, owner, repo, labels) {
                     color = '0366d6';
                     const tech = label.split(': ')[1];
                     description = `${tech.charAt(0).toUpperCase() + tech.slice(1)} related insight`;
+                }
+                else if (label === 'agentic-remediation') {
+                    color = '0e8a16';
+                    description = 'Can be automatically remediated by a coding agent';
+                }
+                else if (label === 'manual-remediation') {
+                    color = 'e4e669';
+                    description = 'Requires manual human remediation';
                 }
                 try {
                     await octokit.rest.issues.createLabel({
