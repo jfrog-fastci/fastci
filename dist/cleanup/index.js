@@ -38095,14 +38095,11 @@ function buildHowToFixSection(insight) {
     if (insight.remediationPrompt) {
         // Show a brief summary for humans
         const promptLines = insight.remediationPrompt.split('\n');
-        const firstParagraph = promptLines
-            .slice(0, Math.min(3, promptLines.length))
-            .join('\n');
-        lines.push(firstParagraph);
-        if (promptLines.length > 3) {
-            lines.push('');
-            lines.push('*(See AI prompt below for complete instructions)*');
+        if (promptLines.length > 0) {
+            lines.push(promptLines[0]);
         }
+        lines.push('');
+        lines.push('*(See AI prompt below for complete instructions)*');
     }
     lines.push('');
     return lines;
