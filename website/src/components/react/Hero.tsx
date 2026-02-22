@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer, fadeIn } from '../../lib/animations';
 import AnimatedCounter from './AnimatedCounter';
+import AnimatedWorkflow from './AnimatedWorkflow';
 
 function GridBackground() {
   return (
@@ -44,65 +45,6 @@ function GridBackground() {
       {/* Vignette */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-950" />
     </div>
-  );
-}
-
-function CodeSnippet() {
-  return (
-    <motion.div
-      variants={fadeInUp}
-      className="relative max-w-lg mx-auto lg:mx-0"
-    >
-      <div className="glass-card overflow-hidden">
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
-          <div className="w-3 h-3 rounded-full bg-red-500/60" />
-          <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
-          <div className="w-3 h-3 rounded-full bg-green-500/60" />
-          <span className="ml-2 text-xs text-gray-500 font-mono">.github/workflows/ci.yml</span>
-        </div>
-        <div className="p-5 font-mono text-sm leading-relaxed">
-          <div className="text-gray-500">
-            <span className="text-gray-600"># Add FastCI to any job — just 3 lines</span>
-          </div>
-          <div className="mt-2">
-            <span className="text-purple-400">steps</span>
-            <span className="text-gray-500">:</span>
-          </div>
-          <div>
-            <span className="text-gray-500">  - </span>
-            <span className="text-purple-400">uses</span>
-            <span className="text-gray-500">: </span>
-            <motion.span
-              className="text-brand-400"
-              animate={{ opacity: [1, 0.6, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              jfrog-fastci/fastci@v0
-            </motion.span>
-          </div>
-          <div>
-            <span className="text-gray-500">    </span>
-            <span className="text-purple-400">with</span>
-            <span className="text-gray-500">:</span>
-          </div>
-          <div>
-            <span className="text-gray-500">      </span>
-            <span className="text-purple-400">github_token</span>
-            <span className="text-gray-500">: </span>
-            <span className="text-amber-300">{'${{ secrets.GITHUB_TOKEN }}'}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">      </span>
-            <span className="text-purple-400">accept_terms</span>
-            <span className="text-gray-500">: </span>
-            <span className="text-emerald-300">'yes'</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Glow behind card */}
-      <div className="absolute -inset-4 -z-10 bg-brand-500/5 rounded-3xl blur-2xl" />
-    </motion.div>
   );
 }
 
@@ -171,8 +113,8 @@ export default function Hero() {
             </motion.div>
           </div>
 
-          {/* Right column: Code snippet */}
-          <CodeSnippet />
+          {/* Right column: Animated workflow */}
+          <AnimatedWorkflow />
         </motion.div>
 
         {/* Stats row */}
