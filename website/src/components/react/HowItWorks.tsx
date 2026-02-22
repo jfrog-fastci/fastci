@@ -1,5 +1,5 @@
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { useRef, useState } from 'react';
 import { fadeInUp, staggerContainer } from '../../lib/animations';
 
 function YamlSnippet() {
@@ -28,25 +28,77 @@ function YamlSnippet() {
   );
 }
 
+const issues = [
+  { id: 42, title: 'Dependency caching missing for `npm i`' },
+  { id: 43, title: 'Missing multi-stage build in `docker build`' },
+  { id: 44, title: 'Pin base image to increase cache hit rate' },
+] as const;
+
+function GitHubIssueIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+      <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z" />
+    </svg>
+  );
+}
+
+function IssueRow({ id, title, index }: { id: number; title: string; index: number }) {
+  const [hovered, setHovered] = useState(false);
+  const parts = title.split(/`([^`]+)`/);
+
+  return (
+    <motion.div
+      className="group flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-default transition-colors hover:bg-white/[0.03]"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.12, duration: 0.4, ease: [0.25, 0.4, 0.25, 1] }}
+    >
+      <GitHubIssueIcon className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+
+      <span className="text-[13px] text-gray-300 flex-1 min-w-0 truncate">
+        {parts.map((part, i) =>
+          i % 2 === 1 ? (
+            <code key={i} className="text-brand-400 bg-brand-500/10 px-1 py-0.5 rounded text-[12px]">{part}</code>
+          ) : (
+            <span key={i}>{part}</span>
+          )
+        )}
+      </span>
+
+      <AnimatePresence>
+        {hovered && (
+          <motion.span
+            initial={{ opacity: 0, x: 6 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 6 }}
+            transition={{ duration: 0.15 }}
+            className="text-[11px] font-mono text-gray-500 shrink-0"
+          >
+            #{id}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 function IssueMockup() {
   return (
     <div className="mt-6 rounded-xl bg-black/60 border border-white/[0.06] overflow-hidden">
-      <div className="p-4 space-y-3">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded-full border-2 border-emerald-500 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          </div>
-          <span className="text-[13px] text-white font-medium">Cache miss detected in npm install</span>
-        </div>
-        <div className="pl-6 space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-medium text-amber-400/80 bg-amber-500/10 px-2 py-0.5 rounded-full">bottleneck</span>
-            <span className="text-[10px] font-medium text-purple-400/80 bg-purple-500/10 px-2 py-0.5 rounded-full">cache</span>
-          </div>
-          <p className="text-[12px] text-gray-500 leading-relaxed">
-            Step "Install dependencies" takes 2m 34s. Adding a cache key based on package-lock.json could reduce this to ~8s.
-          </p>
-        </div>
+      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/[0.06]">
+        <svg className="w-3.5 h-3.5 text-emerald-500" fill="currentColor" viewBox="0 0 16 16">
+          <circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          <circle cx="8" cy="8" r="2" />
+        </svg>
+        <span className="text-[11px] text-gray-500 font-mono">3 issues opened</span>
+      </div>
+      <div className="p-2 space-y-0.5">
+        {issues.map((issue, i) => (
+          <IssueRow key={i} id={issue.id} title={issue.title} index={i} />
+        ))}
       </div>
     </div>
   );
