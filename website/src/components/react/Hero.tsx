@@ -122,8 +122,9 @@ export default function Hero() {
           <div>
             <motion.div variants={fadeInUp} className="mb-6">
               <span className="inline-flex items-center gap-2 text-sm font-medium text-brand-400 bg-brand-500/10 px-4 py-1.5 rounded-full border border-brand-500/20">
+                Free
                 <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-                Open Source &middot; Free Forever
+                No Sign Up Required
               </span>
             </motion.div>
 
