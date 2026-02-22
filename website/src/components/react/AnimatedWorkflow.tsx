@@ -8,6 +8,7 @@ function Line({
   highlight,
   duration,
   flashWhen,
+  durationHighlight,
 }: {
   children: React.ReactNode;
   delay?: number;
@@ -15,6 +16,7 @@ function Line({
   highlight?: boolean;
   duration?: string;
   flashWhen?: boolean;
+  durationHighlight?: boolean;
 }) {
   const prevFlashWhen = useRef(false);
   const [showNewFlash, setShowNewFlash] = useState(false);
@@ -52,7 +54,11 @@ function Line({
       )}
       {children}
       {duration && (
-        <span className="ml-auto shrink-0 text-gray-500 text-xs tabular-nums">
+        <span
+          className={`ml-auto shrink-0 text-xs tabular-nums ${
+            durationHighlight ? 'text-emerald-400' : 'text-gray-500'
+          }`}
+        >
           ~{duration}
         </span>
       )}
@@ -221,39 +227,22 @@ export default function AnimatedWorkflow() {
               transition={{ staggerChildren: 0.08, delayChildren: 0.1 }}
               className="contents"
             >
-              <Line visible={true} highlight duration="5s">
+              <Line visible={true} highlight duration="0s">
                 <span className="text-gray-500">{nbsp(6)}- </span>
                 <span className="text-purple-400">uses</span>
                 <span className="text-gray-500">: </span>
                 <span className="text-brand-400">jfrog-fastci/fastci@v0</span>
               </Line>
-              <Line visible={true} highlight>
-                <span className="text-gray-500">{nbsp(8)}</span>
-                <span className="text-purple-400">with</span>
-                <span className="text-gray-500">:</span>
-              </Line>
-              <Line visible={true} highlight>
-                <span className="text-gray-500">{nbsp(10)}</span>
-                <span className="text-purple-400">github_token</span>
-                <span className="text-gray-500">: </span>
-                <span className="text-amber-300">{'${{ secrets.GITHUB_TOKEN }}'}</span>
-              </Line>
-              <Line visible={true} highlight>
-                <span className="text-gray-500">{nbsp(10)}</span>
-                <span className="text-purple-400">accept_terms</span>
-                <span className="text-gray-500">: </span>
-                <span className="text-emerald-300">'yes'</span>
-              </Line>
             </motion.div>
           )}
           </AnimatePresence>
 
-          <Line visible={lineIndex > 6} duration="15s">
+          <Line visible={lineIndex > 6} duration="3s" durationHighlight={showFixed}>
             <span className="text-gray-500">{nbsp(6)}- </span>
             <span className="text-purple-400">uses</span>
             <span className="text-gray-500">: actions/checkout@v4</span>
           </Line>
-          <Line visible={lineIndex > 7} duration={showFixed ? '30s' : '1m'}>
+          <Line visible={lineIndex > 7} duration={showFixed ? '30s' : '1m'} durationHighlight={showFixed}>
             <span className="text-gray-500">{nbsp(6)}- </span>
             <span className="text-purple-400">uses</span>
             <span className="text-gray-500">: actions/setup-go@v5</span>
@@ -295,7 +284,7 @@ export default function AnimatedWorkflow() {
               <span className="text-red-400/90">false</span>
             )}
           </Line>
-          <Line visible={lineIndex > 11} duration={showFixed ? '20s' : '8.2m'}>
+          <Line visible={lineIndex > 11} duration={showFixed ? '20s' : '8.2m'} durationHighlight={showFixed}>
             <span className="text-gray-500">{nbsp(6)}- </span>
             <span className="text-purple-400">run</span>
             <span className="text-gray-500">: go build ./...</span>
@@ -327,41 +316,24 @@ export default function AnimatedWorkflow() {
               exit={{ opacity: 0 }}
               className="contents"
             >
-              <Line visible={true} highlight duration="5s">
+              <Line visible={true} highlight duration="0s">
                 <span className="text-gray-500">{nbsp(6)}- </span>
                 <span className="text-purple-400">uses</span>
                 <span className="text-gray-500">: </span>
                 <span className="text-brand-400">jfrog-fastci/fastci@v0</span>
               </Line>
-              <Line visible={true} highlight>
-                <span className="text-gray-500">{nbsp(8)}</span>
-                <span className="text-purple-400">with</span>
-                <span className="text-gray-500">:</span>
-              </Line>
-              <Line visible={true} highlight>
-                <span className="text-gray-500">{nbsp(10)}</span>
-                <span className="text-purple-400">github_token</span>
-                <span className="text-gray-500">: </span>
-                <span className="text-amber-300">{'${{ secrets.GITHUB_TOKEN }}'}</span>
-              </Line>
-              <Line visible={true} highlight>
-                <span className="text-gray-500">{nbsp(10)}</span>
-                <span className="text-purple-400">accept_terms</span>
-                <span className="text-gray-500">: </span>
-                <span className="text-emerald-300">'yes'</span>
-              </Line>
             </motion.div>
           )}
           </AnimatePresence>
 
-          <Line visible={lineIndex > 15} duration="15s">
+          <Line visible={lineIndex > 15} duration="3s" durationHighlight={showFixed}>
             <span className="text-gray-500">{nbsp(6)}- </span>
             <span className="text-purple-400">uses</span>
             <span className="text-gray-500">: actions/checkout@v4</span>
           </Line>
           {showFixed ? (
             <>
-              <Line visible={true} duration="23s">
+              <Line visible={true} duration="23s" durationHighlight={true}>
                 <span className="text-gray-500">{nbsp(6)}- </span>
                 <span className="text-purple-400">uses</span>
                 <span className="text-gray-500">: docker/build-push-action@v5</span>
@@ -403,7 +375,7 @@ export default function AnimatedWorkflow() {
                   </span>
                 )}
               </Line>
-              <Line visible={lineIndex > 17} duration="10m">
+              <Line visible={lineIndex > 17} duration="30s">
                 <span className="text-gray-500">{nbsp(6)}- </span>
                 <span className="text-purple-400">run</span>
                 <span className="text-gray-500">: docker push jfrog.io/service:1.10.0</span>
