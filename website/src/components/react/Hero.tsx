@@ -125,7 +125,7 @@ export default function Hero() {
           initial="hidden"
           animate="visible"
           transition={{ delay: 0.8 }}
-          className="mt-20 md:mt-28 grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-4"
+          className="mt-20 md:mt-28 grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-4 max-w-md md:max-w-none mx-auto justify-items-center md:justify-items-stretch"
         >
           <AnimatedCounter target={3} suffix=" lines" label="to install" />
           <AnimatedCounter target={5} suffix=" min" label="setup time" />

@@ -104,6 +104,21 @@ function IssueMockup() {
   );
 }
 
+function DiffLine({ type, oldNum, newNum, content }: { type: 'add' | 'del' | 'ctx'; oldNum?: number; newNum?: number; content: string }) {
+  const bg = type === 'add' ? 'bg-emerald-500/10' : type === 'del' ? 'bg-red-500/10' : '';
+  const prefix = type === 'add' ? '+' : type === 'del' ? '-' : ' ';
+  const prefixColor = type === 'add' ? 'text-emerald-400' : type === 'del' ? 'text-red-400' : 'text-gray-500';
+  const textColor = type === 'del' ? 'text-red-300/90' : 'text-gray-300';
+  return (
+    <div className={`flex font-mono text-[11px] leading-relaxed ${bg}`}>
+      <span className="w-6 shrink-0 text-right pr-2 text-gray-600 select-none">{oldNum ?? ''}</span>
+      <span className="w-6 shrink-0 text-right pr-2 text-gray-600 select-none">{newNum ?? ''}</span>
+      <span className={`w-4 shrink-0 ${prefixColor}`}>{prefix}</span>
+      <span className={textColor}>{content}</span>
+    </div>
+  );
+}
+
 function PRMockup() {
   return (
     <div className="mt-6 rounded-xl bg-black/60 border border-white/[0.06] overflow-hidden">
@@ -112,7 +127,7 @@ function PRMockup() {
           <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
           </svg>
-          <span className="text-[13px] text-white font-medium">Add npm caching to CI workflow</span>
+          <span className="text-[13px] text-white font-medium">Add multi-stage build to Dockerfile</span>
         </div>
         <div className="pl-6 space-y-2.5">
           <div className="flex items-center gap-2">
@@ -120,10 +135,33 @@ function PRMockup() {
           </div>
           <div className="flex items-center gap-3 text-[11px] text-gray-500">
             <span className="flex items-center gap-1">
-              <span className="text-emerald-400">+12</span> <span className="text-red-400">-2</span>
+              <span className="text-emerald-400">+12</span> <span className="text-red-400">-8</span>
             </span>
-            <span>ci.yml</span>
+            <span>Dockerfile</span>
           </div>
+        </div>
+      </div>
+      {/* GitHub-style diff: single-stage → multi-stage */}
+      <div className="border-t border-white/[0.06]">
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-white/[0.06] bg-black/30">
+          <span className="text-[11px] text-gray-500 font-mono">Dockerfile</span>
+        </div>
+        <div className="p-2 font-mono text-[11px] overflow-x-auto">
+          <DiffLine type="del" oldNum={1} newNum={undefined} content="FROM node:18" />
+          <DiffLine type="add" oldNum={undefined} newNum={1} content="FROM node:18 AS builder" />
+          <DiffLine type="ctx" oldNum={2} newNum={2} content="WORKDIR /app" />
+          <DiffLine type="ctx" oldNum={3} newNum={3} content="COPY package*.json ./" />
+          <DiffLine type="ctx" oldNum={4} newNum={4} content="RUN npm ci" />
+          <DiffLine type="ctx" oldNum={5} newNum={5} content="COPY . ." />
+          <DiffLine type="del" oldNum={6} newNum={undefined} content="RUN npm run build" />
+          <DiffLine type="del" oldNum={7} newNum={undefined} content={'CMD ["npm", "start"]'} />
+          <DiffLine type="add" oldNum={undefined} newNum={6} content="RUN npm run build" />
+          <DiffLine type="add" oldNum={undefined} newNum={7} content="FROM node:18-slim" />
+          <DiffLine type="add" oldNum={undefined} newNum={8} content="WORKDIR /app" />
+          <DiffLine type="add" oldNum={undefined} newNum={9} content="COPY --from=builder /app/dist ./dist" />
+          <DiffLine type="add" oldNum={undefined} newNum={10} content="COPY package*.json ./" />
+          <DiffLine type="add" oldNum={undefined} newNum={11} content="RUN npm ci --omit=dev" />
+          <DiffLine type="add" oldNum={undefined} newNum={12} content={'CMD ["npm", "start"]'} />
         </div>
       </div>
     </div>

@@ -81,7 +81,7 @@ function InsightBadge({
         initial={{ opacity: 0, scale: 0.8 }}
         animate={visible ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
         transition={{ duration: 0.35, delay }}
-        className="relative inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-500/20 text-brand-300 text-xs font-medium border border-brand-500/30"
+        className="relative inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-500/20 text-brand-300 text-xs font-medium border border-brand-500/30 whitespace-nowrap"
       >
         <span className="text-brand-400">→</span> {text}
       </motion.span>
@@ -280,7 +280,7 @@ export default function AnimatedWorkflow() {
             <span className="text-purple-400">uses</span>
             <span className="text-gray-500">: actions/checkout@v4</span>
           </Line>
-          <Line visible={lineIndex > 7} duration={showFixed ? '30s' : '1m'} durationHighlight={showFixed}>
+          <Line visible={lineIndex > 7} duration={showFixed ? '1.2m' : '1m'} durationHighlight={showFixed}>
             <span className="text-gray-500">{nbsp(6)}- </span>
             <span className="text-purple-400">uses</span>
             <span className="text-gray-500">: actions/setup-go@v5</span>
@@ -290,7 +290,7 @@ export default function AnimatedWorkflow() {
             <span className="text-purple-400">with</span>
             <span className="text-gray-500">:</span>
             {(showInsights && !showFixed) && (
-              <span className="ml-2">
+              <span className="absolute right-0 top-0">
                 <InsightBadge
                   text="Enable cache ~2m faster"
                   visible={true}
@@ -371,7 +371,7 @@ export default function AnimatedWorkflow() {
           </Line>
           {showFixed ? (
             <>
-              <Line visible={true} duration="23s" durationHighlight={true} flashWhen={true}>
+              <Line visible={true} duration="2m" durationHighlight={true} flashWhen={true}>
                 <span className="text-gray-500">{nbsp(6)}- </span>
                 <span className="text-purple-400">uses</span>
                 <span className="text-gray-500">: docker/build-push-action@v5</span>
@@ -404,9 +404,9 @@ export default function AnimatedWorkflow() {
                 <span className="text-purple-400">run</span>
                 <span className="text-gray-500">: docker build -t jfrog.io/service:1.10.0 .</span>
                 {showInsights && (
-                  <span className="ml-2">
+                  <span className="absolute right-0 top-0">
                     <InsightBadge
-                      text="Use Buildx ~1m faster"
+                      text="Use Buildx ~8m faster"
                       visible={true}
                       delay={0.4}
                     />

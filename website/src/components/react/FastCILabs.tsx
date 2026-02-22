@@ -66,6 +66,64 @@ export default function FastCILabs() {
         </motion.div>
 
         <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mb-8"
+        >
+          <a
+            href={`${baseUrl}/labs/insights/docker-build-use-multi-stage-build`}
+            className="group block"
+          >
+            <motion.div
+              whileHover={{ scale: 1.01, y: -2, transition: { duration: 0.25 } }}
+              className="glass-card-hover overflow-hidden"
+            >
+              <div className="flex flex-col md:flex-row">
+                <div className="md:w-1/3 h-40 md:h-auto bg-gradient-to-br from-brand-500/20 to-cyan-500/20 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-surface-950/40" />
+                  <div className="absolute bottom-4 left-5 flex gap-2">
+                    <span className="text-xs font-medium text-white/80 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
+                      Insight
+                    </span>
+                    <span className="text-xs font-medium text-brand-300 bg-brand-500/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                      Docker Optimization
+                    </span>
+                  </div>
+                  <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                      backgroundImage:
+                        'linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)',
+                      backgroundSize: '30px 30px',
+                    }}
+                  />
+                </div>
+                <div className="p-6 md:p-8 md:w-2/3">
+                  <div className="flex items-center gap-3 mb-3">
+                    <h3 className="text-xl font-bold text-white group-hover:text-brand-400 transition-colors">
+                      Docker Build: Use Multi-Stage Builds
+                    </h3>
+                    <span className="shrink-0 text-xs font-bold text-brand-400 bg-brand-500/15 border border-brand-500/30 px-3 py-1 rounded-full">
+                      ~34% faster
+                    </span>
+                  </div>
+                  <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                    Replace monolithic Dockerfiles with multi-stage builds to drastically reduce image size and build time. Backed by real CI data from 3 open-source repositories tested daily.
+                  </p>
+                  <span className="text-brand-400 text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+                    View performance data
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          </a>
+        </motion.div>
+
+        <motion.div
           variants={staggerContainer}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
