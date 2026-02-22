@@ -114,7 +114,9 @@ export default function Hero() {
           </div>
 
           {/* Right column: Animated workflow */}
-          <AnimatedWorkflow />
+          <div className="min-w-0">
+            <AnimatedWorkflow />
+          </div>
         </motion.div>
 
         {/* Stats row */}

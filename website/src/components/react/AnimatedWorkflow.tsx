@@ -149,7 +149,7 @@ export default function AnimatedWorkflow() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="relative w-[672px] max-w-full mx-auto lg:mx-0"
+      className="relative w-full max-w-[672px] min-w-0 mx-auto lg:mx-0"
     >
       <div className="glass-card overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
@@ -221,7 +221,7 @@ export default function AnimatedWorkflow() {
         </div>
 
         <div
-          className="p-5 font-mono text-sm leading-relaxed overflow-x-auto overflow-y-auto"
+          className="p-3 sm:p-5 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto overflow-y-auto"
           style={{ height: '420px' }}
         >
           {/* name */}
@@ -371,27 +371,27 @@ export default function AnimatedWorkflow() {
           </Line>
           {showFixed ? (
             <>
-              <Line visible={true} duration="23s" durationHighlight={true}>
+              <Line visible={true} duration="23s" durationHighlight={true} flashWhen={true}>
                 <span className="text-gray-500">{nbsp(6)}- </span>
                 <span className="text-purple-400">uses</span>
                 <span className="text-gray-500">: docker/build-push-action@v5</span>
               </Line>
-              <Line visible={true}>
+              <Line visible={true} flashWhen={true}>
                 <span className="text-gray-500">{nbsp(8)}</span>
                 <span className="text-purple-400">with</span>
                 <span className="text-gray-500">:</span>
               </Line>
-              <Line visible={true}>
+              <Line visible={true} flashWhen={true}>
                 <span className="text-gray-500">{nbsp(10)}</span>
                 <span className="text-purple-400">context</span>
                 <span className="text-gray-500">: .</span>
               </Line>
-              <Line visible={true}>
+              <Line visible={true} flashWhen={true}>
                 <span className="text-gray-500">{nbsp(10)}</span>
                 <span className="text-purple-400">push</span>
                 <span className="text-gray-500">: true</span>
               </Line>
-              <Line visible={true}>
+              <Line visible={true} flashWhen={true}>
                 <span className="text-gray-500">{nbsp(10)}</span>
                 <span className="text-purple-400">tags</span>
                 <span className="text-gray-500">: jfrog.io/service:1.10.0</span>
@@ -424,7 +424,7 @@ export default function AnimatedWorkflow() {
       </div>
 
       {/* Step indicators */}
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
         {STEPS.map(({ id, label }) => {
           const isActive = phase === id;
           const isComplete = phase > id;
@@ -440,7 +440,7 @@ export default function AnimatedWorkflow() {
                 phaseStartRef.current = Date.now();
                 setPhaseProgress(0);
               }}
-              className="relative px-4 py-2 rounded-lg text-sm font-medium overflow-hidden transition-colors duration-200 border hover:border-white/20"
+              className="relative px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium overflow-hidden transition-colors duration-200 border hover:border-white/20"
               style={{
                 backgroundColor: isActive || isComplete ? 'transparent' : 'rgba(255,255,255,0.05)',
                 borderColor: isActive || isComplete ? 'rgba(64,190,70,0.4)' : 'rgba(255,255,255,0.1)',
