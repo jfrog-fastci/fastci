@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,8 +6,8 @@
 
 @layer base {
   :root {
-    --brand-glow: rgba(26, 173, 124, 0.15);
-    --brand-glow-strong: rgba(26, 173, 124, 0.3);
+    --brand-glow: rgba(64, 190, 70, 0.15);
+    --brand-glow-strong: rgba(64, 190, 70, 0.3);
   }
 
   html {
@@ -36,7 +36,7 @@
   }
 
   .glass-card-hover:hover {
-    @apply bg-white/[0.06] border-brand-500/20 shadow-[0_0_40px_rgba(26,173,124,0.08)];
+    @apply bg-white/[0.06] border-brand-500/20 shadow-[0_0_40px_rgba(64,190,70,0.08)];
   }
 
   .gradient-text {
