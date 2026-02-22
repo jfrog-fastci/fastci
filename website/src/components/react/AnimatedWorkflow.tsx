@@ -131,7 +131,7 @@ export default function AnimatedWorkflow() {
       const progress = Math.min(elapsed / duration, 1);
       setPhaseProgress(progress);
       if (progress >= 1) {
-        setPhase((p) => (p + 1) % 5);
+        setPhase((p) => Math.min(p + 1, 4));
       }
     }, 50);
     return () => clearInterval(iv);
