@@ -5,13 +5,8 @@ const baseUrl = import.meta.env.BASE_URL;
 <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16 md:h-20">
-      <a href={baseUrl} class="flex items-center gap-2.5 group">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center font-bold text-white text-sm">
-          F
-        </div>
-        <span class="text-lg font-bold text-white tracking-tight">
-          Fast<span class="text-brand-400">CI</span>
-        </span>
+      <a href={baseUrl} class="flex items-center group">
+        <img src={`${baseUrl}/fastci_logo.svg`} alt="FastCI" class="h-7 w-auto" />
       </a>
 
       <div class="flex items-center gap-3">
