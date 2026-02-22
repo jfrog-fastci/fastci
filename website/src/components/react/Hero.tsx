@@ -131,10 +131,8 @@ export default function Hero() {
               variants={fadeInUp}
               className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight mb-6"
             >
-              Automatically Identify{' '}
-              <br className="hidden sm:block" />
-              &amp; Optimize{' '}
-              <span className="gradient-text">Your CI</span>
+              The fastest path to faster{' '}
+              <span className="gradient-text">CI</span>
             </motion.h1>
 
             <motion.p
