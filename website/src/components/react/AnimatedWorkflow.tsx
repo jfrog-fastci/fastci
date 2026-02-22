@@ -89,14 +89,15 @@ function InsightBadge({
   );
 }
 
-const PHASE_TIMINGS = [4500, 3750, 4500, 4500] as const; // original → +fastci → +insights → fixed (1.5× slower)
+const PHASE_TIMINGS = [4500, 3750, 4500, 2500, 4500] as const; // original → +fastci → +insights → fixing → fixed
 const nbsp = (n: number) => '\u00A0'.repeat(n);
 
 const STEPS = [
   { id: 0, label: 'Original workflow' },
   { id: 1, label: 'Add FastCI' },
   { id: 2, label: 'Insights' },
-  { id: 3, label: 'Fixes applied' },
+  { id: 3, label: 'Fixing In PR' },
+  { id: 4, label: 'Fixes applied' },
 ] as const;
 
 export default function AnimatedWorkflow() {
@@ -130,24 +131,25 @@ export default function AnimatedWorkflow() {
       const progress = Math.min(elapsed / duration, 1);
       setPhaseProgress(progress);
       if (progress >= 1) {
-        setPhase((p) => (p + 1) % 4);
+        setPhase((p) => (p + 1) % 5);
       }
     }, 50);
     return () => clearInterval(iv);
   }, [phase]);
 
-  // Simplified phase logic: 0=original, 1=+fastci, 2=+insights, 3=fixed
+  // Phase logic: 0=original, 1=+fastci, 2=+insights, 3=fixing, 4=fixed
   const showOriginal = phase === 0;
   const showFastCI = phase >= 1;
   const showInsights = phase >= 2;
-  const showFixed = phase === 3;
+  const showFixingInPR = phase === 3;
+  const showFixed = phase === 4;
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="relative max-w-2xl mx-auto lg:mx-0"
+      className="relative w-[672px] max-w-full mx-auto lg:mx-0"
     >
       <div className="glass-card overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
@@ -157,8 +159,8 @@ export default function AnimatedWorkflow() {
           <span className="ml-2 text-xs text-gray-500 font-mono">
             .github/workflows/ci.yml
           </span>
-          <AnimatePresence>
-            {showInsights && !showFixed && (
+          <AnimatePresence mode="wait">
+            {showInsights && !showFixingInPR && !showFixed && (
               <motion.span
                 key="insights-badge"
                 initial={{ opacity: 0, x: 10 }}
@@ -169,10 +171,46 @@ export default function AnimatedWorkflow() {
                 Insights found
               </motion.span>
             )}
+            {showFixingInPR && (
+              <motion.span
+                key="fixing-badge"
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0 }}
+                className="ml-auto flex items-center gap-2 text-xs text-amber-400"
+              >
+                Fixing In PR
+                <span className="relative inline-flex h-4 w-4">
+                  <svg className="h-4 w-4 -rotate-90" viewBox="0 0 36 36">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      className="text-white/10"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="16"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="3"
+                      strokeDasharray={100}
+                      strokeDashoffset={100 - phaseProgress * 100}
+                      strokeLinecap="round"
+                      className="text-amber-400 transition-all duration-75"
+                    />
+                  </svg>
+                </span>
+              </motion.span>
+            )}
             {showFixed && (
               <motion.span
                 key="fixed-badge"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 className="ml-auto text-xs text-emerald-400"
               >
