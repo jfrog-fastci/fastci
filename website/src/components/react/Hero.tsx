@@ -14,7 +14,7 @@ function GridBackground() {
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(26,173,124,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(64,190,70,0.12) 0%, transparent 70%)',
         }}
       />
       <motion.div
@@ -25,7 +25,7 @@ function GridBackground() {
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
         className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(62,200,150,0.1) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(64,190,70,0.08) 0%, transparent 70%)',
         }}
       />
 
@@ -149,7 +149,7 @@ export default function Hero() {
                 href="https://github.com/jfrog-fastci/fastci#installation"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-brand-500 text-white font-semibold text-base hover:bg-brand-400 transition-all duration-200 hover:shadow-[0_0_30px_rgba(26,173,124,0.35)]"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-brand-500 text-white font-semibold text-base hover:bg-brand-400 transition-all duration-200 hover:shadow-[0_0_30px_rgba(64,190,70,0.35)]"
               >
                 Get Started
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
