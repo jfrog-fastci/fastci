@@ -1,0 +1,102 @@
+---
+import Layout from './Layout.astro';
+import Navbar from '../components/astro/Navbar.astro';
+import Footer from '../components/astro/Footer.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  tag: string;
+  readTime: string;
+  publishDate: Date;
+  gradient: string;
+}
+
+const { title, description, tag, readTime, publishDate, gradient } = Astro.props;
+const baseUrl = import.meta.env.BASE_URL;
+
+const formattedDate = publishDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Layout title={`${title} | FastCI Labs`} description={description}>
+  <Navbar />
+
+  <main class="pt-24 md:pt-32 pb-16 md:pb-24">
+    <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <a
+        href={`${baseUrl}/blog`}
+        class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-brand-400 transition-colors mb-8 group"
+      >
+        <svg class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+        </svg>
+        Back to all posts
+      </a>
+
+      <header class="mb-12">
+        <div class={`h-48 md:h-64 rounded-2xl bg-gradient-to-br ${gradient} relative overflow-hidden mb-8`}>
+          <div class="absolute inset-0 bg-surface-950/40" />
+          <div class="absolute bottom-5 left-6">
+            <span class="text-xs font-medium text-white/80 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
+              {tag}
+            </span>
+          </div>
+          <div
+            class="absolute inset-0 opacity-10"
+            style="background-image: linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 30px 30px;"
+          />
+        </div>
+
+        <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-4 leading-tight">
+          {title}
+        </h1>
+        <p class="text-lg text-gray-400 mb-6 leading-relaxed">
+          {description}
+        </p>
+        <div class="flex items-center gap-4 text-sm text-gray-500">
+          <time datetime={publishDate.toISOString()}>
+            {formattedDate}
+          </time>
+          <span class="w-1 h-1 rounded-full bg-gray-600" />
+          <span>{readTime}</span>
+        </div>
+        <div class="mt-8 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      </header>
+
+      <div class="prose prose-invert prose-lg max-w-none
+        prose-headings:font-bold prose-headings:text-white
+        prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4
+        prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+        prose-p:text-gray-300 prose-p:leading-relaxed
+        prose-a:text-brand-400 prose-a:no-underline hover:prose-a:underline
+        prose-strong:text-white prose-strong:font-semibold
+        prose-li:text-gray-300
+        prose-code:text-brand-300 prose-code:bg-white/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:font-mono
+        prose-pre:bg-surface-800 prose-pre:border prose-pre:border-white/5 prose-pre:rounded-xl
+        prose-blockquote:border-brand-500/50 prose-blockquote:text-gray-400
+        prose-hr:border-white/10
+        prose-ol:text-gray-300 prose-ul:text-gray-300"
+      >
+        <slot />
+      </div>
+
+      <div class="mt-16 pt-8 border-t border-white/10">
+        <a
+          href={`${baseUrl}/blog`}
+          class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-brand-400 transition-colors group"
+        >
+          <svg class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+          </svg>
+          Back to all posts
+        </a>
+      </div>
+    </article>
+  </main>
+
+  <Footer />
+</Layout>
