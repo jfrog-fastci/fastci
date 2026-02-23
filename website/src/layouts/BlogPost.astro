@@ -10,9 +10,10 @@ interface Props {
   readTime: string;
   publishDate: Date;
   gradient: string;
+  image?: string;
 }
 
-const { title, description, tag, readTime, publishDate, gradient } = Astro.props;
+const { title, description, tag, readTime, publishDate, gradient, image } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL;
 
 const formattedDate = publishDate.toLocaleDateString('en-US', {
@@ -22,7 +23,7 @@ const formattedDate = publishDate.toLocaleDateString('en-US', {
 });
 ---
 
-<Layout title={`${title} | FastCI Labs`} description={description}>
+<Layout title={`${title} | FastCI Labs`} description={description} image={image} imageAlt={title}>
   <Navbar />
 
   <main class="pt-24 md:pt-32 pb-16 md:pb-24">

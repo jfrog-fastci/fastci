@@ -10,6 +10,8 @@ const blog = defineCollection({
     readTime: z.string(),
     publishDate: z.coerce.date(),
     gradient: z.string().default('from-brand-500/20 to-emerald-500/20'),
+    /** Optional: custom OG image path for social previews (e.g. /images/my-post-og.png) */
+    image: z.string().optional(),
   }),
 });
 

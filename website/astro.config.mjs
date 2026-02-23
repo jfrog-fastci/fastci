@@ -3,8 +3,8 @@ import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
-  site: 'https://jfrog-fastci.github.io',
-  base: '/fastci',
+  site: 'https://fastci.jfrog.com',
+  base: '/',
   integrations: [react(), tailwind()],
   output: 'static',
 });
