@@ -1,0 +1,77 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Navbar from '../../components/astro/Navbar.astro';
+import Footer from '../../components/astro/Footer.astro';
+
+const baseUrl = import.meta.env.BASE_URL;
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime()
+);
+---
+
+<Layout title="Blog | FastCI Labs" description="Research, best practices, and insights on CI/CD optimization from the FastCI team.">
+  <Navbar />
+
+  <main class="pt-24 md:pt-32 pb-16 md:pb-24">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16 md:mb-20">
+        <span class="inline-flex items-center gap-2 text-sm font-semibold text-brand-400 bg-brand-500/10 px-4 py-1.5 rounded-full border border-brand-500/20 mb-6">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+          </svg>
+          FastCI Labs
+        </span>
+        <h1 class="text-3xl md:text-5xl font-extrabold text-white mb-5">
+          Research & Best Practices
+        </h1>
+        <p class="text-gray-400 text-lg max-w-3xl mx-auto leading-relaxed">
+          FastCI Labs is on a mission to automatically identify and optimize CI
+          pipelines, and build the most up-to-date, centralized source of
+          CI/CD best practices and knowledge.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6">
+        {posts.map((post) => (
+          <a href={`${baseUrl}/blog/${post.id}`} class="group">
+            <article class="glass-card-hover overflow-hidden h-full">
+              <div class={`h-40 bg-gradient-to-br ${post.data.gradient} relative overflow-hidden`}>
+                <div class="absolute inset-0 bg-surface-950/40" />
+                <div class="absolute bottom-4 left-5">
+                  <span class="text-xs font-medium text-white/80 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
+                    {post.data.tag}
+                  </span>
+                </div>
+                <div
+                  class="absolute inset-0 opacity-10"
+                  style="background-image: linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 30px 30px;"
+                />
+              </div>
+
+              <div class="p-6">
+                <h2 class="text-lg font-bold text-white mb-3 group-hover:text-brand-400 transition-colors">
+                  {post.data.title}
+                </h2>
+                <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                  {post.data.description}
+                </p>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500">{post.data.readTime}</span>
+                  <span class="text-brand-400 text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+                    Read more
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </span>
+                </div>
+              </div>
+            </article>
+          </a>
+        ))}
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

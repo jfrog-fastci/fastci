@@ -10,6 +10,9 @@ npm-debug.log*
 
 # Build output
 lib/
+!website/src/lib/
+website/dist/
+website/.astro/
 
 # Environment variables
 .env

@@ -1,0 +1,56 @@
+---
+description: JFrog brand design system - colors, fonts, and styling conventions for the FastCI website
+globs: website/**/*.{astro,tsx,jsx,ts,css}
+alwaysApply: false
+---
+
+# JFrog Design System for FastCI Website
+
+FastCI is a JFrog product. The website must follow JFrog's brand design language.
+
+## Typography
+
+- **Primary font**: `Open Sans` (weights: 300-800)
+- **Monospace font**: `JetBrains Mono` (for code snippets)
+- Tailwind classes: `font-sans` (Open Sans), `font-mono` (JetBrains Mono)
+
+## Brand Colors
+
+### JFrog Green (Primary)
+| Token       | Hex       | Usage                          |
+|------------|-----------|--------------------------------|
+| brand-500  | `#40BE46` | Primary buttons, accents       |
+| brand-400  | `#49BB50` | Hover states, links            |
+| brand-300  | `#66CB6A` | Gradient highlights            |
+| brand-600  | `#36A13B` | Darker green accents           |
+
+### Surface (Dark Navy Backgrounds)
+| Token        | Hex       | Usage                        |
+|-------------|-----------|------------------------------|
+| surface-950 | `#070E1A` | Page background (darkest)    |
+| surface-900 | `#0C1B32` | Card backgrounds, sections   |
+| surface-800 | `#122342` | Elevated surfaces            |
+| surface-700 | `#1C2A4A` | Borders, subtle accents      |
+| surface-600 | `#303A4A` | Secondary borders            |
+
+### Text Colors
+- Headings: `text-white` (#FFFFFF)
+- Body text: `text-gray-400` (~#8C9FA4 range)
+- Muted text: `text-gray-500` (~#557085 range)
+- Labels/captions: `text-gray-600`
+
+### Glow/Shadow
+- Brand glow: `rgba(64, 190, 70, 0.15)` (subtle)
+- Brand glow strong: `rgba(64, 190, 70, 0.3)` (buttons)
+
+## Component Patterns
+
+- Cards: `rounded-2xl border border-white/[0.08] bg-surface-950` (clean, no glassmorphism)
+- Buttons (primary): `bg-brand-500 text-white hover:bg-brand-400 rounded-full`
+- Borders: Use `border-white/[0.06]` to `border-white/[0.08]` for subtle card borders
+- Gradient text: `gradient-text` class (green gradient for emphasis)
+
+## Do NOT
+- Use heavy glassmorphism or blur effects on cards
+- Use colors outside the JFrog palette for primary UI elements
+- Use Inter or any font other than Open Sans for body text

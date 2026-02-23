@@ -37779,41 +37779,52 @@ function v4(options, buf, offset) {
 /* harmony default export */ const dist_node_v4 = (v4);
 
 ;// CONCATENATED MODULE: ./src/sendCoralogixLog.ts
-
-async function sendCoralogixLog(message, options) {
-    // Get OpenTelemetry endpoint and token from environment variables
-    const otelEndpoint = (0,lib_core.getInput)('fastci_otel_endpoint', { required: true });
-    const otelToken = (0,lib_core.getInput)('fastci_otel_token', { required: true });
+async function sendCoralogixLog(_message, _options) {
+    return { success: true, logData: "not implemented yet" };
+    /*
+    const otelEndpoint = getInput('fastci_otel_endpoint', { required: false });
+    const otelToken = getInput('fastci_otel_token', { required: false });
+  
+    if (!otelToken || !otelEndpoint) {
+      debug('GitHub Action telemetry not configured (token is bundled in the binary instead)');
+      return { success: false, logData: 'telemetry not configured' };
+    }
+  
     // Prepare log entry
-    const logEntry = {
-        applicationName: "fastci-github-action",
-        text: typeof message === 'object' ? JSON.stringify(message) : message,
-        timestamp: Date.now(),
-        severity: options.severity || 3, // Default to Info
-        ...options
+    const logEntry: any = {
+      applicationName: "fastci-github-action",
+      text: typeof message === 'object' ? JSON.stringify(message) : message,
+      timestamp: Date.now(),
+      severity: options.severity || 3, // Default to Info
+      ...options
     };
+  
+  
     try {
-        // Using fetch API (available in Node.js since v18)
-        const now = new Date();
-        const response = await fetch(`https://${otelEndpoint}/logs/v1/singles`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${otelToken}`
-            },
-            body: JSON.stringify([logEntry]) // API expects an array of log entries
-        });
-        const duration = Date.now() - now.getTime();
-        (0,lib_core.debug)(`Sent log to Coralogix in ${duration}ms`);
-        if (!response.ok) {
-            throw new Error(`Failed to send log: ${response.status} ${response.statusText}`);
-        }
-        const result = await response.json();
-        return { success: true, logData: JSON.stringify(result) };
+      // Using fetch API (available in Node.js since v18)
+      const now = new Date();
+      const response = await fetch(`https://${otelEndpoint}/logs/v1/singles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${otelToken}`
+        },
+        body: JSON.stringify([logEntry]) // API expects an array of log entries
+      });
+  
+      const duration = Date.now() - now.getTime();
+      debug(`Sent log to Coralogix in ${duration}ms`);
+  
+      if (!response.ok) {
+        throw new Error(`Failed to send log: ${response.status} ${response.statusText}`);
+      }
+  
+      const result = await response.json();
+      return { success: true, logData: JSON.stringify(result) };
+    } catch (error) {
+      return { success: false, logData: error instanceof Error ? error.message : String(error) };
     }
-    catch (error) {
-        return { success: false, logData: error instanceof Error ? error.message : String(error) };
-    }
+      */
 }
 // get github environment variables as log metadata
 function getGithubLogMetadata() {

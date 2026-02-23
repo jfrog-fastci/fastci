@@ -32,22 +32,23 @@ inputs:
     required: false
 
   fastci_otel_endpoint:
-    description: "OpenTelemetry Endpoint that will receive the traces. If 'file://<path>', the OTel will be written to the file path"
+    description: "Telemetry endpoint. Override with 'file:///tmp/traces.otel' for local trace files, or set to empty string to disable telemetry."
     required: false
     default: "ingress.coralogix.us:443"
+
+  fastci_otel_token:
+    description: ""
+    required: false
+    default: ""
 
   github_token:
     description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
     required: true
 
-  fastci_otel_token:
-    description: "OpenTelemetry token"
-    required: true
-
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.22.29"
+    default: "v0.22.32"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
