@@ -72,7 +72,7 @@ export default function Hero() {
 
             <motion.h1
               variants={fadeInUp}
-              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight mb-6"
+              className="text-4xl sm:text-5xl lg:text-6xl font-medium leading-[1.1] tracking-tight mb-6"
             >
               The fastest path to faster{' '}
               <span className="gradient-text">CI</span>
