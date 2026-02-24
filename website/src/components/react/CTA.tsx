@@ -19,7 +19,7 @@ export default function CTA() {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full"
           style={{
             background:
-              'radial-gradient(circle, rgba(64,190,70,0.15) 0%, transparent 60%)',
+              'radial-gradient(circle, rgba(54,161,59,0.15) 0%, transparent 60%)',
           }}
         />
         {/* Grid overlay */}
@@ -59,7 +59,7 @@ export default function CTA() {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-brand-500 text-white font-semibold text-lg hover:bg-brand-400 transition-all duration-200 shadow-[0_0_30px_rgba(64,190,70,0.2)] hover:shadow-[0_0_50px_rgba(64,190,70,0.4)]"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-brand-500 text-white font-semibold text-lg hover:bg-brand-400 transition-all duration-200 shadow-[0_0_30px_rgba(54,161,59,0.2)] hover:shadow-[0_0_50px_rgba(54,161,59,0.4)]"
             >
               Get Started Free
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

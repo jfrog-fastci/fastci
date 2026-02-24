@@ -45,8 +45,8 @@ function Line({
       {showNewFlash && (
         <motion.span
           className="absolute inset-0 -left-1 -right-1 rounded"
-          initial={{ backgroundColor: 'rgba(64, 190, 70, 0.28)' }}
-          animate={{ backgroundColor: 'rgba(64, 190, 70, 0)' }}
+          initial={{ backgroundColor: 'rgba(54, 161, 59, 0.28)' }}
+          animate={{ backgroundColor: 'rgba(54, 161, 59, 0)' }}
           transition={{ duration: 0.5 }}
           style={{ zIndex: -1 }}
           aria-hidden
@@ -131,7 +131,7 @@ export default function AnimatedWorkflow() {
       const progress = Math.min(elapsed / duration, 1);
       setPhaseProgress(progress);
       if (progress >= 1) {
-        setPhase((p) => Math.min(p + 1, 4));
+        setPhase((p) => (p + 1) % 5);
       }
     }, 50);
     return () => clearInterval(iv);
@@ -424,7 +424,7 @@ export default function AnimatedWorkflow() {
       </div>
 
       {/* Step indicators */}
-      <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
+      <div className="mt-4 flex flex-nowrap gap-1.5 sm:gap-2 overflow-x-auto pb-1">
         {STEPS.map(({ id, label }) => {
           const isActive = phase === id;
           const isComplete = phase > id;
@@ -440,10 +440,10 @@ export default function AnimatedWorkflow() {
                 phaseStartRef.current = Date.now();
                 setPhaseProgress(0);
               }}
-              className="relative px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium overflow-hidden transition-colors duration-200 border hover:border-white/20"
+              className="relative shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium overflow-hidden transition-colors duration-200 border hover:border-white/20"
               style={{
                 backgroundColor: isActive || isComplete ? 'transparent' : 'rgba(255,255,255,0.05)',
-                borderColor: isActive || isComplete ? 'rgba(64,190,70,0.4)' : 'rgba(255,255,255,0.1)',
+                borderColor: isActive || isComplete ? 'rgba(54,161,59,0.4)' : 'rgba(255,255,255,0.1)',
                 color: isActive || isComplete ? 'rgb(134,239,172)' : 'rgb(156,163,175)',
               }}
             >

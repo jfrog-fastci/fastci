@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/astro/Navbar.astro';
 import Footer from '../components/astro/Footer.astro';
 import Hero from '../components/react/Hero';
+import ProblemSection from '../components/react/ProblemSection';
 import HowItWorks from '../components/react/HowItWorks';
 import Features from '../components/react/Features';
 import FastCILabs from '../components/react/FastCILabs';
@@ -14,6 +15,7 @@ import CTA from '../components/react/CTA';
 
   <main>
     <Hero client:load />
+    <ProblemSection client:visible />
     <HowItWorks client:visible />
     <Features client:visible />
     <FastCILabs client:visible />

@@ -15,14 +15,14 @@
   </g>
   <defs>
     <radialGradient id="g0" cx="0" cy="0" r="1" gradientTransform="matrix(4.39194 4.94043 -11.6881 11.0487 20.2595 21.6504)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#40BE46" stop-opacity="0"/>
-      <stop offset="0.145095" stop-color="#40BE46" stop-opacity="0.15"/>
-      <stop offset="0.867238" stop-color="#40BE46"/>
+      <stop stop-color="#36a13b" stop-opacity="0"/>
+      <stop offset="0.145095" stop-color="#36a13b" stop-opacity="0.15"/>
+      <stop offset="0.867238" stop-color="#36a13b"/>
     </radialGradient>
     <radialGradient id="g1" cx="0" cy="0" r="1" gradientTransform="matrix(-4.53362 -5.08573 12.0991 -11.3455 16.151 8.42758)" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#40BE46" stop-opacity="0"/>
-      <stop offset="0.133024" stop-color="#40BE46" stop-opacity="0.15"/>
-      <stop offset="0.867238" stop-color="#40BE46"/>
+      <stop stop-color="#36a13b" stop-opacity="0"/>
+      <stop offset="0.133024" stop-color="#36a13b" stop-opacity="0.15"/>
+      <stop offset="0.867238" stop-color="#36a13b"/>
     </radialGradient>
   </defs>
 </svg>

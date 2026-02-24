@@ -22,7 +22,7 @@ const svg = `
       <stop offset="100%" style="stop-color:#1e293b"/>
     </linearGradient>
     <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#40BE46"/>
+      <stop offset="0%" style="stop-color:#36a13b"/>
       <stop offset="100%" style="stop-color:#34d399"/>
     </linearGradient>
   </defs>

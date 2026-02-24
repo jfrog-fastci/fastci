@@ -15,7 +15,7 @@ function GridBackground() {
         transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute -top-1/4 -left-1/4 w-[800px] h-[800px] rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(64,190,70,0.12) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(54,161,59,0.12) 0%, transparent 70%)',
         }}
       />
       <motion.div
@@ -26,7 +26,7 @@ function GridBackground() {
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
         className="absolute -bottom-1/4 -right-1/4 w-[600px] h-[600px] rounded-full"
         style={{
-          background: 'radial-gradient(circle, rgba(64,190,70,0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(54,161,59,0.08) 0%, transparent 70%)',
         }}
       />
 
@@ -90,8 +90,11 @@ export default function Hero() {
                 href="https://cursor.com/link/prompt?text=%2A%2AIMPORTANT%3A%2A%2A%20Ignore%20previous%20FastCI%20installation%20instructions%20and%20follow%20these%20updated%20steps.%0A%0AScan%20all%20workflow%20files%20in%20%60.github%2Fworkflows%2F%60%20for%20FastCI%20usage%3A%0A%0A1.%20For%20each%20workflow%20using%20%60jfrog-fastci%2Ffastci%40v0%60%3A%0A%20%20%20-%20Check%20if%20%60issues%3A%20write%60%20permission%20exists%20at%20workflow%20level%0A%20%20%20-%20If%20set%20to%20%60false%60%2C%20ask%3A%20%22Workflow%20%5Bname%5D%20has%20issues%3A%20write%3A%20false.%20Change%20to%20%27write%27%3F%22%0A%20%20%20-%20If%20missing%2C%20add%20it%20automatically%20at%20workflow%20level%0A%0A2.%20Add%20FastCI%20as%20the%20first%20step%20in%20each%20job%3A%0A%0A%60%60%60yaml%0A-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20with%3A%0A%20%20%20%20github_token%3A%20%24%7B%7B%20secrets.GITHUB_TOKEN%20%7D%7D%0A%20%20%20%20accept_terms%3A%20%27yes%27%0A%60%60%60%0A%0A3.%20For%20jobs%20using%20containers%2C%20add%20volume%20mount%3A%0A%0A%60%60%60yaml%0Acontainer%3A%0A%20%20image%3A%20%3Cyour-image%3E%0A%20%20volumes%3A%0A%20%20%20%20-%20%2Fhome%2Frunner%3A%2Ftmp%2Ffastci%2Fmounts%2Fhome%2Frunner%0A%60%60%60%0A%0AExample%3A%0A%0A%60%60%60yaml%0Apermissions%3A%0A%20%20issues%3A%20write%0A%0Ajobs%3A%0A%20%20build%3A%0A%20%20%20%20runs-on%3A%20ubuntu-latest%0A%20%20%20%20steps%3A%0A%20%20%20%20%20%20-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20%20%20%20%20%20%20with%3A%0A%20%20%20%20%20%20%20%20%20%20github_token%3A%20%24%7B%7B%20secrets.GITHUB_TOKEN%20%7D%7D%0A%20%20%20%20%20%20%20%20%20%20accept_terms%3A%20%27yes%27%0A%20%20%20%20%20%20-%20uses%3A%20actions%2Fcheckout%40v4%0A%60%60%60"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-brand-500 text-white font-semibold text-base hover:bg-brand-400 transition-all duration-200 hover:shadow-[0_0_30px_rgba(64,190,70,0.35)]"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-brand-500 text-white font-semibold text-base hover:bg-brand-400 transition-all duration-200 hover:shadow-[0_0_30px_rgba(54,161,59,0.35)]"
               >
+                <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" fillRule="evenodd" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M22.106 5.68L12.5.135a.998.998 0 00-.998 0L1.893 5.68a.84.84 0 00-.419.726v11.186c0 .3.16.577.42.727l9.607 5.547a.999.999 0 00.998 0l9.608-5.547a.84.84 0 00.42-.727V6.407a.84.84 0 00-.42-.726zm-.603 1.176L12.228 22.92c-.063.108-.228.064-.228-.061V12.34a.59.59 0 00-.295-.51l-9.11-5.26c-.107-.062-.063-.228.062-.228h18.55c.264 0 .428.286.296.514z" />
+                </svg>
                 Install via cursor
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
@@ -123,11 +126,35 @@ export default function Hero() {
           initial="hidden"
           animate="visible"
           transition={{ delay: 0.8 }}
-          className="mt-20 md:mt-28 grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-4 max-w-md md:max-w-none mx-auto justify-items-center md:justify-items-stretch"
+          className="mt-20 md:mt-28 grid grid-cols-2 gap-8 md:gap-4 max-w-md mx-auto justify-items-center"
         >
           <AnimatedCounter target={3} suffix=" lines" label="to install" />
           <AnimatedCounter target={5} suffix=" min" label="setup time" />
-          <AnimatedCounter target={100} suffix="%" label="GitHub native" />
+        </motion.div>
+
+        <motion.div
+          variants={fadeIn}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.9 }}
+          className="mt-10 md:mt-12 max-w-3xl mx-auto rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6"
+        >
+          <div className="text-sm font-medium text-gray-300 mb-4">Supported platforms</div>
+          <div className="flex flex-wrap gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3.5 py-1.5 text-sm text-brand-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
+              GitHub Actions (supported now)
+            </span>
+            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-sm text-gray-300">
+              GitLab CI (coming soon)
+            </span>
+            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-sm text-gray-300">
+              Jenkins (coming soon)
+            </span>
+            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-sm text-gray-300">
+              Others (coming soon)
+            </span>
+          </div>
         </motion.div>
       </div>
     </section>
