@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion';
-import { fadeInUp, staggerContainer, fadeIn } from '../../lib/animations';
-import AnimatedCounter from './AnimatedCounter';
+import { fadeInUp, staggerContainer } from '../../lib/animations';
 import AnimatedWorkflow from './AnimatedWorkflow';
 
 function GridBackground() {
@@ -117,43 +116,6 @@ export default function Hero() {
           {/* Right column: Animated workflow */}
           <div className="min-w-0">
             <AnimatedWorkflow />
-          </div>
-        </motion.div>
-
-        {/* Stats row */}
-        <motion.div
-          variants={fadeIn}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.8 }}
-          className="mt-20 md:mt-28 grid grid-cols-2 gap-8 md:gap-4 max-w-md mx-auto justify-items-center"
-        >
-          <AnimatedCounter target={3} suffix=" lines" label="to install" />
-          <AnimatedCounter target={5} suffix=" min" label="setup time" />
-        </motion.div>
-
-        <motion.div
-          variants={fadeIn}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.9 }}
-          className="mt-10 md:mt-12 max-w-3xl mx-auto rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-6"
-        >
-          <div className="text-sm font-medium text-gray-300 mb-4">Supported platforms</div>
-          <div className="flex flex-wrap gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3.5 py-1.5 text-sm text-brand-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-400" />
-              GitHub Actions (supported now)
-            </span>
-            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-sm text-gray-300">
-              GitLab CI (coming soon)
-            </span>
-            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-sm text-gray-300">
-              Jenkins (coming soon)
-            </span>
-            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5 text-sm text-gray-300">
-              Others (coming soon)
-            </span>
           </div>
         </motion.div>
       </div>

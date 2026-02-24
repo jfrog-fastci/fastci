@@ -1,6 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { fadeInUp, staggerContainer } from '../../lib/animations';
+import { DockerIcon, NodeIcon, PythonIcon, GoIcon, GradleIcon, RustIcon } from '../../lib/techIcons';
 import TraceGraph from './TraceGraph';
 
 function TracingVisual() {

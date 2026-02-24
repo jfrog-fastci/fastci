@@ -89,7 +89,7 @@ function InsightBadge({
   );
 }
 
-const PHASE_TIMINGS = [4500, 3750, 4500, 2500, 4500] as const; // original → +fastci → +insights → fixing → fixed
+const PHASE_TIMINGS = [4500, 3750, 4500, 2500, 10000] as const; // original → +fastci → +insights → fixing → fixed (10s so people can see)
 const nbsp = (n: number) => '\u00A0'.repeat(n);
 
 const STEPS = [
@@ -423,8 +423,8 @@ export default function AnimatedWorkflow() {
         </div>
       </div>
 
-      {/* Step indicators */}
-      <div className="mt-4 flex flex-nowrap gap-1.5 sm:gap-2 overflow-x-auto pb-1">
+      {/* Step indicators - equal width so all fit in one row */}
+      <div className="mt-4 grid grid-cols-5 gap-1 sm:gap-1.5 min-w-0">
         {STEPS.map(({ id, label }) => {
           const isActive = phase === id;
           const isComplete = phase > id;
@@ -434,13 +434,14 @@ export default function AnimatedWorkflow() {
             <button
               key={id}
               type="button"
+              title={label}
               onClick={() => {
                 setPhase(id);
                 setLineIndex(id === 0 ? 0 : 99);
                 phaseStartRef.current = Date.now();
                 setPhaseProgress(0);
               }}
-              className="relative shrink-0 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium overflow-hidden transition-colors duration-200 border hover:border-white/20"
+              className="relative px-2 py-1 sm:py-1.5 rounded-md text-xs font-medium overflow-hidden transition-colors duration-200 border hover:border-white/20 truncate min-w-0"
               style={{
                 backgroundColor: isActive || isComplete ? 'transparent' : 'rgba(255,255,255,0.05)',
                 borderColor: isActive || isComplete ? 'rgba(54,161,59,0.4)' : 'rgba(255,255,255,0.1)',
@@ -452,7 +453,7 @@ export default function AnimatedWorkflow() {
                 className="absolute inset-y-0 left-0 rounded-lg bg-brand-500/30 transition-[width] duration-75 ease-linear"
                 style={{ width: `${progress * 100}%` }}
               />
-              <span className="relative z-10">{label}</span>
+              <span className="relative z-10 block truncate min-w-0">{label}</span>
             </button>
           );
         })}
