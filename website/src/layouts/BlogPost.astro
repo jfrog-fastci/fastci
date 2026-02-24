@@ -13,8 +13,9 @@ interface Props {
   image?: string;
 }
 
+import { basePath } from '../lib/baseUrl';
+
 const { title, description, tag, readTime, publishDate, gradient, image } = Astro.props;
-const baseUrl = import.meta.env.BASE_URL;
 
 const formattedDate = publishDate.toLocaleDateString('en-US', {
   year: 'numeric',
@@ -29,7 +30,7 @@ const formattedDate = publishDate.toLocaleDateString('en-US', {
   <main class="pt-24 md:pt-32 pb-16 md:pb-24">
     <article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       <a
-        href={`${baseUrl}/blog`}
+        href={basePath('blog')}
         class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-brand-400 transition-colors mb-8 group"
       >
         <svg class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -87,7 +88,7 @@ const formattedDate = publishDate.toLocaleDateString('en-US', {
 
       <div class="mt-16 pt-8 border-t border-white/10">
         <a
-          href={`${baseUrl}/blog`}
+          href={basePath('blog')}
           class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-brand-400 transition-colors group"
         >
           <svg class="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

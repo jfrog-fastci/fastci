@@ -1,6 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { fadeInUp, staggerContainer } from '../../../lib/animations';
+import { basePath } from '../../../lib/baseUrl';
 import type { InsightMeta } from '../../../data/insights/types';
 
 interface Props {
@@ -31,8 +32,6 @@ function InlineCounter({ target }: { target: number }) {
 }
 
 export default function InsightHero({ meta, aggregatedROI, repoCount }: Props) {
-  const baseUrl = import.meta.env.BASE_URL;
-
   return (
     <section className="relative px-4 sm:px-6 lg:px-8 mb-16 md:mb-24">
       <div className="max-w-5xl mx-auto">
@@ -43,7 +42,7 @@ export default function InsightHero({ meta, aggregatedROI, repoCount }: Props) {
         >
           <motion.a
             variants={fadeInUp}
-            href={`${baseUrl}/#labs`}
+            href={basePath('#labs')}
             className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-brand-400 transition-colors mb-8 group"
           >
             <svg
