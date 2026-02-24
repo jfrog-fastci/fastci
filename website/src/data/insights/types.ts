@@ -23,6 +23,8 @@ export interface RepoBenchmark {
   language: string;
   description: string;
   runs: WorkflowRun[];
+  /** URL to the last GitHub Actions run in the forked repo. If omitted, built from jfrog-fastci/{repo}/actions/runs/{lastRunId}. */
+  actionsRunUrl?: string;
 }
 
 export interface InsightMeta {

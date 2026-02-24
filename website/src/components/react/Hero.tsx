@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '../../lib/animations';
+import { InteractiveGridPattern } from '../ui/grid-pattern';
 
 function GridBackground() {
   return (
@@ -27,15 +28,12 @@ function GridBackground() {
         }}
       />
 
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-        }}
+      <InteractiveGridPattern
+        width={30}
+        height={30}
+        squares={[60, 40]}
+        className="[mask-image:radial-gradient(500px_circle_at_center,white,transparent)] border-none"
+        squaresClassName="stroke-white/[0.06] hover:fill-brand-500/20"
       />
 
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-surface-950" />
@@ -57,10 +55,10 @@ export default function Hero() {
         >
           <motion.div variants={fadeInUp} className="mb-6">
             <span className="inline-flex items-center gap-2 text-sm font-medium text-brand-400 bg-brand-500/10 px-4 py-1.5 rounded-full border border-brand-500/20">
-              Free
+              Pay Less
               <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-              No Sign Up Required
-            </span>
+              Build Faster ⚡
+             </span>
           </motion.div>
 
           <motion.h1
