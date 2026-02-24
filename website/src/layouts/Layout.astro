@@ -15,9 +15,11 @@ const {
   imageAlt = 'FastCI - Automatically Identify and Optimize Your CI',
 } = Astro.props;
 
+import { basePath as assetPath } from '../lib/baseUrl';
+
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const basePath = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
-const baseUrl = new URL(basePath, Astro.site);
+const basePathForUrl = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+const baseUrl = new URL(basePathForUrl, Astro.site);
 // Use 1200x630 - the universal standard for Slack, WhatsApp, Telegram, LinkedIn, Discord, Twitter, GitHub, etc.
 const ogImageUrl = image
   ? image.startsWith('http') ? image : new URL(image.replace(/^\//, ''), baseUrl).href
@@ -31,7 +33,7 @@ const ogImageUrl = image
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}/favicon.svg`} />
+    <link rel="icon" type="image/svg+xml" href={assetPath('favicon.svg')} />
     <link rel="canonical" href={canonicalURL} />
 
     <!-- Open Graph: Facebook, LinkedIn, Slack, WhatsApp, Telegram, Discord, iMessage, etc. -->

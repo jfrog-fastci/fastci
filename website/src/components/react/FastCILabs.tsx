@@ -1,8 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { fadeInUp, staggerContainer } from '../../lib/animations';
-
-const baseUrl = import.meta.env.BASE_URL;
+import { basePath } from '../../lib/baseUrl';
 
 const posts = [
   {
@@ -72,7 +71,7 @@ export default function FastCILabs() {
           className="mb-8"
         >
           <a
-            href={`${baseUrl}/labs/insights/docker-build-use-multi-stage-build`}
+            href={basePath('labs/insights/docker-build-use-multi-stage-build')}
             className="group block"
           >
             <motion.div
@@ -82,7 +81,7 @@ export default function FastCILabs() {
               <div className="flex flex-col md:flex-row">
                 <div className="md:w-1/3 h-40 md:h-auto relative overflow-hidden">
                   <img
-                    src={`${baseUrl}/images/docker-insight-thumb.svg`}
+                    src={basePath('images/docker-insight-thumb.svg')}
                     alt="Docker optimization insight"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
@@ -135,7 +134,7 @@ export default function FastCILabs() {
           className="grid md:grid-cols-3 gap-6"
         >
           {posts.map((post) => (
-            <a key={post.slug} href={`${baseUrl}/blog/${post.slug}`} className="group">
+            <a key={post.slug} href={basePath(`blog/${post.slug}`)} className="group">
               <motion.article
                 variants={fadeInUp}
                 whileHover={{

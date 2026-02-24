@@ -4,7 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 import Navbar from '../../components/astro/Navbar.astro';
 import Footer from '../../components/astro/Footer.astro';
 
-const baseUrl = import.meta.env.BASE_URL;
+import { basePath } from '../../lib/baseUrl';
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.publishDate.getTime() - a.data.publishDate.getTime()
 );
@@ -34,7 +34,7 @@ const posts = (await getCollection('blog')).sort(
 
       <div class="grid md:grid-cols-3 gap-6">
         {posts.map((post) => (
-          <a href={`${baseUrl}/blog/${post.id}`} class="group">
+          <a href={basePath(`blog/${post.id}`)} class="group">
             <article class="glass-card-hover overflow-hidden h-full">
               <div class={`h-40 bg-gradient-to-br ${post.data.gradient} relative overflow-hidden`}>
                 <div class="absolute inset-0 bg-surface-950/40" />

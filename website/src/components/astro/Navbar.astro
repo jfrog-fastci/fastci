@@ -1,17 +1,17 @@
 ---
-const baseUrl = import.meta.env.BASE_URL;
+import { baseUrl, basePath } from '../../lib/baseUrl';
 ---
 
 <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16 md:h-20">
       <a href={baseUrl} class="flex items-center group">
-        <img src={`${baseUrl}/fastci_logo.svg`} alt="FastCI" class="h-7 w-auto" />
+        <img src={basePath('fastci_logo.svg')} alt="FastCI" class="h-7 w-auto" />
       </a>
 
       <div class="flex items-center gap-3">
         <a
-          href={`${baseUrl}/blog`}
+          href={basePath('blog')}
           class="hidden sm:flex items-center text-sm text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
         >
           Blog
