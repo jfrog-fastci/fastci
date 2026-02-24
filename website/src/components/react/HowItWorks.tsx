@@ -191,7 +191,7 @@ export default function HowItWorks() {
                 Your CI,<br />optimized.
               </h2>
               <p className="text-gray-400 mt-4 leading-relaxed">
-                Three steps, fully automated. From installation to AI-powered fixes, FastCI handles everything so you can focus on shipping.
+                Three steps: instrument, detect, propose. FastCI handles the analysis and fix generation—you stay in control with reviewable PRs at every step.
               </p>
             </div>
             <div className="mt-8 flex items-center gap-3">
@@ -241,10 +241,10 @@ export default function HowItWorks() {
           >
             <div className="flex items-center gap-3 mb-1">
               <span className="text-[11px] font-mono text-gray-500 tracking-widest">03</span>
-              <h3 className="text-xl font-bold text-white">AI Fixes Applied</h3>
+              <h3 className="text-xl font-bold text-white">Fixes Ready for Review</h3>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
-              An AI agent implements each fix and opens a pull request. Just review and merge.
+              An AI agent drafts each fix and opens a pull request. You review, approve, and merge—no changes without human sign-off.
             </p>
             <PRMockup />
           </motion.div>

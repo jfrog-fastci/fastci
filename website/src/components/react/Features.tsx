@@ -141,7 +141,7 @@ export default function Features() {
             Everything you need for faster CI
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Built for developers who want their CI pipelines to stay fast without constant manual tuning.
+            Built for teams who want pipelines to stay fast without constant manual tuning. Insights as Issues, fixes as PRs—you review and merge, FastCI does the rest.
           </p>
         </motion.div>
 
@@ -170,7 +170,7 @@ export default function Features() {
           >
             <h3 className="text-xl font-bold text-white">GitHub-Native</h3>
             <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-              Insights as Issues. Fixes as PRs. Everything stays in your existing workflow.
+              Insights as Issues. Fixes as PRs—never direct changes. Every optimization goes through your existing review workflow.
             </p>
             <GitHubVisual />
           </motion.div>

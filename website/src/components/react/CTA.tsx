@@ -45,9 +45,11 @@ export default function CTA() {
             Ready to optimize{' '}
             <span className="gradient-text">your CI?</span>
           </h2>
-          <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-xl mx-auto">
-            Start finding and fixing bottlenecks in minutes. Open source,
-            free forever, zero config.
+          <p className="text-lg md:text-xl text-gray-400 mb-6 max-w-xl mx-auto">
+            5 minutes to install. First insight on the next run. Fixes land as PRs—review and merge when you're ready. Open source, free forever, zero config.
+          </p>
+          <p className="text-sm text-gray-500 mb-10 max-w-lg mx-auto">
+            Safe by design: FastCI never pushes directly to main. Every fix is a PR for your team to review. No secret handling changes—you decide what gets merged.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

@@ -58,9 +58,9 @@ export default function FastCILabs() {
             Research &amp; Best Practices
           </h2>
           <p className="text-gray-400 text-lg max-w-3xl mx-auto leading-relaxed">
-            FastCI Labs is on a mission to automatically identify and optimize CI
-            pipelines, and build the most up-to-date, centralized source of
-            CI/CD best practices and knowledge.
+            FastCI Labs is on a mission to automatically identify optimization
+            opportunities in CI pipelines, and build the most up-to-date,
+            centralized source of CI/CD best practices and knowledge.
           </p>
         </motion.div>
 
