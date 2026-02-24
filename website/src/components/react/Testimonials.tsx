@@ -22,25 +22,11 @@ const testimonials: Testimonial[] = [
     iconColor: techIconColors.docker,
   },
   {
-    name: 'Sarah',
-    role: 'DevOps Engineer',
-    body: "Our npm install was eating 3 minutes every run. FastCI added caching and now it's 20 seconds. I didn't touch a thing.",
-    icon: <NodeIcon />,
-    iconColor: techIconColors.node,
-  },
-  {
     name: 'Jake',
     role: 'Developer',
     body: "I've been meaning to fix our CI for months. FastCI just opened a PR and... it worked? Kind of embarrassing how easy it was.",
     icon: <PythonIcon />,
     iconColor: techIconColors.python,
-  },
-  {
-    name: 'Priya',
-    role: 'Engineering Manager',
-    body: "We were burning money on CI minutes. FastCI found we were re-downloading Go modules every run. Fixed in one PR.",
-    icon: <GoIcon />,
-    iconColor: techIconColors.go,
   },
   {
     name: 'Alex',
@@ -59,7 +45,7 @@ const testimonials: Testimonial[] = [
   {
     name: 'Nadia',
     role: 'Developer',
-    body: "Set it up on a Friday afternoon, came back Monday to a PR that saved us 8 minutes per build. Yes please.",
+    body: "Set it up on a Friday afternoon, came back Monday to a PR that saved us 8 minutes per build.",
     icon: <DockerIcon />,
     iconColor: techIconColors.docker,
   },
@@ -69,13 +55,6 @@ const testimonials: Testimonial[] = [
     body: "The PR-based approach is great. I could actually review what changed before merging. No black box nonsense.",
     icon: <GitHubActionsIcon />,
     iconColor: techIconColors.githubActions,
-  },
-  {
-    name: 'Riley',
-    role: 'DevOps Engineer',
-    body: "Our team spent weeks debating CI improvements. FastCI just did it in a weekend with zero meetings.",
-    icon: <PythonIcon />,
-    iconColor: techIconColors.python,
   },
   {
     name: 'Eva',
@@ -135,15 +114,15 @@ function Marquee({
   className?: string;
 }) {
   return (
-    <div className={`flex overflow-hidden [--gap:1rem] ${className}`}>
+    <div className={`flex overflow-hidden gap-4 [--gap:1rem] ${className}`}>
       <div
-        className={`flex shrink-0 gap-[var(--gap)] ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} [--duration:40s]`}
+        className={`flex shrink-0 gap-4 ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} [--duration:40s]`}
         style={{ willChange: 'transform' }}
       >
         {children}
       </div>
       <div
-        className={`flex shrink-0 gap-[var(--gap)] ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} [--duration:40s]`}
+        className={`flex shrink-0 gap-4 ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} [--duration:40s]`}
         aria-hidden="true"
         style={{ willChange: 'transform' }}
       >

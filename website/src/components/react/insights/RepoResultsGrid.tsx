@@ -1,7 +1,8 @@
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
-import { fadeInUp, staggerContainer } from '../../../lib/animations';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { useRef, useState } from 'react';
+import { fadeInUp } from '../../../lib/animations';
 import type { RepoStats } from '../../../lib/insightStats';
+import { formatDuration } from '../../../lib/insightStats';
 import WorkflowComparison from './WorkflowComparison';
 
 interface Props {
@@ -14,38 +15,24 @@ const languageColors: Record<string, string> = {
   Go: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
 };
 
-function StatBox({
-  label,
-  value,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) {
+function ChevronIcon({ open }: { open: boolean }) {
   return (
-    <div
-      className={`text-center p-3 rounded-lg border ${
-        highlight
-          ? 'bg-brand-500/10 border-brand-500/20'
-          : 'bg-white/[0.02] border-white/[0.05]'
-      }`}
+    <svg
+      className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
     >
-      <p
-        className={`text-xl font-bold ${highlight ? 'text-brand-400' : 'text-white'}`}
-      >
-        {value}
-      </p>
-      <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-wider">
-        {label}
-      </p>
-    </div>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+    </svg>
   );
 }
 
 export default function RepoResultsGrid({ repoStats }: Props) {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-60px' });
+  const [expandedRepo, setExpandedRepo] = useState<string | null>(null);
 
   return (
     <section className="px-4 sm:px-6 lg:px-8 mb-16 md:mb-24">
@@ -67,70 +54,299 @@ export default function RepoResultsGrid({ repoStats }: Props) {
         </motion.div>
 
         <motion.div
-          variants={staggerContainer}
+          variants={fadeInUp}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          className="rounded-2xl border border-white/[0.08] bg-surface-950 overflow-hidden"
         >
-          {repoStats.map((stats) => (
-            <motion.div
-              key={stats.repo}
-              variants={fadeInUp}
-              className="rounded-2xl border border-white/[0.08] bg-surface-950 p-6 flex flex-col"
-            >
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <svg
-                    className="w-4 h-4 text-gray-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06]">
+                  <th className="text-left text-[10px] text-gray-500 uppercase tracking-wider font-medium px-5 py-3">
+                    Repository
+                  </th>
+                  <th className="text-center text-[10px] text-gray-500 uppercase tracking-wider font-medium px-3 py-3">
+                    Runs
+                  </th>
+                  <th className="text-center text-[10px] text-gray-500 uppercase tracking-wider font-medium px-3 py-3">
+                    Avg
+                  </th>
+                  <th className="text-center text-[10px] text-gray-500 uppercase tracking-wider font-medium px-3 py-3">
+                    P50
+                  </th>
+                  <th className="text-center text-[10px] text-gray-500 uppercase tracking-wider font-medium px-3 py-3">
+                    P90
+                  </th>
+                  <th className="text-center text-[10px] text-gray-500 uppercase tracking-wider font-medium px-3 py-3">
+                    Before
+                  </th>
+                  <th className="text-center text-[10px] text-gray-500 uppercase tracking-wider font-medium px-3 py-3">
+                    After
+                  </th>
+                  <th className="text-center text-[10px] text-gray-500 uppercase tracking-wider font-medium px-3 py-3">
+                    Saved
+                  </th>
+                  <th className="w-8" />
+                </tr>
+              </thead>
+              <tbody>
+                {repoStats.map((stats) => {
+                  const isExpanded = expandedRepo === stats.repo;
+                  const saved = stats.mainMedianRun.durationSeconds - stats.insightMedianRun.durationSeconds;
+
+                  return (
+                    <DesktopRow
+                      key={stats.repo}
+                      stats={stats}
+                      saved={saved}
+                      isExpanded={isExpanded}
+                      onToggle={() =>
+                        setExpandedRepo(isExpanded ? null : stats.repo)
+                      }
                     />
-                  </svg>
-                  <h3 className="text-sm font-bold text-white">{stats.repo}</h3>
-                </div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span
-                    className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
-                      languageColors[stats.language] ?? 'text-gray-400 bg-white/[0.04] border-white/[0.08]'
-                    }`}
-                  >
-                    {stats.language}
-                  </span>
-                  <span className="text-[10px] text-gray-600">
-                    {stats.runCount} runs
-                  </span>
-                </div>
-                <p className="text-[11px] text-gray-500 leading-relaxed">
-                  {stats.description}
-                </p>
-              </div>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-              <div className="grid grid-cols-3 gap-2 mb-5">
-                <StatBox label="Avg" value={`${stats.avgROI}%`} highlight />
-                <StatBox label="p50" value={`${stats.p50ROI}%`} />
-                <StatBox label="p90" value={`${stats.p90ROI}%`} />
-              </div>
+          {/* Mobile stacked layout */}
+          <div className="md:hidden divide-y divide-white/[0.06]">
+            {repoStats.map((stats) => {
+              const isExpanded = expandedRepo === stats.repo;
+              const saved = stats.mainMedianRun.durationSeconds - stats.insightMedianRun.durationSeconds;
 
-              <div className="flex-1">
-                <p className="text-[10px] text-gray-600 uppercase tracking-wider font-medium mb-3">
-                  Median run comparison
-                </p>
-                <WorkflowComparison
-                  mainRun={stats.mainMedianRun}
-                  insightRun={stats.insightMedianRun}
+              return (
+                <MobileRow
+                  key={stats.repo}
+                  stats={stats}
+                  saved={saved}
+                  isExpanded={isExpanded}
+                  onToggle={() =>
+                    setExpandedRepo(isExpanded ? null : stats.repo)
+                  }
                 />
-              </div>
-            </motion.div>
-          ))}
+              );
+            })}
+          </div>
         </motion.div>
       </div>
     </section>
+  );
+}
+
+function DesktopRow({
+  stats,
+  saved,
+  isExpanded,
+  onToggle,
+}: {
+  stats: RepoStats;
+  saved: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <>
+      <tr
+        onClick={onToggle}
+        className="border-b border-white/[0.04] hover:bg-white/[0.02] cursor-pointer transition-colors"
+      >
+        <td className="px-5 py-4">
+          <div className="flex items-center gap-3">
+            <svg
+              className="w-4 h-4 text-gray-500 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"
+              />
+            </svg>
+            <div>
+              <span className="text-sm font-bold text-white">{stats.repo}</span>
+              <div className="flex items-center gap-2 mt-1">
+                <span
+                  className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${
+                    languageColors[stats.language] ?? 'text-gray-400 bg-white/[0.04] border-white/[0.08]'
+                  }`}
+                >
+                  {stats.language}
+                </span>
+                <span className="text-[10px] text-gray-600 hidden lg:inline">
+                  {stats.description}
+                </span>
+              </div>
+            </div>
+          </div>
+        </td>
+        <td className="text-center px-3 py-4">
+          <span className="text-xs text-gray-400 tabular-nums">{stats.runCount}</span>
+        </td>
+        <td className="text-center px-3 py-4">
+          <span className="text-sm font-bold text-brand-400 tabular-nums">
+            {stats.avgROI}%
+          </span>
+        </td>
+        <td className="text-center px-3 py-4">
+          <span className="text-xs text-gray-300 tabular-nums">{stats.p50ROI}%</span>
+        </td>
+        <td className="text-center px-3 py-4">
+          <span className="text-xs text-gray-300 tabular-nums">{stats.p90ROI}%</span>
+        </td>
+        <td className="text-center px-3 py-4">
+          <span className="text-xs text-gray-400 tabular-nums font-mono">
+            {formatDuration(stats.mainMedianRun.durationSeconds)}
+          </span>
+        </td>
+        <td className="text-center px-3 py-4">
+          <span className="text-xs text-brand-300 tabular-nums font-mono">
+            {formatDuration(stats.insightMedianRun.durationSeconds)}
+          </span>
+        </td>
+        <td className="text-center px-3 py-4">
+          <span className="text-xs text-emerald-400 tabular-nums font-mono font-medium">
+            {formatDuration(saved)}
+          </span>
+        </td>
+        <td className="px-3 py-4">
+          <ChevronIcon open={isExpanded} />
+        </td>
+      </tr>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <tr>
+            <td colSpan={9} className="p-0">
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                className="overflow-hidden"
+              >
+                <div className="px-5 py-5 bg-white/[0.01] border-b border-white/[0.06]">
+                  <p className="text-[10px] text-gray-600 uppercase tracking-wider font-medium mb-3">
+                    Median run comparison
+                  </p>
+                  <div className="max-w-md">
+                    <WorkflowComparison
+                      mainRun={stats.mainMedianRun}
+                      insightRun={stats.insightMedianRun}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </td>
+          </tr>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
+function MobileRow({
+  stats,
+  saved,
+  isExpanded,
+  onToggle,
+}: {
+  stats: RepoStats;
+  saved: number;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full text-left px-4 py-4 hover:bg-white/[0.02] transition-colors"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <svg
+              className="w-4 h-4 text-gray-500 shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776"
+              />
+            </svg>
+            <span className="text-sm font-bold text-white">{stats.repo}</span>
+          </div>
+          <ChevronIcon open={isExpanded} />
+        </div>
+
+        <div className="flex items-center gap-2 mb-3">
+          <span
+            className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full border ${
+              languageColors[stats.language] ?? 'text-gray-400 bg-white/[0.04] border-white/[0.08]'
+            }`}
+          >
+            {stats.language}
+          </span>
+          <span className="text-[10px] text-gray-600">{stats.runCount} runs</span>
+        </div>
+
+        <div className="grid grid-cols-4 gap-3">
+          <div>
+            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Avg</p>
+            <p className="text-sm font-bold text-brand-400 tabular-nums">{stats.avgROI}%</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Before</p>
+            <p className="text-xs text-gray-400 tabular-nums font-mono">
+              {formatDuration(stats.mainMedianRun.durationSeconds)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] text-gray-500 uppercase tracking-wider">After</p>
+            <p className="text-xs text-brand-300 tabular-nums font-mono">
+              {formatDuration(stats.insightMedianRun.durationSeconds)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Saved</p>
+            <p className="text-xs text-emerald-400 tabular-nums font-mono font-medium">
+              {formatDuration(saved)}
+            </p>
+          </div>
+        </div>
+      </button>
+
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4">
+              <p className="text-[10px] text-gray-600 uppercase tracking-wider font-medium mb-3">
+                Median run comparison
+              </p>
+              <WorkflowComparison
+                mainRun={stats.mainMedianRun}
+                insightRun={stats.insightMedianRun}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

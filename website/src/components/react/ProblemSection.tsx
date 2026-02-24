@@ -30,11 +30,7 @@ export default function ProblemSection() {
           transition={{ duration: 0.6 }}
           className="text-center mb-12 md:mb-14"
         >
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-5">The Hidden Cost of Slow CI</h2>
-          <p className="text-gray-400 text-lg leading-relaxed max-w-3xl mx-auto">
-            When feedback loops are slow, teams lose focus, pipelines drift, and delivery becomes less predictable.
-            The problem is not one broken workflow. It is continuous CI maintenance that never gets enough time.
-          </p>
+          <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-5">Slow CI Is A Productivity Killer</h2>
         </motion.div>
 
         <motion.div

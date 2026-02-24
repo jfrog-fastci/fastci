@@ -58,7 +58,7 @@ export default function InsightHero({ meta, aggregatedROI, repoCount }: Props) {
                 d="M11 17l-5-5m0 0l5-5m-5 5h12"
               />
             </svg>
-            FastCI Labs
+            JFrog CI Labs
           </motion.a>
 
           <motion.div variants={fadeInUp} className="mb-4">
