@@ -1,5 +1,6 @@
 ---
 import { baseUrl, basePath } from '../../lib/baseUrl';
+import LabsIcon from '../icons/LabsIcon.astro';
 ---
 
 <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
@@ -14,9 +15,7 @@ import { baseUrl, basePath } from '../../lib/baseUrl';
           href={basePath('blog')}
           class="hidden sm:flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors px-3 py-2 rounded-lg hover:bg-white/5"
         >
-          <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M7 2v2h1v14c0 2.21 1.79 4 4 4s4-1.79 4-4V4h1V2H7zm4 18c-1.1 0-2-.9-2-2h4c0 1.1-.9 2-2 2zm-2-4V4h4v12H9z"/>
-          </svg>
+          <LabsIcon class="w-5 h-5 shrink-0" />
           Labs
         </a>
         <a

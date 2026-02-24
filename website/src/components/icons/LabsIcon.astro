@@ -1,0 +1,11 @@
+---
+import { LABS_ICON_PATH } from '../../lib/icons';
+interface Props {
+  class?: string;
+}
+const { class: className = 'w-5 h-5 shrink-0' } = Astro.props;
+---
+
+<svg class={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+  <path stroke-linecap="round" stroke-linejoin="round" d={LABS_ICON_PATH} />
+</svg>
