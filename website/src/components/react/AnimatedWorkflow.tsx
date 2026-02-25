@@ -45,8 +45,8 @@ function Line({
       {showNewFlash && (
         <motion.span
           className="absolute inset-0 -left-1 -right-1 rounded"
-          initial={{ backgroundColor: 'rgba(64, 190, 70, 0.28)' }}
-          animate={{ backgroundColor: 'rgba(64, 190, 70, 0)' }}
+          initial={{ backgroundColor: 'rgba(54, 161, 59, 0.28)' }}
+          animate={{ backgroundColor: 'rgba(54, 161, 59, 0)' }}
           transition={{ duration: 0.5 }}
           style={{ zIndex: -1 }}
           aria-hidden
@@ -89,16 +89,51 @@ function InsightBadge({
   );
 }
 
-const PHASE_TIMINGS = [4500, 3750, 4500, 2500, 4500] as const; // original → +fastci → +insights → fixing → fixed
+const PHASE_TIMINGS = [4500, 3750, 4500, 2500, 10000] as const; // original → +fastci → +insights → fixing → fixed (10s so people can see)
 const nbsp = (n: number) => '\u00A0'.repeat(n);
 
 const STEPS = [
-  { id: 0, label: 'Original workflow' },
-  { id: 1, label: 'Add FastCI' },
-  { id: 2, label: 'Insights' },
-  { id: 3, label: 'Fixing In PR' },
-  { id: 4, label: 'Fixes applied' },
+  {
+    id: 0,
+    label: 'Drop in FastCI',
+    desc: 'Add 3 lines of YAML to any GitHub Actions workflow. FastCI runs as the first step and instruments your entire pipeline.',
+  },
+  {
+    id: 1,
+    label: 'Insights Detected',
+    desc: 'Analyzes every run, identifies bottlenecks, and opens GitHub Issues with actionable diagnostics.',
+  },
+  {
+    id: 2,
+    label: 'Fixes Ready for Review',
+    desc: 'An AI agent drafts each fix and opens a pull request. You review, approve, and merge—no changes without human sign-off.',
+  },
 ] as const;
+
+function phaseToStep(phase: number): number {
+  if (phase <= 1) return 0;
+  if (phase === 2) return 1;
+  return 2;
+}
+
+function stepToPhase(step: number): number {
+  return [0, 2, 3][step];
+}
+
+function getStepProgress(stepId: number, phase: number, phaseProgress: number): number {
+  if (stepId === 0) {
+    if (phase === 0) return phaseProgress * 0.5;
+    if (phase === 1) return 0.5 + phaseProgress * 0.5;
+    return phase > 1 ? 1 : 0;
+  }
+  if (stepId === 1) {
+    if (phase === 2) return phaseProgress;
+    return phase > 2 ? 1 : 0;
+  }
+  if (phase === 3) return phaseProgress * 0.5;
+  if (phase === 4) return 0.5 + phaseProgress * 0.5;
+  return phase > 4 ? 1 : 0;
+}
 
 export default function AnimatedWorkflow() {
   const [phase, setPhase] = useState(0);
@@ -131,14 +166,12 @@ export default function AnimatedWorkflow() {
       const progress = Math.min(elapsed / duration, 1);
       setPhaseProgress(progress);
       if (progress >= 1) {
-        setPhase((p) => Math.min(p + 1, 4));
+        setPhase((p) => (p + 1) % 5);
       }
     }, 50);
     return () => clearInterval(iv);
   }, [phase]);
 
-  // Phase logic: 0=original, 1=+fastci, 2=+insights, 3=fixing, 4=fixed
-  const showOriginal = phase === 0;
   const showFastCI = phase >= 1;
   const showInsights = phase >= 2;
   const showFixingInPR = phase === 3;
@@ -149,7 +182,7 @@ export default function AnimatedWorkflow() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="relative w-full max-w-[672px] min-w-0 mx-auto lg:mx-0"
+      className="relative w-full max-w-3xl min-w-0 mx-auto"
     >
       <div className="glass-card overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-3 border-b border-white/5">
@@ -406,7 +439,7 @@ export default function AnimatedWorkflow() {
                 {showInsights && (
                   <span className="absolute right-0 top-0">
                     <InsightBadge
-                      text="Use Buildx ~8m faster"
+                      text="Enable cache ~8m faster"
                       visible={true}
                       delay={0.4}
                     />
@@ -424,35 +457,45 @@ export default function AnimatedWorkflow() {
       </div>
 
       {/* Step indicators */}
-      <div className="mt-4 flex flex-wrap gap-1.5 sm:gap-2">
-        {STEPS.map(({ id, label }) => {
-          const isActive = phase === id;
-          const isComplete = phase > id;
-          const progress = isComplete ? 1 : isActive ? phaseProgress : 0;
+      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {STEPS.map(({ id, label, desc }) => {
+          const activeStep = phaseToStep(phase);
+          const stepActive = activeStep === id;
+          const stepComplete = activeStep > id;
+          const progress = stepComplete ? 1 : stepActive ? getStepProgress(id, phase, phaseProgress) : 0;
 
           return (
             <button
               key={id}
               type="button"
               onClick={() => {
-                setPhase(id);
+                setPhase(stepToPhase(id));
                 setLineIndex(id === 0 ? 0 : 99);
                 phaseStartRef.current = Date.now();
                 setPhaseProgress(0);
               }}
-              className="relative px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium overflow-hidden transition-colors duration-200 border hover:border-white/20"
+              className="relative p-4 rounded-xl text-left overflow-hidden transition-colors duration-200 border hover:border-white/20"
               style={{
-                backgroundColor: isActive || isComplete ? 'transparent' : 'rgba(255,255,255,0.05)',
-                borderColor: isActive || isComplete ? 'rgba(64,190,70,0.4)' : 'rgba(255,255,255,0.1)',
-                color: isActive || isComplete ? 'rgb(134,239,172)' : 'rgb(156,163,175)',
+                borderColor: stepActive || stepComplete ? 'rgba(54,161,59,0.4)' : 'rgba(255,255,255,0.08)',
               }}
             >
-              {/* Progress bar fill */}
               <span
-                className="absolute inset-y-0 left-0 rounded-lg bg-brand-500/30 transition-[width] duration-75 ease-linear"
+                className="absolute inset-y-0 left-0 bg-brand-500/20 transition-[width] duration-75 ease-linear"
                 style={{ width: `${progress * 100}%` }}
               />
-              <span className="relative z-10">{label}</span>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[11px] font-mono text-gray-500 tracking-widest">
+                    {String(id + 1).padStart(2, '0')}
+                  </span>
+                  <span className={`text-sm font-bold ${stepActive || stepComplete ? 'text-white' : 'text-gray-400'}`}>
+                    {label}
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-500 leading-relaxed line-clamp-2">
+                  {desc}
+                </p>
+              </div>
             </button>
           );
         })}

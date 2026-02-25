@@ -12,6 +12,8 @@ export interface RepoStats {
   mainMedianRun: WorkflowRun;
   insightMedianRun: WorkflowRun;
   runCount: number;
+  /** URL to the last GitHub Actions run in the forked repo */
+  actionsRunUrl: string;
 }
 
 function percentile(sorted: number[], p: number): number {
@@ -73,6 +75,16 @@ export function computeRepoStats(benchmark: RepoBenchmark): RepoStats {
         : closest,
     );
 
+  const lastInsightRun = insightRuns.length > 0
+    ? insightRuns.reduce((latest, r) => (r.runId > latest.runId ? r : latest))
+    : null;
+  const repoSlug = benchmark.repo.replace(/\//g, '-');
+  const actionsRunUrl =
+    benchmark.actionsRunUrl ??
+    (lastInsightRun
+      ? `https://github.com/jfrog-fastci/${repoSlug}/actions/runs/${lastInsightRun.runId}`
+      : `https://github.com/jfrog-fastci/${repoSlug}/actions`);
+
   return {
     repo: benchmark.repo,
     language: benchmark.language,
@@ -85,6 +97,7 @@ export function computeRepoStats(benchmark: RepoBenchmark): RepoStats {
     mainMedianRun,
     insightMedianRun,
     runCount: pairCount,
+    actionsRunUrl,
   };
 }
 

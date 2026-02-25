@@ -19,7 +19,7 @@ export default function CTA() {
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full"
           style={{
             background:
-              'radial-gradient(circle, rgba(64,190,70,0.15) 0%, transparent 60%)',
+              'radial-gradient(circle, rgba(54,161,59,0.15) 0%, transparent 60%)',
           }}
         />
         {/* Grid overlay */}
@@ -45,9 +45,11 @@ export default function CTA() {
             Ready to optimize{' '}
             <span className="gradient-text">your CI?</span>
           </h2>
-          <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-xl mx-auto">
-            Start finding and fixing bottlenecks in minutes. Open source,
-            free forever, zero config.
+          <p className="text-lg md:text-xl text-gray-400 mb-6 max-w-xl mx-auto">
+            5 minutes to install. First insight on the next run. Fixes land as PRs—review and merge when you're ready.
+          </p>
+          <p className="text-sm text-gray-500 mb-10 max-w-lg mx-auto">
+            Safe by design: FastCI never pushes directly to main. Every fix is a PR for your team to review. No secret handling changes—you decide what gets merged.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -57,7 +59,7 @@ export default function CTA() {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-brand-500 text-white font-semibold text-lg hover:bg-brand-400 transition-all duration-200 shadow-[0_0_30px_rgba(64,190,70,0.2)] hover:shadow-[0_0_50px_rgba(64,190,70,0.4)]"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-brand-500 text-white font-semibold text-lg hover:bg-brand-400 transition-all duration-200 shadow-[0_0_30px_rgba(54,161,59,0.2)] hover:shadow-[0_0_50px_rgba(54,161,59,0.4)]"
             >
               Get Started Free
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
