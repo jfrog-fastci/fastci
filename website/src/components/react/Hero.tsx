@@ -128,7 +128,7 @@ type InstallOption = {
 
 const INSTALL_OPTIONS: InstallOption[] = [
   { label: 'Install via Cursor', type: 'link', href: CURSOR_INSTALL_URL, icon: CursorIcon, color: COLORS.cursor },
-  { label: 'Install with a Prompt', type: 'modal', icon: PromptIcon, color: COLORS.prompt },
+  { label: 'Install via Prompt', type: 'modal', icon: PromptIcon, color: COLORS.prompt },
   { label: 'Install via Vscode', type: 'link', href: VSCODE_INSTALL_URL, icon: VscodeIcon, color: COLORS.vscode },
 ];
 

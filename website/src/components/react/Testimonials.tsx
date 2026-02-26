@@ -53,10 +53,71 @@ const testimonials: Testimonial[] = [
     role: 'Developer',
     body: "cargo build was taking forever in CI. FastCI added the right caching and now it's actually reasonable.",
   },
+  {
+    name: 'Amina',
+    role: 'Platform Engineer',
+    body: "We didn't want another CI platform to manage. FastCI landed a small PR that cut cold starts by a lot. Minimal change, big win.",
+  },
+  {
+    name: 'Priya',
+    role: 'Staff Engineer',
+    body: "Loved that it explained the *why* in the PR. It wasn’t just “enable cache”—it pointed to the slow step and proved the improvement.",
+  },
+  {
+    name: 'José',
+    role: 'Developer',
+    body: "Our Node installs were the bottleneck. FastCI tuned caching and suddenly the pipeline felt snappy again.",
+  },
+  {
+    name: 'Fatima',
+    role: 'SRE',
+    body: "We care about reliability as much as speed. The changes were reviewable, reversible, and didn’t add new moving parts.",
+  },
+  {
+    name: 'Kenji',
+    role: 'Developer',
+    body: "The first PR was small and obvious. After merging, every run was faster. That’s exactly how tools should work.",
+  },
+  {
+    name: 'Luisa',
+    role: 'QA Engineer',
+    body: "Our test split was uneven and flaky. FastCI suggested changes that stabilized runs and shaved minutes off the suite.",
+  },
+  {
+    name: 'Kwame',
+    role: 'Engineering Manager',
+    body: "The team didn’t have to context-switch. We got an issue, then a PR, and merged it like any normal improvement.",
+  },
+  {
+    name: 'Noor',
+    role: 'DevOps Engineer',
+    body: "I expected setup steps and tokens. Instead it just worked with our repo, then started finding real wins immediately.",
+  },
+  {
+    name: 'Isha',
+    role: 'Developer',
+    body: "FastCI found we were running expensive steps on docs-only changes. The PR fixed it and reduced noise in CI.",
+  },
+  {
+    name: 'Diego',
+    role: 'Developer',
+    body: "We were rebuilding Docker layers every time. One PR later, caching actually behaved the way we assumed it did.",
+  },
+  {
+    name: 'Hana',
+    role: 'Tech Lead',
+    body: "The suggestions felt pragmatic—not theoretical. It picked the easiest high-impact fix first and kept changes small.",
+  },
+  {
+    name: 'Omar',
+    role: 'CTO',
+    body: "Time-to-merge improved without a big migration. That’s rare. Reviewable PRs beat adopting yet another dashboard.",
+  },
 ];
 
-const firstRow = testimonials.slice(0, 6);
-const secondRow = testimonials.slice(6);
+const mid = Math.ceil(testimonials.length / 2);
+const firstRow = testimonials.slice(0, mid);
+const secondRow = testimonials.slice(mid);
 
 function TestimonialCard({ name, role, body }: Testimonial) {
   return (
