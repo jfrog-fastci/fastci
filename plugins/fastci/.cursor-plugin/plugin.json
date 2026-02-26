@@ -1,0 +1,11 @@
+{
+  "name": "fastci",
+  "version": "0.0.1",
+  "description": "FastCI commands and guidance for GitHub Actions installation.",
+  "author": {
+    "name": "FastCI"
+  },
+  "keywords": ["fastci", "github-actions", "ci", "automation"],
+  "commands": "commands",
+  "rules": "rules"
+}

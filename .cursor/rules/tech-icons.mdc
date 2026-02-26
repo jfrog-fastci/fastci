@@ -1,0 +1,36 @@
+---
+description: Use react-icons (Simple Icons) for technology/brand icons instead of inline SVGs
+globs: website/**/*.{tsx,jsx,ts}
+alwaysApply: false
+---
+
+# Tech Icons Rule
+
+When adding or modifying technology/brand icons in the website, use **react-icons** from the Simple Icons set (`react-icons/si`) instead of inline SVG paths.
+
+## Source
+
+- Browse icons: https://react-icons.github.io/react-icons/search/
+- Simple Icons (brand logos): https://react-icons.github.io/react-icons/icons/si/
+
+## Usage
+
+```tsx
+import { SiDocker, SiPython, SiGo } from 'react-icons/si';
+
+// Use with className and color
+<SiDocker className="w-4 h-4" color="#2496ED" />
+```
+
+## Guidelines
+
+1. **Prefer Simple Icons (si)** for technology, framework, and brand logos (Docker, Python, Go, npm, Git, etc.)
+2. **Search first**: Use the react-icons search to find the icon (e.g. search "golang" for Go)
+3. **Wrap in thin components** when you need consistent props (className, fill) across the app — see `website/src/lib/techIcons.tsx`
+4. **Do NOT** add inline SVG paths for brand icons — use react-icons instead
+
+## Adding New Icons
+
+1. Search https://react-icons.github.io/react-icons/search/ for the icon
+2. Import from `react-icons/si` (or `react-icons/fa`, `react-icons/hi`, etc. if not a brand)
+3. Add a wrapper in `techIcons.tsx` if the icon is used in multiple places

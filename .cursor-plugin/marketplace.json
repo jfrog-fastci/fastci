@@ -1,0 +1,16 @@
+{
+  "name": "fastci",
+  "owner": {
+    "name": "FastCI"
+  },
+  "metadata": {
+    "description": "FastCI Cursor plugin(s) for installing and operating FastCI."
+  },
+  "plugins": [
+    {
+      "name": "fastci",
+      "source": "plugins/fastci",
+      "description": "Commands and guidance to install FastCI in GitHub Actions workflows."
+    }
+  ]
+}

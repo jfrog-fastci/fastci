@@ -1,6 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { basePath } from '../../lib/baseUrl';
+import {
+  DockerIcon,
+  NpmIcon,
+  PythonIcon,
+  GoIcon,
+  GitIcon,
+  GitHubActionsIcon,
+  techIconColors,
+} from '../../lib/techIcons';
+import { TextAnimate } from '../ui/text-animate';
 
 type ColumnKey = 'backlog' | 'coding' | 'review' | 'done';
 
@@ -46,7 +55,6 @@ const TASK_POOL: TaskTemplate[] = [
   { title: 'Split build and test jobs', savedMinutes: '1.5 min', savedPercent: 35, prNumber: 227 },
   { title: 'Use matrix for multi-platform', savedMinutes: '3.0 min', savedPercent: 50, prNumber: 241 },
   { title: 'Pin action versions by SHA', savedMinutes: '0.3 min', savedPercent: 12, prNumber: 153 },
-  { title: 'Compress build artifacts', savedMinutes: '0.6 min', savedPercent: 25, prNumber: 198 },
 ];
 
 interface ActiveTask {
@@ -133,15 +141,40 @@ function HumanIcon({ color }: { color: string }) {
   );
 }
 
-function FastCIIcon({ className }: { className?: string }) {
+type TaskIconConfig = {
+  Icon: (props: { className?: string; fill?: string }) => ReactNode;
+  bgColor: string;
+};
+
+function getTaskIconConfig(title: string): TaskIconConfig {
+  const t = title.toLowerCase();
+  if (t.includes('npm') || t.includes('node_modules') || t.includes('cache npm')) {
+    return { Icon: NpmIcon, bgColor: techIconColors.npm };
+  }
+  if (t.includes('docker') || t.includes('buildkit') || t.includes('container') || t.includes('image')) {
+    return { Icon: DockerIcon, bgColor: techIconColors.docker };
+  }
+  if (t.includes('go module') || t.includes('go ')) {
+    return { Icon: GoIcon, bgColor: techIconColors.go };
+  }
+  if (t.includes('pip') || t.includes('python')) {
+    return { Icon: PythonIcon, bgColor: techIconColors.python };
+  }
+  if (t.includes('git') || t.includes('clone') || t.includes('checkout')) {
+    return { Icon: GitIcon, bgColor: techIconColors.git };
+  }
+  return { Icon: GitHubActionsIcon, bgColor: techIconColors.githubActions };
+}
+
+function TaskIcon({ template, className }: { template: TaskTemplate; className?: string }) {
+  const { Icon, bgColor } = getTaskIconConfig(template.title);
   return (
-    <img
-      src={basePath('fastci_icon.svg')}
-      alt=""
-      className={className}
-      width={14}
-      height={12}
-    />
+    <span
+      className={`inline-flex items-center justify-center rounded-full flex-shrink-0 ${className ?? ''}`}
+      style={{ backgroundColor: bgColor }}
+    >
+      <Icon className="w-[60%] h-[60%]" fill="white" />
+    </span>
   );
 }
 
@@ -180,12 +213,8 @@ function IssueClosedIcon({ className }: { className?: string }) {
   );
 }
 
-function AvatarCircle() {
-  return (
-    <div className="w-5 h-5 rounded-full bg-[#30363d] border border-[#484f58] flex items-center justify-center flex-shrink-0">
-      <FastCIIcon className="w-3 h-2.5 brightness-150" />
-    </div>
-  );
+function TaskAvatar({ template }: { template: TaskTemplate }) {
+  return <TaskIcon template={template} className="w-5 h-5" />;
 }
 
 function TaskCard({
@@ -206,8 +235,6 @@ function TaskCard({
 
   return (
     <motion.div
-      layout
-      layoutId={task.id}
       initial={{ opacity: 0, scale: 0.96, y: 8 }}
       animate={{
         opacity: 1,
@@ -237,7 +264,7 @@ function TaskCard({
             fastci <span className="text-[#e6edf3]">#{template.prNumber}</span>
           </motion.span>
         </div>
-        <AvatarCircle />
+        <TaskAvatar template={template} />
       </div>
 
       {/* Title */}
@@ -329,9 +356,15 @@ function ColumnHeader({ column, count }: { column: ColumnDef; count: number }) {
           <ThreeDotsIcon />
         </div>
       </div>
-      <p className="text-[11px] text-[#848d97] mt-1 ml-[22px]">
+      <TextAnimate
+        animation="slideUp"
+        by="word"
+        as="p"
+        className="text-[11px] text-[#848d97] mt-1 ml-[22px]"
+        once
+      >
         {column.subtitle}
-      </p>
+      </TextAnimate>
     </div>
   );
 }
@@ -340,7 +373,15 @@ const HUMAN_REVIEWER_COLOR = '#94a3b8';
 const HUMAN_LABEL_BG = '#334155';
 const HUMAN_GLOW = 'rgba(148,163,184,0.35)';
 
-function AgentCursorEl({ agent, visible }: { agent: AgentCursor; visible: boolean }) {
+function AgentCursorEl({
+  agent,
+  visible,
+  targetTemplate,
+}: {
+  agent: AgentCursor;
+  visible: boolean;
+  targetTemplate: TaskTemplate | null;
+}) {
   const isHuman = agent.sourceColumn === 'review';
 
   return (
@@ -373,7 +414,11 @@ function AgentCursorEl({ agent, visible }: { agent: AgentCursor; visible: boolea
               'Reviewer'
             ) : (
               <>
-                <FastCIIcon className="w-3 h-2.5 brightness-200" />
+                {targetTemplate ? (
+                  <TaskIcon template={targetTemplate} className="w-3 h-2.5" />
+                ) : (
+                  <TaskIcon template={TASK_POOL[0]} className="w-3 h-2.5" />
+                )}
                 {agent.name}
               </>
             )}
@@ -580,9 +625,14 @@ export default function CIKanbanBoard() {
           <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
             Your AI <span className="gradient-text">DevOps Army</span>
           </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
-            FastCI agents continuously find, fix, and ship CI optimizations&mdash;so you don&rsquo;t have to.
-          </p>
+          <TextAnimate
+            animation="slideUp"
+            by="word"
+            className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed"
+            once
+          >
+            {"FastCI agents continuously find, fix, and ship CI optimizations\u2014so you don\u2019t have to."}
+          </TextAnimate>
         </motion.div>
 
         <motion.div
@@ -592,17 +642,30 @@ export default function CIKanbanBoard() {
           className="relative"
           ref={boardRef}
         >
-          {agents.map((agent, i) => (
-            <AgentCursorEl key={i} agent={agent} visible={agent.busy} />
-          ))}
+          {agents.map((agent, i) => {
+            const targetTask = agent.targetTaskId
+              ? tasks.find((t) => t.id === agent.targetTaskId)
+              : null;
+            const targetTemplate = targetTask
+              ? TASK_POOL[targetTask.templateIndex]
+              : null;
+            return (
+              <AgentCursorEl
+                key={i}
+                agent={agent}
+                visible={agent.busy}
+                targetTemplate={targetTemplate}
+              />
+            );
+          })}
 
           <div className="rounded-xl border border-[#30363d] bg-[#0d1117] overflow-hidden">
-            <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-[#30363d]">
+            <div className="grid grid-cols-2 lg:grid-cols-4 grid-rows-2 lg:grid-rows-1 divide-x divide-[#30363d] h-[640px] lg:h-[400px]">
               {COLUMNS.map((col) => {
                 const colTasks = columnTasks(col.key);
                 return (
-                  <div key={col.key} data-column={col.key} className="min-h-[320px] flex flex-col">
-                    <div className="p-3 md:p-4 flex-1">
+                  <div key={col.key} data-column={col.key} className="h-full flex flex-col overflow-hidden">
+                    <div className="p-3 md:p-4 flex-1 min-h-0 overflow-y-auto">
                       <ColumnHeader column={col} count={colTasks.length} />
                       <div className="flex flex-col gap-2">
                         <AnimatePresence mode="popLayout">
