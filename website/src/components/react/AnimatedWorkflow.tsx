@@ -254,8 +254,8 @@ export default function AnimatedWorkflow() {
         </div>
 
         <div
-          className="p-3 sm:p-5 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto overflow-y-auto"
-          style={{ height: '420px' }}
+          className="p-3 sm:p-5 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto overflow-y-hidden"
+          style={{ height: '560px' }}
         >
           {/* name */}
           <Line visible={lineIndex > 0}>
@@ -456,8 +456,8 @@ export default function AnimatedWorkflow() {
         </div>
       </div>
 
-      {/* Step indicators */}
-      <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+      {/* Step indicators — desktop grid */}
+      <div className="hidden sm:grid mt-4 grid-cols-3 gap-2">
         {STEPS.map(({ id, label, desc }) => {
           const activeStep = phaseToStep(phase);
           const stepActive = activeStep === id;
@@ -499,6 +499,85 @@ export default function AnimatedWorkflow() {
             </button>
           );
         })}
+      </div>
+
+      {/* Step indicators — mobile 3D carousel */}
+      <div
+        className="sm:hidden mt-4 relative overflow-hidden"
+        style={{ height: '148px', perspective: '900px' }}
+      >
+        {STEPS.map(({ id, label, desc }) => {
+          const activeStep = phaseToStep(phase);
+          const n = STEPS.length;
+          const raw = id - activeStep;
+          // normalize offset to -1, 0, or 1 (wrapping)
+          const offset = ((raw + Math.floor(n / 2)) % n) - Math.floor(n / 2);
+
+          const stepActive = activeStep === id;
+          const stepComplete = activeStep > id;
+          const progress = stepComplete ? 1 : stepActive ? getStepProgress(id, phase, phaseProgress) : 0;
+
+          return (
+            <motion.button
+              key={id}
+              type="button"
+              onClick={() => {
+                setPhase(stepToPhase(id));
+                setLineIndex(id === 0 ? 0 : 99);
+                phaseStartRef.current = Date.now();
+                setPhaseProgress(0);
+              }}
+              animate={{
+                rotateY: offset === 0 ? 0 : offset > 0 ? -44 : 44,
+                x: offset === 0 ? '0%' : offset > 0 ? '76%' : '-76%',
+                scale: offset === 0 ? 1 : 0.76,
+              }}
+              transition={{ type: 'spring', stiffness: 300, damping: 32 }}
+              className="absolute inset-0 p-4 rounded-xl text-left overflow-hidden border bg-surface-950"
+              style={{
+                borderColor: (stepActive || stepComplete) ? 'rgba(54,161,59,0.4)' : 'rgba(255,255,255,0.08)',
+                zIndex: offset === 0 ? 2 : 1,
+                transformOrigin: 'center center',
+              }}
+            >
+              <span
+                className="absolute inset-y-0 left-0 bg-brand-500/20 transition-[width] duration-75 ease-linear"
+                style={{ width: `${progress * 100}%` }}
+              />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-[11px] font-mono text-gray-500 tracking-widest">
+                    {String(id + 1).padStart(2, '0')}
+                  </span>
+                  <span className={`text-sm font-bold ${(stepActive || stepComplete) ? 'text-white' : 'text-gray-400'}`}>
+                    {label}
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-500 leading-relaxed">
+                  {desc}
+                </p>
+              </div>
+            </motion.button>
+          );
+        })}
+
+        {/* Progress dots */}
+        <div className="absolute -bottom-5 left-0 right-0 flex justify-center gap-1.5 pointer-events-none">
+          {STEPS.map(({ id }) => {
+            const activeStep = phaseToStep(phase);
+            return (
+              <motion.div
+                key={id}
+                animate={{
+                  width: activeStep === id ? 16 : 6,
+                  opacity: activeStep === id ? 1 : 0.35,
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                className="h-1.5 rounded-full bg-brand-400"
+              />
+            );
+          })}
+        </div>
       </div>
 
       {/* Glow behind card */}

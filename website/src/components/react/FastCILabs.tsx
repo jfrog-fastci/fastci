@@ -13,6 +13,7 @@ const posts = [
       'CI pipelines degrade silently. Builds that once took 3 minutes creep to 15. Learn why proactive CI maintenance is the key to engineering velocity.',
     readTime: '5 min read',
     gradient: 'from-brand-500/20 to-emerald-500/20',
+    image: 'images/_fastci.svg',
   },
   {
     slug: 'github-actions-performance-guide',
@@ -146,6 +147,13 @@ export default function FastCILabs() {
                 <div
                   className={`h-40 bg-gradient-to-br ${post.gradient} relative overflow-hidden`}
                 >
+                  {post.image && (
+                    <img
+                      src={basePath(post.image)}
+                      alt=""
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  )}
                   <div className="absolute inset-0 bg-surface-950/40" />
                   <div className="absolute bottom-4 left-5">
                     <span className="text-xs font-medium text-white/80 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
