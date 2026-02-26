@@ -9,6 +9,7 @@ import Features from '../components/react/Features';
 import FastCILabs from '../components/react/FastCILabs';
 import SupportedPlatforms from '../components/react/SupportedPlatforms';
 import Testimonials from '../components/react/Testimonials';
+import CIKanbanBoard from '../components/react/CIKanbanBoard';
 import CTA from '../components/react/CTA';
 ---
 
@@ -17,6 +18,7 @@ import CTA from '../components/react/CTA';
 
   <main>
     <Hero client:load />
+    <CIKanbanBoard client:visible />
     <Testimonials client:visible />
     <ProblemSection client:visible />
     <SupportedPlatforms client:visible />
