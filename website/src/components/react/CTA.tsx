@@ -1,5 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
+import { TextAnimate } from '../ui/text-animate';
 
 export default function CTA() {
   const ref = useRef<HTMLDivElement>(null);
@@ -45,12 +46,25 @@ export default function CTA() {
             Ready to optimize{' '}
             <span className="gradient-text">your CI?</span>
           </h2>
-          <p className="text-lg md:text-xl text-gray-400 mb-6 max-w-xl mx-auto">
-            5 minutes to install. First insight on the next run. Fixes land as PRs—review and merge when you're ready.
-          </p>
-          <p className="text-sm text-gray-500 mb-10 max-w-lg mx-auto">
-            Safe by design: FastCI never pushes directly to main. Every fix is a PR for your team to review. No secret handling changes—you decide what gets merged.
-          </p>
+          <TextAnimate
+            animation="slideUp"
+            by="word"
+            className="text-lg md:text-xl text-gray-400 mb-6 max-w-xl mx-auto"
+            stagger={0.05}
+            once
+          >
+            {"5 minutes to install. First insight on the next run. Fixes land as PRs\u2014review and merge when you\u2019re ready."}
+          </TextAnimate>
+          <TextAnimate
+            animation="slideUp"
+            by="word"
+            className="text-sm text-gray-500 mb-10 max-w-lg mx-auto"
+            stagger={0.04}
+            delay={0.3}
+            once
+          >
+            {"Safe by design: FastCI never pushes directly to main. Every fix is a PR for your team to review. No secret handling changes\u2014you decide what gets merged."}
+          </TextAnimate>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <motion.a
