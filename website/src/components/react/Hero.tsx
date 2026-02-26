@@ -128,11 +128,7 @@ type InstallOption = {
 
 const INSTALL_OPTIONS: InstallOption[] = [
   { label: 'Install via Cursor', type: 'link', href: CURSOR_INSTALL_URL, icon: CursorIcon, color: COLORS.cursor },
-<<<<<<< HEAD
   { label: 'Install via Prompt', type: 'modal', icon: PromptIcon, color: COLORS.prompt },
-=======
-  { label: 'Install with a Prompt', type: 'modal', icon: PromptIcon, color: COLORS.prompt },
->>>>>>> f597c91b1d7aac1ac27879ecf6aab2e6dd758a71
   { label: 'Install via Vscode', type: 'link', href: VSCODE_INSTALL_URL, icon: VscodeIcon, color: COLORS.vscode },
 ];
 
@@ -253,11 +249,7 @@ export default function Hero() {
     if (isHovered || isDropdownOpen) return;
     const id = setInterval(() => {
       setSelectedIndex((i) => (i + 1) % INSTALL_OPTIONS.length);
-<<<<<<< HEAD
     }, 3000);
-=======
-    }, 5000);
->>>>>>> f597c91b1d7aac1ac27879ecf6aab2e6dd758a71
     return () => clearInterval(id);
   }, [isHovered, isDropdownOpen]);
 
