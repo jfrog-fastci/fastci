@@ -629,6 +629,7 @@ export default function CIKanbanBoard() {
             animation="slideUp"
             by="word"
             className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed"
+            stagger={0.05}
             once
           >
             {"FastCI agents continuously find, fix, and ship CI optimizations\u2014so you don\u2019t have to."}

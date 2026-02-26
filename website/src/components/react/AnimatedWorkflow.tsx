@@ -518,15 +518,9 @@ export default function AnimatedWorkflow() {
           const progress = stepComplete ? 1 : stepActive ? getStepProgress(id, phase, phaseProgress) : 0;
 
           return (
-            <motion.button
+            <motion.div
               key={id}
-              type="button"
-              onClick={() => {
-                setPhase(stepToPhase(id));
-                setLineIndex(id === 0 ? 0 : 99);
-                phaseStartRef.current = Date.now();
-                setPhaseProgress(0);
-              }}
+              role="presentation"
               animate={{
                 rotateY: offset === 0 ? 0 : offset > 0 ? -44 : 44,
                 x: offset === 0 ? '0%' : offset > 0 ? '76%' : '-76%',
@@ -557,7 +551,7 @@ export default function AnimatedWorkflow() {
                   {desc}
                 </p>
               </div>
-            </motion.button>
+            </motion.div>
           );
         })}
 

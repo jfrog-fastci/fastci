@@ -294,31 +294,18 @@ export default function Hero() {
             <span className="gradient-text">For Everyone</span>
           </motion.h1>
 
-          <motion.p
-            variants={fadeInUp}
-            className="text-lg md:text-xl text-gray-400 leading-relaxed mb-10 max-w-2xl"
-          >
+          <motion.div variants={fadeInUp}>
             <TextAnimate
               animation="slideUp"
               by="word"
-              as="span"
-              className="gradient-text font-bold"
-              startOnView={false}
+              as="p"
+              className="text-lg md:text-xl text-gray-400 leading-relaxed mb-10 max-w-2xl"
+              stagger={0.06}
               once
             >
-              Faster CI
-            </TextAnimate>{' '}
-            <TextAnimate
-              animation="slideUp"
-              by="word"
-              as="span"
-              delay={0.1}
-              startOnView={false}
-              once
-            >
-              with ongoing expert level CI maintenance for free.
+              Faster CI with ongoing expert level CI maintenance for free.
             </TextAnimate>
-          </motion.p>
+          </motion.div>
 
           <motion.div variants={fadeInUp} className="flex flex-wrap justify-center gap-4">
             <div
