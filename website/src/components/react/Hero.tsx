@@ -9,9 +9,6 @@ const CURSOR_INSTALL_URL =
 const PROMPT_INSTALL_URL =
   'https://raw.githubusercontent.com/jfrog-fastci/fastci/main/prompts/install.md';
 
-const VSCODE_INSTALL_URL =
-  'https://aka.ms/awesome-copilot/install/agent?url=vscode%3Achat-agent%2Finstall%3Furl%3Dhttps%3A%2F%2Fraw.githubusercontent.com%2Fjfrog-fastci%2Ffastci%2Fmain%2Fprompts%2Finstall.md';
-
 function CursorIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" fillRule="evenodd" viewBox="0 0 24 24" aria-hidden>
@@ -79,6 +76,9 @@ jobs:
           accept_terms: 'yes'
       - uses: actions/checkout@v4
 \`\`\``;
+
+const VSCODE_INSTALL_URL =
+  'vscode://GitHub.Copilot-Chat/chat?agent=agent&prompt=' + encodeURIComponent(INSTALL_PROMPT_TEXT);
 
 type ColorTheme = {
   bg: string;
