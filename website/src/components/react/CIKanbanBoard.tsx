@@ -22,7 +22,7 @@ interface ColumnDef {
 
 const COLUMNS: ColumnDef[] = [
   { key: 'backlog', label: 'Backlog', subtitle: 'Queued optimizations', dotColor: '#848d97' },
-  { key: 'coding', label: 'In progress', subtitle: 'Actively being worked on', dotColor: '#d29922' },
+  { key: 'coding', label: 'In progress', subtitle: 'Actively worked on', dotColor: '#d29922' },
   { key: 'review', label: 'In review', subtitle: 'Waiting for approval', dotColor: '#3fb950' },
   { key: 'done', label: 'Done', subtitle: 'Merged & shipped', dotColor: '#a371f7' },
 ];
@@ -659,13 +659,13 @@ export default function CIKanbanBoard() {
             );
           })}
 
-          <div className="rounded-xl border border-[#30363d] bg-[#0d1117] overflow-hidden">
+          <div className="rounded-xl border border-[#30363d] bg-[#0d1117] overflow-hidden relative">
             <div className="grid grid-cols-2 lg:grid-cols-4 grid-rows-2 lg:grid-rows-1 divide-x divide-[#30363d] h-[640px] lg:h-[400px]">
               {COLUMNS.map((col) => {
                 const colTasks = columnTasks(col.key);
                 return (
                   <div key={col.key} data-column={col.key} className="h-full flex flex-col overflow-hidden">
-                    <div className="p-3 md:p-4 flex-1 min-h-0 overflow-y-auto">
+                    <div className="p-3 md:p-4 flex-1 min-h-0 overflow-hidden">
                       <ColumnHeader column={col} count={colTasks.length} />
                       <div className="flex flex-col gap-2">
                         <AnimatePresence mode="popLayout">
@@ -681,16 +681,25 @@ export default function CIKanbanBoard() {
                         </AnimatePresence>
                       </div>
                     </div>
-                    <div className="px-3 md:px-4 py-2 border-t border-[#30363d]/50">
-                      <span className="text-[12px] text-[#848d97] flex items-center gap-1 cursor-default">
-                        <svg width="14" height="14" viewBox="0 0 16 16" fill="#848d97"><path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" /></svg>
-                        Add item
-                      </span>
-                    </div>
                   </div>
                 );
               })}
             </div>
+            {/* 20px fade gradient at boundaries - mobile only */}
+            <div
+              className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[40px] pointer-events-none lg:hidden z-10"
+              aria-hidden
+              style={{
+                background: 'linear-gradient(90deg, transparent 0%, #0d1117 50%, transparent 100%)',
+              }}
+            />
+            <div
+              className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[40px] pointer-events-none lg:hidden z-10"
+              aria-hidden
+              style={{
+                background: 'linear-gradient(180deg, transparent 0%, #0d1117 50%, transparent 100%)',
+              }}
+            />
           </div>
         </motion.div>
       </div>
