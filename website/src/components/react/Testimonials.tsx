@@ -1,10 +1,16 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, type ReactNode } from 'react';
+import {
+  DockerIcon, NodeIcon, PythonIcon, GoIcon, GradleIcon, RustIcon, GitHubActionsIcon,
+  techIconColors,
+} from '../../lib/techIcons';
 
 interface Testimonial {
   name: string;
   role: string;
   body: string;
+  icon: ReactNode;
+  iconColor: string;
 }
 
 const testimonials: Testimonial[] = [
@@ -12,119 +18,84 @@ const testimonials: Testimonial[] = [
     name: 'Marcus',
     role: 'Developer',
     body: "Was actually really simple to install and cut my Docker build time in half. No config, no tokens, just works.",
+    icon: <DockerIcon />,
+    iconColor: techIconColors.docker,
   },
   {
     name: 'Jake',
     role: 'Developer',
     body: "I've been meaning to fix our CI for months. FastCI just opened a PR and... it worked? Kind of embarrassing how easy it was.",
+    icon: <PythonIcon />,
+    iconColor: techIconColors.python,
   },
   {
     name: 'Alex',
     role: 'Developer',
     body: "Our Gradle builds were painfully slow. FastCI spotted the bottleneck and fixed it before I finished my coffee.",
+    icon: <GradleIcon />,
+    iconColor: techIconColors.gradle,
   },
   {
     name: 'Chen',
     role: 'DevOps Engineer',
     body: "Thought our CI was fine until FastCI showed us we were recompiling everything from scratch every single run. Oops.",
+    icon: <RustIcon />,
+    iconColor: techIconColors.rust,
   },
   {
     name: 'Nadia',
     role: 'Developer',
     body: "Set it up on a Friday afternoon, came back Monday to a PR that saved us 8 minutes per build.",
+    icon: <DockerIcon />,
+    iconColor: techIconColors.docker,
   },
   {
     name: 'Tom',
     role: 'Engineering Manager',
     body: "The PR-based approach is great. I could actually review what changed before merging. No black box nonsense.",
+    icon: <GitHubActionsIcon />,
+    iconColor: techIconColors.githubActions,
   },
   {
     name: 'Eva',
     role: 'Developer',
     body: "Honestly forgot I installed it. Then got a PR that cut our test suite from 12 min to 4. Nice surprise.",
+    icon: <GoIcon />,
+    iconColor: techIconColors.go,
   },
   {
     name: 'Dev',
     role: 'Engineering Manager',
     body: "Every other CI tool wants you to learn their dashboard. FastCI just opens GitHub issues. That's it. That's the tool.",
+    icon: <GitHubActionsIcon />,
+    iconColor: techIconColors.githubActions,
   },
   {
     name: 'Sam',
     role: 'Developer',
     body: "cargo build was taking forever in CI. FastCI added the right caching and now it's actually reasonable.",
-  },
-  {
-    name: 'Amina',
-    role: 'Platform Engineer',
-    body: "We didn't want another CI platform to manage. FastCI landed a small PR that cut cold starts by a lot. Minimal change, big win.",
-  },
-  {
-    name: 'Priya',
-    role: 'Staff Engineer',
-    body: "Loved that it explained the *why* in the PR. It wasn’t just “enable cache”—it pointed to the slow step and proved the improvement.",
-  },
-  {
-    name: 'José',
-    role: 'Developer',
-    body: "Our Node installs were the bottleneck. FastCI tuned caching and suddenly the pipeline felt snappy again.",
-  },
-  {
-    name: 'Fatima',
-    role: 'SRE',
-    body: "We care about reliability as much as speed. The changes were reviewable, reversible, and didn’t add new moving parts.",
-  },
-  {
-    name: 'Kenji',
-    role: 'Developer',
-    body: "The first PR was small and obvious. After merging, every run was faster. That’s exactly how tools should work.",
-  },
-  {
-    name: 'Luisa',
-    role: 'QA Engineer',
-    body: "Our test split was uneven and flaky. FastCI suggested changes that stabilized runs and shaved minutes off the suite.",
-  },
-  {
-    name: 'Kwame',
-    role: 'Engineering Manager',
-    body: "The team didn’t have to context-switch. We got an issue, then a PR, and merged it like any normal improvement.",
-  },
-  {
-    name: 'Noor',
-    role: 'DevOps Engineer',
-    body: "I expected setup steps and tokens. Instead it just worked with our repo, then started finding real wins immediately.",
-  },
-  {
-    name: 'Isha',
-    role: 'Developer',
-    body: "FastCI found we were running expensive steps on docs-only changes. The PR fixed it and reduced noise in CI.",
-  },
-  {
-    name: 'Diego',
-    role: 'Developer',
-    body: "We were rebuilding Docker layers every time. One PR later, caching actually behaved the way we assumed it did.",
-  },
-  {
-    name: 'Hana',
-    role: 'Tech Lead',
-    body: "The suggestions felt pragmatic—not theoretical. It picked the easiest high-impact fix first and kept changes small.",
-  },
-  {
-    name: 'Omar',
-    role: 'CTO',
-    body: "Time-to-merge improved without a big migration. That’s rare. Reviewable PRs beat adopting yet another dashboard.",
+    icon: <RustIcon />,
+    iconColor: techIconColors.rust,
   },
 ];
 
-const mid = Math.ceil(testimonials.length / 2);
-const firstRow = testimonials.slice(0, mid);
-const secondRow = testimonials.slice(mid);
+const firstRow = testimonials.slice(0, 6);
+const secondRow = testimonials.slice(6);
 
-function TestimonialCard({ name, role, body }: Testimonial) {
+function TestimonialCard({ name, role, body, icon, iconColor }: Testimonial) {
   return (
     <figure className="relative w-72 shrink-0 cursor-default overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] p-5 hover:bg-white/[0.06] transition-colors duration-200">
-      <div>
-        <figcaption className="text-sm font-semibold text-white">{name}</figcaption>
-        <p className="text-xs text-gray-500">{role}</p>
+      <div className="flex items-center gap-3">
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+          style={{ backgroundColor: `${iconColor}26` }}
+        >
+          {icon}
+        </div>
+        <div>
+          <figcaption className="text-sm font-semibold text-white">{name}</figcaption>
+          <p className="text-xs text-gray-500">{role}</p>
+        </div>
       </div>
       <blockquote className="mt-3 text-sm leading-relaxed text-gray-400">
         "{body}"
