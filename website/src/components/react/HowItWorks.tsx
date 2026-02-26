@@ -1,6 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import AnimatedWorkflow from './AnimatedWorkflow';
+import { TextAnimate } from '../ui/text-animate';
 
 export default function HowItWorks() {
   const ref = useRef<HTMLDivElement>(null);
@@ -18,9 +19,15 @@ export default function HowItWorks() {
           <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-5">
             Your CI, optimized.
           </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Three steps: instrument, detect, propose. FastCI handles the analysis and fix generation—you stay in control with reviewable PRs at every step.
-          </p>
+          <TextAnimate
+            animation="slideUp"
+            by="word"
+            className="text-gray-400 text-lg max-w-2xl mx-auto"
+            stagger={0.05}
+            once
+          >
+            {"Three steps: instrument, detect, propose. FastCI handles the analysis and fix generation\u2014you stay in control with reviewable PRs at every step."}
+          </TextAnimate>
         </motion.div>
 
         <motion.div

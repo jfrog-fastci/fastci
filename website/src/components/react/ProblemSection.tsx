@@ -1,6 +1,7 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { fadeInUp, staggerContainer } from '../../lib/animations';
+import { TextAnimate } from '../ui/text-animate';
 
 const problems = [
   {
@@ -51,15 +52,21 @@ export default function ProblemSection() {
           ))}
         </motion.div>
 
-        <motion.p
+        <motion.div
           variants={fadeInUp}
           initial="hidden"
           animate={isInView ? 'visible' : 'hidden'}
-          className="text-center text-base md:text-lg text-gray-300 max-w-3xl mx-auto"
         >
-          FastCI turns CI optimization into a continuous, reviewable process so teams ship faster without
-          sacrificing control.
-        </motion.p>
+          <TextAnimate
+            animation="slideUp"
+            by="word"
+            className="text-center text-base md:text-lg text-gray-300 max-w-3xl mx-auto"
+            stagger={0.05}
+            once
+          >
+            FastCI turns CI optimization into a continuous, reviewable process so teams ship faster without sacrificing control.
+          </TextAnimate>
+        </motion.div>
       </div>
     </section>
   );

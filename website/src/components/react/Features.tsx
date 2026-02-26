@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { fadeInUp, staggerContainer } from '../../lib/animations';
 import { DockerIcon, NodeIcon, PythonIcon, GoIcon, GradleIcon, RustIcon } from '../../lib/techIcons';
 import TraceGraph from './TraceGraph';
+import { TextAnimate } from '../ui/text-animate';
 
 function TracingVisual() {
   const steps = [
@@ -74,9 +75,15 @@ export default function Features() {
           <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-5">
             Everything you need for faster CI
           </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Built for teams who want pipelines to stay fast without constant manual tuning. Insights as Issues, fixes as PRs—you review and merge, FastCI does the rest.
-          </p>
+          <TextAnimate
+            animation="slideUp"
+            by="word"
+            className="text-gray-400 text-lg max-w-2xl mx-auto"
+            stagger={0.05}
+            once
+          >
+            {"Built for teams who want pipelines to stay fast without constant manual tuning. Insights as Issues, fixes as PRs\u2014you review and merge, FastCI does the rest."}
+          </TextAnimate>
         </motion.div>
 
         <motion.div

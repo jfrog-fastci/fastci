@@ -1,5 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, type ReactNode } from 'react';
+import { TextAnimate } from '../ui/text-animate';
 
 interface Testimonial {
   name: string;
@@ -116,9 +117,15 @@ export default function Testimonials() {
           <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-5">
             Developers love it
           </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+          <TextAnimate
+            animation="slideUp"
+            by="word"
+            className="text-gray-400 text-lg max-w-2xl mx-auto"
+            stagger={0.05}
+            once
+          >
             Real feedback from teams who installed FastCI and never looked back.
-          </p>
+          </TextAnimate>
         </motion.div>
       </div>
 

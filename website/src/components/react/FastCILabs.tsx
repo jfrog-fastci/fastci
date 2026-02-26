@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { fadeInUp, staggerContainer } from '../../lib/animations';
 import { basePath } from '../../lib/baseUrl';
 import { LabsIcon } from '../icons/LabsIcon';
+import { TextAnimate } from '../ui/text-animate';
 
 const posts = [
   {
@@ -57,11 +58,15 @@ export default function FastCILabs() {
           <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-5">
             Research &amp; Best Practices
           </h2>
-          <p className="text-gray-400 text-lg max-w-3xl mx-auto leading-relaxed">
-            JFrog CI Labs is on a mission to automatically identify optimization
-            opportunities in CI pipelines, and build the most up-to-date,
-            centralized source of CI/CD best practices and knowledge.
-          </p>
+          <TextAnimate
+            animation="slideUp"
+            by="word"
+            className="text-gray-400 text-lg max-w-3xl mx-auto leading-relaxed"
+            stagger={0.04}
+            once
+          >
+            JFrog CI Labs is on a mission to automatically identify optimization opportunities in CI pipelines, and build the most up-to-date, centralized source of CI/CD best practices and knowledge.
+          </TextAnimate>
         </motion.div>
 
         <motion.div
