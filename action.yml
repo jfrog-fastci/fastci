@@ -128,7 +128,7 @@ inputs:
   create_issues_from_insights:
     description: "Create GitHub issues from detected CI insights (e.g., missing .dockerignore)"
     required: false
-    default: "true"
+    default: "false"
 
   insight_issue_labels:
     description: "Comma-separated list of additional labels to add to insight issues"
