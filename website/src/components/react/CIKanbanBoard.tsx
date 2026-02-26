@@ -4,11 +4,18 @@ import { basePath } from '../../lib/baseUrl';
 
 type ColumnKey = 'backlog' | 'coding' | 'review' | 'done';
 
-const COLUMNS: { key: ColumnKey; label: string }[] = [
-  { key: 'backlog', label: 'Backlog' },
-  { key: 'coding', label: 'Coding' },
-  { key: 'review', label: 'Waiting For Review' },
-  { key: 'done', label: 'Done' },
+interface ColumnDef {
+  key: ColumnKey;
+  label: string;
+  subtitle: string;
+  dotColor: string;
+}
+
+const COLUMNS: ColumnDef[] = [
+  { key: 'backlog', label: 'Backlog', subtitle: 'Queued optimizations', dotColor: '#848d97' },
+  { key: 'coding', label: 'In progress', subtitle: 'Actively being worked on', dotColor: '#d29922' },
+  { key: 'review', label: 'In review', subtitle: 'Waiting for approval', dotColor: '#3fb950' },
+  { key: 'done', label: 'Done', subtitle: 'Merged & shipped', dotColor: '#a371f7' },
 ];
 
 const NEXT_COLUMN: Record<ColumnKey, ColumnKey | null> = {
@@ -53,15 +60,32 @@ interface AgentCursor {
   name: string;
   color: string;
   glowColor: string;
+  labelBgColor: string;
   busy: boolean;
   targetTaskId: string | null;
+  sourceColumn: ColumnKey | null;
   position: { x: number; y: number };
 }
 
 const AGENT_DEFS = [
-  { name: 'Agent Alpha', color: '#5cb85f', glowColor: 'rgba(92,184,95,0.4)' },
-  { name: 'Agent Beta', color: '#4fc3f7', glowColor: 'rgba(79,195,247,0.4)' },
-  { name: 'Agent Gamma', color: '#ce93d8', glowColor: 'rgba(206,147,216,0.4)' },
+  {
+    name: 'Agent Alpha',
+    color: '#5cb85f',
+    glowColor: 'rgba(92,184,95,0.4)',
+    labelBgColor: '#1a4a1c',
+  },
+  {
+    name: 'Agent Beta',
+    color: '#4fc3f7',
+    glowColor: 'rgba(79,195,247,0.4)',
+    labelBgColor: '#0d3a4a',
+  },
+  {
+    name: 'Agent Gamma',
+    color: '#ce93d8',
+    glowColor: 'rgba(206,147,216,0.4)',
+    labelBgColor: '#3a2a4a',
+  },
 ];
 
 function GitPROpenIcon({ className }: { className?: string }) {
@@ -89,6 +113,21 @@ function CursorIcon({ color }: { color: string }) {
         stroke="white"
         strokeWidth="1.2"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function HumanIcon({ color }: { color: string }) {
+  return (
+    <svg width="16" height="20" viewBox="0 0 16 20" fill="none">
+      <circle cx="8" cy="5" r="3.5" fill={color} stroke="white" strokeWidth="1" />
+      <path
+        d="M2 20c0-4 2.5-7 6-7s6 3 6 7"
+        fill={color}
+        stroke="white"
+        strokeWidth="1"
+        strokeLinecap="round"
       />
     </svg>
   );
@@ -123,6 +162,32 @@ function randomBetween(min: number, max: number): number {
   return min + Math.random() * (max - min);
 }
 
+function IssueOpenIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="currentColor" width="12" height="12">
+      <path d="M8 9.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+      <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Z" />
+    </svg>
+  );
+}
+
+function IssueClosedIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 16 16" fill="currentColor" width="12" height="12">
+      <path d="M11.28 6.78a.75.75 0 0 0-1.06-1.06L7.25 8.69 5.78 7.22a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l3.5-3.5Z" />
+      <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-1.5 0a6.5 6.5 0 1 0-13 0 6.5 6.5 0 0 0 13 0Z" />
+    </svg>
+  );
+}
+
+function AvatarCircle() {
+  return (
+    <div className="w-5 h-5 rounded-full bg-[#30363d] border border-[#484f58] flex items-center justify-center flex-shrink-0">
+      <FastCIIcon className="w-3 h-2.5 brightness-150" />
+    </div>
+  );
+}
+
 function TaskCard({
   task,
   template,
@@ -135,64 +200,99 @@ function TaskCard({
   agent: AgentCursor | null;
 }) {
   const isTargeted = agent !== null && agent.targetTaskId === task.id;
-  const prUrl = `https://github.com/example/repo/pull/${template.prNumber}`;
+  const isHumanReviewer = agent !== null && agent.sourceColumn === 'review';
+  const targetGlow = isHumanReviewer ? 'rgba(148,163,184,0.35)' : agent?.glowColor ?? 'transparent';
+  const targetBorder = isHumanReviewer ? 'rgba(148,163,184,0.5)' : agent ? agent.color + '55' : '#30363d';
 
   return (
     <motion.div
       layout
       layoutId={task.id}
-      initial={{ opacity: 0, scale: 0.92, y: 10 }}
+      initial={{ opacity: 0, scale: 0.96, y: 8 }}
       animate={{
         opacity: 1,
         scale: 1,
         y: 0,
-        boxShadow: isTargeted && agent
-          ? `0 0 24px ${agent.glowColor}`
-          : '0 0 0px transparent',
-        borderColor: isTargeted && agent
-          ? agent.color + '55'
-          : 'rgba(255,255,255,0.08)',
+        boxShadow: isTargeted && agent ? `0 0 20px ${targetGlow}` : '0 1px 0 rgba(0,0,0,0.3)',
+        borderColor: isTargeted && agent ? targetBorder : '#30363d',
       }}
-      exit={{ opacity: 0, scale: 0.85, y: -8, transition: { duration: 0.35 } }}
-      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-      className="relative rounded-xl bg-white/[0.04] border border-white/[0.08] p-3 cursor-default"
+      exit={{ opacity: 0, scale: 0.92, y: -6, transition: { duration: 0.3 } }}
+      transition={{ type: 'spring', stiffness: 320, damping: 30 }}
+      className="relative rounded-lg bg-[#161b22] border border-[#30363d] p-3 cursor-default"
     >
-      <p className="text-[13px] font-semibold text-white leading-snug mb-2">
+      {/* Label row: fastci repo + issue number + avatar */}
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-1.5">
+          {column === 'done' ? (
+            <IssueClosedIcon className="text-[#a371f7]" />
+          ) : (
+            <IssueOpenIcon className="text-[#3fb950]" />
+          )}
+          <motion.span
+            initial={{ opacity: 0, x: -4 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.25, delay: 0.05 }}
+            className="text-[11px] font-medium text-[#848d97]"
+          >
+            fastci <span className="text-[#e6edf3]">#{template.prNumber}</span>
+          </motion.span>
+        </div>
+        <AvatarCircle />
+      </div>
+
+      {/* Title */}
+      <p className="text-[13px] font-medium text-[#e6edf3] leading-snug mb-2 pr-1">
         {template.title}
       </p>
 
+      {/* ROI labels */}
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-brand-300 bg-brand-500/15 px-2 py-0.5 rounded-full">
+        <motion.span
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.08 }}
+          className="inline-flex items-center gap-1 text-[10px] font-medium text-[#7ee787] bg-[#238636]/30 px-2 py-0.5 rounded-full border border-[#238636]/40"
+        >
           -{template.savedMinutes}/run
-        </span>
-        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-300 bg-emerald-500/15 px-2 py-0.5 rounded-full">
+        </motion.span>
+        <motion.span
+          initial={{ opacity: 0, y: 4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.25, delay: 0.14 }}
+          className="inline-flex items-center gap-1 text-[10px] font-medium text-[#79c0ff] bg-[#1f6feb]/25 px-2 py-0.5 rounded-full border border-[#1f6feb]/35"
+        >
           {template.savedPercent}% faster
-        </span>
+        </motion.span>
 
         {column === 'review' && (
-          <a
-            href={prUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.preventDefault()}
-            className="inline-flex items-center gap-1 text-[10px] font-medium text-green-400 bg-green-500/15 px-2 py-0.5 rounded-full hover:bg-green-500/25 transition-colors"
+          <motion.span
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.2 }}
+            className="inline-flex items-center gap-1 text-[10px] font-medium text-[#3fb950] bg-[#238636]/20 px-2 py-0.5 rounded-full border border-[#238636]/30"
           >
-            <GitPROpenIcon className="text-green-400" />
-            #{template.prNumber}
-          </a>
+            <GitPROpenIcon className="text-[#3fb950]" />
+            PR
+          </motion.span>
         )}
 
         {column === 'done' && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-purple-400 bg-purple-500/15 px-2 py-0.5 rounded-full">
-            <GitPRMergedIcon className="text-purple-400" />
-            #{template.prNumber}
-          </span>
+          <motion.span
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25, delay: 0.2 }}
+            className="inline-flex items-center gap-1 text-[10px] font-medium text-[#a371f7] bg-[#8957e5]/20 px-2 py-0.5 rounded-full border border-[#8957e5]/30"
+          >
+            <GitPRMergedIcon className="text-[#a371f7]" />
+            Merged
+          </motion.span>
         )}
       </div>
 
+      {/* Coding pulse indicator */}
       {column === 'coding' && (
         <motion.div
-          className="absolute top-3 right-3 w-1.5 h-1.5 rounded-full bg-amber-400"
+          className="absolute top-3 right-10 w-1.5 h-1.5 rounded-full bg-[#d29922]"
           animate={{ opacity: [1, 0.3, 1] }}
           transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -201,20 +301,48 @@ function TaskCard({
   );
 }
 
-function ColumnHeader({ label, count }: { label: string; count: number }) {
+function ThreeDotsIcon() {
   return (
-    <div className="flex items-center justify-between mb-3 px-1">
-      <span className="text-xs font-semibold text-gray-300 uppercase tracking-wider">
-        {label}
-      </span>
-      <span className="text-[10px] font-medium text-gray-500 bg-white/[0.06] px-2 py-0.5 rounded-full min-w-[20px] text-center">
-        {count}
-      </span>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="#848d97">
+      <path d="M8 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM1.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm13 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" />
+    </svg>
+  );
+}
+
+function ColumnHeader({ column, count }: { column: ColumnDef; count: number }) {
+  return (
+    <div className="mb-3 px-0.5">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span
+            className="w-3.5 h-3.5 rounded-full border-2 flex-shrink-0"
+            style={{ borderColor: column.dotColor }}
+          />
+          <span className="text-sm font-semibold text-[#e6edf3]">
+            {column.label}
+          </span>
+          <span className="text-xs font-medium text-[#848d97] tabular-nums">
+            {count}
+          </span>
+        </div>
+        <div className="opacity-50 hover:opacity-100 transition-opacity cursor-default">
+          <ThreeDotsIcon />
+        </div>
+      </div>
+      <p className="text-[11px] text-[#848d97] mt-1 ml-[22px]">
+        {column.subtitle}
+      </p>
     </div>
   );
 }
 
+const HUMAN_REVIEWER_COLOR = '#94a3b8';
+const HUMAN_LABEL_BG = '#334155';
+const HUMAN_GLOW = 'rgba(148,163,184,0.35)';
+
 function AgentCursorEl({ agent, visible }: { agent: AgentCursor; visible: boolean }) {
+  const isHuman = agent.sourceColumn === 'review';
+
   return (
     <AnimatePresence>
       {visible && (
@@ -230,17 +358,31 @@ function AgentCursorEl({ agent, visible }: { agent: AgentCursor; visible: boolea
           exit={{ opacity: 0, scale: 0.7, transition: { duration: 0.25 } }}
           transition={{ type: 'spring', stiffness: 160, damping: 20 }}
         >
-          <CursorIcon color={agent.color} />
+          {isHuman ? (
+            <HumanIcon color={HUMAN_REVIEWER_COLOR} />
+          ) : (
+            <CursorIcon color={agent.color} />
+          )}
           <div
             className="flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-semibold text-white whitespace-nowrap mt-3"
-            style={{ backgroundColor: agent.color + 'cc' }}
+            style={{
+              backgroundColor: isHuman ? HUMAN_LABEL_BG : agent.labelBgColor,
+            }}
           >
-            <FastCIIcon className="w-3 h-2.5 brightness-200" />
-            {agent.name}
+            {isHuman ? (
+              'Reviewer'
+            ) : (
+              <>
+                <FastCIIcon className="w-3 h-2.5 brightness-200" />
+                {agent.name}
+              </>
+            )}
           </div>
           <motion.div
             className="absolute -inset-3 rounded-full pointer-events-none"
-            style={{ background: `radial-gradient(circle, ${agent.glowColor} 0%, transparent 70%)` }}
+            style={{
+              background: `radial-gradient(circle, ${isHuman ? HUMAN_GLOW : agent.glowColor} 0%, transparent 70%)`,
+            }}
             animate={{ opacity: [0.6, 0.15, 0.6] }}
             transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
           />
@@ -283,6 +425,7 @@ export default function CIKanbanBoard() {
       ...def,
       busy: false,
       targetTaskId: null,
+      sourceColumn: null,
       position: { x: REST_OFFSCREEN_X, y: 60 + i * 110 },
     }))
   );
@@ -356,7 +499,7 @@ export default function CIKanbanBoard() {
     setAgents((prev) =>
       prev.map((a, i) =>
         i === freeAgentIdx
-          ? { ...a, busy: true, targetTaskId: task.id, position: pickupPos }
+          ? { ...a, busy: true, targetTaskId: task.id, sourceColumn: task.column, position: pickupPos }
           : a
       )
     );
@@ -387,7 +530,7 @@ export default function CIKanbanBoard() {
         setAgents((prev) =>
           prev.map((a, i) =>
             i === freeAgentIdx
-              ? { ...a, busy: false, targetTaskId: null, position: { x: REST_OFFSCREEN_X, y: 60 + i * 110 } }
+              ? { ...a, busy: false, targetTaskId: null, sourceColumn: null, position: { x: REST_OFFSCREEN_X, y: 60 + i * 110 } }
               : a
           )
         );
@@ -453,30 +596,38 @@ export default function CIKanbanBoard() {
             <AgentCursorEl key={i} agent={agent} visible={agent.busy} />
           ))}
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            {COLUMNS.map((col) => {
-              const colTasks = columnTasks(col.key);
-              return (
-                <div key={col.key} data-column={col.key} className="min-h-[280px]">
-                  <div className="glass-card p-3 md:p-4 h-full">
-                    <ColumnHeader label={col.label} count={colTasks.length} />
-                    <div className="flex flex-col gap-2.5">
-                      <AnimatePresence mode="popLayout">
-                        {colTasks.map((task) => (
-                          <TaskCard
-                            key={task.id}
-                            task={task}
-                            template={TASK_POOL[task.templateIndex]}
-                            column={task.column}
-                            agent={task.agentIndex !== null ? agents[task.agentIndex] : null}
-                          />
-                        ))}
-                      </AnimatePresence>
+          <div className="rounded-xl border border-[#30363d] bg-[#0d1117] overflow-hidden">
+            <div className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-[#30363d]">
+              {COLUMNS.map((col) => {
+                const colTasks = columnTasks(col.key);
+                return (
+                  <div key={col.key} data-column={col.key} className="min-h-[320px] flex flex-col">
+                    <div className="p-3 md:p-4 flex-1">
+                      <ColumnHeader column={col} count={colTasks.length} />
+                      <div className="flex flex-col gap-2">
+                        <AnimatePresence mode="popLayout">
+                          {colTasks.map((task) => (
+                            <TaskCard
+                              key={task.id}
+                              task={task}
+                              template={TASK_POOL[task.templateIndex]}
+                              column={task.column}
+                              agent={task.agentIndex !== null ? agents[task.agentIndex] : null}
+                            />
+                          ))}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                    <div className="px-3 md:px-4 py-2 border-t border-[#30363d]/50">
+                      <span className="text-[12px] text-[#848d97] flex items-center gap-1 cursor-default">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="#848d97"><path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z" /></svg>
+                        Add item
+                      </span>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </motion.div>
       </div>
