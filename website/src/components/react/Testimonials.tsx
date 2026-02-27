@@ -1,5 +1,6 @@
 import { motion, useInView } from 'framer-motion';
-import { useRef, type ReactNode } from 'react';
+import { useRef } from 'react';
+import { Marquee } from '../ui/marquee';
 import { TextAnimate } from '../ui/text-animate';
 
 interface Testimonial {
@@ -73,33 +74,6 @@ function TestimonialCard({ name, role, body }: Testimonial) {
   );
 }
 
-function Marquee({
-  children,
-  reverse = false,
-  className = '',
-}: {
-  children: ReactNode;
-  reverse?: boolean;
-  className?: string;
-}) {
-  return (
-    <div className={`flex overflow-hidden gap-4 [--gap:1rem] ${className}`}>
-      <div
-        className={`flex shrink-0 gap-4 ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} [--duration:40s]`}
-        style={{ willChange: 'transform' }}
-      >
-        {children}
-      </div>
-      <div
-        className={`flex shrink-0 gap-4 ${reverse ? 'animate-marquee-reverse' : 'animate-marquee'} [--duration:40s]`}
-        aria-hidden="true"
-        style={{ willChange: 'transform' }}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}
 
 export default function Testimonials() {
   const ref = useRef<HTMLDivElement>(null);

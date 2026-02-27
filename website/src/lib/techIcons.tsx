@@ -8,6 +8,7 @@ import {
   SiGithubactions,
   SiNpm,
   SiGit,
+  SiApachemaven,
 } from 'react-icons/si';
 
 interface IconProps {
@@ -19,6 +20,9 @@ export function DockerIcon({ className = 'w-4 h-4', fill = '#2496ED' }: IconProp
   return <SiDocker className={className} color={fill} />;
 }
 
+export function MavenIcon({ className = 'w-4 h-4', fill = '#C71A32' }: IconProps) {
+  return <SiApachemaven className={className} color={fill} />;
+}
 export function NodeIcon({ className = 'w-4 h-4', fill = '#539E43' }: IconProps) {
   return <SiNodedotjs className={className} color={fill} />;
 }

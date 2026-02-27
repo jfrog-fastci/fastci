@@ -1,7 +1,8 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { fadeInUp, staggerContainer } from '../../lib/animations';
-import { DockerIcon, NodeIcon, PythonIcon, GoIcon, GradleIcon, RustIcon } from '../../lib/techIcons';
+import { Marquee } from '../ui/marquee';
+import { DockerIcon, NodeIcon, PythonIcon, GoIcon, GradleIcon, RustIcon, MavenIcon, GitHubActionsIcon } from '../../lib/techIcons';
 import TraceGraph from './TraceGraph';
 import { TextAnimate } from '../ui/text-animate';
 
@@ -37,24 +38,42 @@ function TracingVisual() {
 function LanguagePills() {
   const tools = [
     { name: 'Docker', icon: <DockerIcon /> },
+    { name: 'Maven', icon: <MavenIcon /> },
     { name: 'Node.js', icon: <NodeIcon /> },
     { name: 'Python', icon: <PythonIcon /> },
     { name: 'Go', icon: <GoIcon /> },
     { name: 'Gradle', icon: <GradleIcon /> },
     { name: 'Rust', icon: <RustIcon /> },
+    { name: 'GitHub Actions', icon: <GitHubActionsIcon /> },
   ];
 
+  const firstRow = tools.slice(0, 4);
+  const secondRow = tools.slice(4);
+
   return (
-    <div className="mt-6 flex flex-wrap gap-2">
-      {tools.map((tool) => (
-        <span
-          key={tool.name}
-          className="inline-flex items-center gap-2 text-[12px] font-medium text-gray-300 bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 rounded-lg"
-        >
-          {tool.icon}
-          {tool.name}
-        </span>
-      ))}
+    <div className="mt-6 flex flex-col gap-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+      <Marquee pauseOnHover className="[--duration:20s]">
+        {firstRow.map((tool) => (
+          <span
+            key={tool.name}
+            className="inline-flex items-center gap-2 text-[12px] font-medium text-gray-300 bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 rounded-lg shrink-0"
+          >
+            {tool.icon}
+            {tool.name}
+          </span>
+        ))}
+      </Marquee>
+      <Marquee reverse pauseOnHover className="[--duration:20s]">
+        {secondRow.map((tool) => (
+          <span
+            key={tool.name}
+            className="inline-flex items-center gap-2 text-[12px] font-medium text-gray-300 bg-white/[0.04] border border-white/[0.08] px-3 py-1.5 rounded-lg shrink-0"
+          >
+            {tool.icon}
+            {tool.name}
+          </span>
+        ))}
+      </Marquee>
     </div>
   );
 }
