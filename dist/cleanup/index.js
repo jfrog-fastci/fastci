@@ -37306,12 +37306,16 @@ function extractCIContext(insight, allSpans) {
     }
     if (jobSpan) {
         const jobDurationMs = jobSpan.attributes['job.duration_ms'];
+        const jobResource = jobSpan.resource || {};
+        const jobId = String(resource['cicd.pipeline.job.id'] || jobResource['cicd.pipeline.job.id'] || jobSpan.attributes['cicd.pipeline.job.id'] || '');
         const jobDisplayName = String(jobSpan.attributes['job.display_name'] || '');
-        lib_core.debug(`extractCIContext: Job display_name=${jobDisplayName}, span.name=${jobSpan.name}`);
-        // Use job.display_name for display name, cicd.pipeline.job.id from resource for ID
+        lib_core.debug(`extractCIContext: Job id=${jobId}, display_name=${jobDisplayName}, span.name=${jobSpan.name}`);
+        // Prefer job ID over display name for determinism across matrix jobs.
+        // Display names include matrix parameters (e.g. "build (ubuntu-latest, 20)")
+        // while the job ID (e.g. "build") is stable across matrix combinations.
         ciContext.job = {
-            id: String(resource['cicd.pipeline.job.id'] || jobSpan.attributes['cicd.pipeline.job.id'] || ''),
-            name: jobDisplayName || jobSpan.name || '',
+            id: jobId,
+            name: jobId || jobDisplayName || jobSpan.name || '',
             durationMs: jobDurationMs ?? calculateDurationMs(jobSpan.start_time, jobSpan.end_time),
             stepCount: jobSpan.attributes['job.step_count'],
         };
@@ -37438,12 +37442,26 @@ function spanToInsight(span, allSpans) {
     };
 }
 /**
- * Extracts all insights from parsed trace spans
+ * Extracts all insights from parsed trace spans.
+ * Deduplicates by insight ID so the same insight detected across multiple
+ * fastcli invocations within a single job is only reported once.
  */
 function extractInsights(spans) {
     const insightSpans = spans.filter(isInsightSpan);
     lib_core.debug(`Found ${insightSpans.length} insight spans`);
-    return insightSpans.map(span => spanToInsight(span, spans));
+    const insights = insightSpans.map(span => spanToInsight(span, spans));
+    const seen = new Map();
+    for (const insight of insights) {
+        const key = insight.id || `unknown-${seen.size}`;
+        if (!seen.has(key)) {
+            seen.set(key, insight);
+        }
+    }
+    const deduped = Array.from(seen.values());
+    if (deduped.length < insights.length) {
+        lib_core.info(`Deduplicated ${insights.length} insights to ${deduped.length} unique insights`);
+    }
+    return deduped;
 }
 /**
  * Main function to parse trace file and extract insights
@@ -38188,23 +38206,36 @@ function getIssueLabels(insight, config) {
     return [...new Set(labels)]; // Deduplicate
 }
 /**
- * Checks if an issue already exists for this insight
+ * Checks if an issue already exists for this insight.
+ * Uses the REST API (listForRepo) instead of the Search API to avoid indexing
+ * delays that cause duplicate issues when matrix jobs finish simultaneously.
  */
 async function findExistingIssue(octokit, repository, insightIssueId) {
+    const repoInfo = utils_parseRepository(repository);
+    if (!repoInfo) {
+        lib_core.warning(`Invalid repository format for issue search: ${repository}`);
+        return { exists: false };
+    }
+    const { owner, repo } = repoInfo;
     try {
-        const searchQuery = generateIssueSearchQuery(repository, insightIssueId);
-        lib_core.debug(`Searching for existing issue with query: ${searchQuery}`);
-        const { data: searchResults } = await octokit.rest.search.issuesAndPullRequests({
-            q: searchQuery,
-            per_page: 1,
+        lib_core.debug(`Listing issues with fastci-insight label to find: ${insightIssueId}`);
+        const { data: issues } = await octokit.rest.issues.listForRepo({
+            owner,
+            repo,
+            labels: 'fastci-insight',
+            state: 'all',
+            per_page: 100,
+            sort: 'created',
+            direction: 'desc',
         });
-        if (searchResults.total_count > 0) {
-            const existingIssue = searchResults.items[0];
-            return {
-                exists: true,
-                issueNumber: existingIssue.number,
-                issueUrl: existingIssue.html_url,
-            };
+        for (const issue of issues) {
+            if (issue.body?.includes(insightIssueId)) {
+                return {
+                    exists: true,
+                    issueNumber: issue.number,
+                    issueUrl: issue.html_url,
+                };
+            }
         }
         return { exists: false };
     }
