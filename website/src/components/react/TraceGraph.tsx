@@ -62,7 +62,7 @@ export default function TraceGraph() {
             </div>
         </div>
         
-        <div className="flex-1 relative w-full">
+        <div className="flex-1 relative w-full min-h-[220px]">
             <AnimatePresence mode="wait">
                 {mode === 'waterfall' ? (
                     <motion.div 
