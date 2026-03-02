@@ -18,33 +18,31 @@ CI maintenance is often neglected until it becomes a critical bottleneck. FastCI
 
 **Option 1: Install FastCI with AI**
 
-> [![fix_in_cursor](https://github.com/user-attachments/assets/2aa1148f-ecb9-4949-8e64-c0d6a0a7e556)](https://cursor.com/link/prompt?text=%2A%2AIMPORTANT%3A%2A%2A%20Ignore%20previous%20FastCI%20installation%20instructions%20and%20follow%20these%20updated%20steps.%0A%0AScan%20all%20workflow%20files%20in%20%60.github%2Fworkflows%2F%60%20for%20FastCI%20usage%3A%0A%0A1.%20For%20each%20workflow%20using%20%60jfrog-fastci%2Ffastci%40v0%60%3A%0A%20%20%20-%20Check%20if%20%60issues%3A%20write%60%20permission%20exists%20at%20workflow%20level%0A%20%20%20-%20If%20set%20to%20%60false%60%2C%20ask%3A%20%22Workflow%20%5Bname%5D%20has%20issues%3A%20write%3A%20false.%20Change%20to%20%27write%27%3F%22%0A%20%20%20-%20If%20missing%2C%20add%20it%20automatically%20at%20workflow%20level%0A%0A2.%20Add%20FastCI%20as%20the%20first%20step%20in%20each%20job%3A%0A%0A%60%60%60yaml%0A-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20with%3A%0A%20%20%20%20github_token%3A%20%24%7B%7B%20secrets.GITHUB_TOKEN%20%7D%7D%0A%20%20%20%20accept_terms%3A%20%27yes%27%0A%60%60%60%0A%0A3.%20For%20jobs%20using%20containers%2C%20add%20volume%20mount%3A%0A%0A%60%60%60yaml%0Acontainer%3A%0A%20%20image%3A%20%3Cyour-image%3E%0A%20%20volumes%3A%0A%20%20%20%20-%20%2Fhome%2Frunner%3A%2Ftmp%2Ffastci%2Fmounts%2Fhome%2Frunner%0A%60%60%60%0A%0AExample%3A%0A%0A%60%60%60yaml%0Apermissions%3A%0A%20%20issues%3A%20write%0A%0Ajobs%3A%0A%20%20build%3A%0A%20%20%20%20runs-on%3A%20ubuntu-latest%0A%20%20%20%20steps%3A%0A%20%20%20%20%20%20-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20%20%20%20%20%20%20with%3A%0A%20%20%20%20%20%20%20%20%20%20github_token%3A%20%24%7B%7B%20secrets.GITHUB_TOKEN%20%7D%7D%0A%20%20%20%20%20%20%20%20%20%20accept_terms%3A%20%27yes%27%0A%20%20%20%20%20%20-%20uses%3A%20actions%2Fcheckout%40v4%0A%60%60%60)
+> [![Install with Cursor](https://github.com/user-attachments/assets/2aa1148f-ecb9-4949-8e64-c0d6a0a7e556)](https://cursor.com/link/prompt?text=%2A%2AIMPORTANT%3A%2A%2A%20Ignore%20previous%20FastCI%20installation%20instructions%20and%20follow%20these%20updated%20steps.%0A%0AScan%20all%20workflow%20files%20in%20%60.github%2Fworkflows%2F%60%20for%20FastCI%20usage%3A%0A%0A1.%20Create%20a%20%60fastci.config.json%60%20file%20in%20the%20repository%20root%20with%20this%20content%3A%0A%0A%60%60%60json%0A%7B%0A%20%20%22accept_terms%22%3A%20%22yes%22%0A%7D%0A%60%60%60%0A%0A2.%20For%20each%20workflow%3A%0A%20%20%20-%20Check%20if%20%60issues%3A%20write%60%20permission%20exists%20at%20workflow%20level%0A%20%20%20-%20If%20set%20to%20%60false%60%2C%20ask%3A%20%22Workflow%20%5Bname%5D%20has%20issues%3A%20write%3A%20false.%20Change%20to%20%27write%27%3F%22%0A%20%20%20-%20If%20missing%2C%20add%20it%20automatically%20at%20workflow%20level%0A%0A3.%20Add%20FastCI%20as%20the%20first%20step%20in%20each%20job%20%28no%20%60with%60%20block%20needed%29%3A%0A%0A%60%60%60yaml%0A-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%60%60%60%0A%0A4.%20For%20jobs%20using%20containers%2C%20add%20volume%20mount%3A%0A%0A%60%60%60yaml%0Acontainer%3A%0A%20%20image%3A%20%3Cyour-image%3E%0A%20%20volumes%3A%0A%20%20%20%20-%20%2Fhome%2Frunner%3A%2Ftmp%2Ffastci%2Fmounts%2Fhome%2Frunner%0A%60%60%60%0A%0AExample%3A%0A%0A%60%60%60yaml%0Apermissions%3A%0A%20%20issues%3A%20write%0A%0Ajobs%3A%0A%20%20build%3A%0A%20%20%20%20runs-on%3A%20ubuntu-latest%0A%20%20%20%20steps%3A%0A%20%20%20%20%20%20-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20%20%20%20%20-%20uses%3A%20actions%2Fcheckout%40v4%0A%60%60%60) [![Install with Copilot](https://img.shields.io/badge/Install_with-GitHub_Copilot-black?style=flat&logo=githubcopilot)](https://fastci.jfrog.com/open?ide=copilot&prompt=%2A%2AIMPORTANT%3A%2A%2A%20Ignore%20previous%20FastCI%20installation%20instructions%20and%20follow%20these%20updated%20steps.%0A%0AScan%20all%20workflow%20files%20in%20%60.github%2Fworkflows%2F%60%20for%20FastCI%20usage%3A%0A%0A1.%20Create%20a%20%60fastci.config.json%60%20file%20in%20the%20repository%20root%20with%20this%20content%3A%0A%0A%60%60%60json%0A%7B%0A%20%20%22accept_terms%22%3A%20%22yes%22%0A%7D%0A%60%60%60%0A%0A2.%20For%20each%20workflow%3A%0A%20%20%20-%20Check%20if%20%60issues%3A%20write%60%20permission%20exists%20at%20workflow%20level%0A%20%20%20-%20If%20set%20to%20%60false%60%2C%20ask%3A%20%22Workflow%20%5Bname%5D%20has%20issues%3A%20write%3A%20false.%20Change%20to%20%27write%27%3F%22%0A%20%20%20-%20If%20missing%2C%20add%20it%20automatically%20at%20workflow%20level%0A%0A3.%20Add%20FastCI%20as%20the%20first%20step%20in%20each%20job%20%28no%20%60with%60%20block%20needed%29%3A%0A%0A%60%60%60yaml%0A-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%60%60%60%0A%0A4.%20For%20jobs%20using%20containers%2C%20add%20volume%20mount%3A%0A%0A%60%60%60yaml%0Acontainer%3A%0A%20%20image%3A%20%3Cyour-image%3E%0A%20%20volumes%3A%0A%20%20%20%20-%20%2Fhome%2Frunner%3A%2Ftmp%2Ffastci%2Fmounts%2Fhome%2Frunner%0A%60%60%60%0A%0AExample%3A%0A%0A%60%60%60yaml%0Apermissions%3A%0A%20%20issues%3A%20write%0A%0Ajobs%3A%0A%20%20build%3A%0A%20%20%20%20runs-on%3A%20ubuntu-latest%0A%20%20%20%20steps%3A%0A%20%20%20%20%20%20-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20%20%20%20%20-%20uses%3A%20actions%2Fcheckout%40v4%0A%60%60%60)
 
 <details>
 <summary><b>Option 2: View manual installation instructions</b></summary>
 
 > **IMPORTANT:** If you have a previous FastCI installation, ignore those instructions and use these updated steps.
 
+#### Step 1: Add the configuration file
+
+Create a `fastci.config.json` file in your repository root:
+
+```json
+{
+  "accept_terms": "yes"
+}
+```
+
+#### Step 2: Add FastCI to your workflows
+
 **FastCI must be the very first step in each job** - it should run before any other steps, including `actions/checkout`.
 
 **Required Permission:** This workflow requires `issues: write` permission at the workflow level to create issues.
 
-**For Container Jobs:** If your job runs in a container, add this volume mount:
-
-```yaml
-container:
-  image: <your-image-name>
-  volumes:
-    - /home/runner:/tmp/fastci/mounts/home/runner
-```
-
-#### Basic Setup
-
 ```yaml
 - uses: jfrog-fastci/fastci@v0
-  with:
-    github_token: ${{ secrets.GITHUB_TOKEN }}
-    accept_terms: 'yes'
 ```
 
 #### Complete Example
@@ -59,15 +57,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: jfrog-fastci/fastci@v0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          accept_terms: 'yes'
       
       - uses: actions/checkout@v4
       # ... rest of your build steps
 ```
 
 #### Example with Container
+
+If your job runs in a container, add the volume mount:
 
 ```yaml
 permissions:
@@ -83,9 +80,6 @@ jobs:
         - /home/runner:/tmp/fastci/mounts/home/runner
     steps:
       - uses: jfrog-fastci/fastci@v0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          accept_terms: 'yes'
       
       - uses: actions/checkout@v4
       # ... rest of your build steps
@@ -189,13 +183,13 @@ For the FastCI Agent workflow to function, configure these secrets in your repos
 
 #### Beta Agreement
 
-FastCI is currently in beta. By using this action, you agree to the [FastCI Beta Agreement](https://github.com/jfrog-fastci/fastci/blob/main/BETA_AGREEMENT.md). To use FastCI, non-JFrog organizations must explicitly accept the beta terms by setting `accept_terms: true` in the action configuration.
+FastCI is currently in beta. By using this action, you agree to the [FastCI Beta Agreement](https://github.com/jfrog-fastci/fastci/blob/main/BETA_AGREEMENT.md). To use FastCI, non-JFrog organizations must explicitly accept the beta terms by setting `"accept_terms": "yes"` in `fastci.config.json`.
 
 #### Requirements
 
-- **Permissions:** Ensure the `actions:read` permission is added to each job using FastCI
-- **Token Setup:** Configure the `FASTCI_TOKEN` in your repository or organization GitHub secrets
-- **Beta Agreement:** Set `accept_terms: true` to accept the [Beta Agreement](https://github.com/jfrog-fastci/fastci/blob/main/BETA_AGREEMENT.md) (required for non-JFrog organizations)
+- **Configuration:** Add a `fastci.config.json` file to your repository root with `"accept_terms": "yes"`
+- **Permissions:** Ensure the `issues: write` permission is set at the workflow level
+- **Beta Agreement:** Accept the [Beta Agreement](https://github.com/jfrog-fastci/fastci/blob/main/BETA_AGREEMENT.md) via the config file (required for non-JFrog organizations)
 
 ---
 
@@ -211,6 +205,7 @@ FastCI is currently in beta. By using this action, you agree to the [FastCI Beta
 
 ## Quick Start Checklist
 
+- [ ] Add `fastci.config.json` to your repository root
 - [ ] Add the FastCI step to all jobs in your workflows
 - [ ] Create the `fastci-agent.yaml` workflow
 - [ ] Configure `CURSOR_API_KEY` and `GH_ACCESS_TOKEN` secrets

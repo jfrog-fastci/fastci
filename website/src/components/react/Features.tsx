@@ -128,14 +128,14 @@ export default function Features() {
             variants={fadeInUp}
             className="rounded-2xl border border-white/[0.08] bg-surface-950 p-8"
           >
-            <h3 className="text-xl font-bold text-white">Zero Configuration</h3>
+            <h3 className="text-xl font-bold text-white">Minimal Setup</h3>
             <p className="text-gray-400 text-sm mt-2 leading-relaxed">
-              No dashboards, no config files, no tokens. Add 3 lines of YAML and FastCI does the rest.
+              No dashboards, no tokens. One config file, one line of YAML, and FastCI does the rest.
             </p>
             <div className="mt-6 grid grid-cols-3 gap-3">
               {[
-                { value: '3', label: 'lines to install' },
-                { value: '0', label: 'config needed' },
+                { value: '1', label: 'line to install' },
+                { value: '1', label: 'config file' },
                 { value: '5m', label: 'setup time' },
               ].map((stat) => (
                 <div key={stat.label} className="text-center p-3 rounded-lg bg-white/[0.02] border border-white/[0.05]">
