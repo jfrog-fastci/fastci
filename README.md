@@ -2,6 +2,10 @@
 
 A drop-in agent for GitHub Actions that automatically identifies CI bottlenecks and generates fixes. FastCI analyzes your workflows in real-time, flags performance issues as GitHub Issues, and can automatically create pull requests to resolve them.
 
+<p align="center">
+  <img src="assets/fastci-cli-animation.svg" alt="FastCI CLI in action" width="600"/>
+</p>
+
 ## Why FastCI?
 
 CI maintenance is often neglected until it becomes a critical bottleneck. FastCI prevents technical debt accumulation by continuously monitoring and optimizing your CI pipeline, turning maintenance from reactive to proactive.
