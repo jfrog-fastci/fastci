@@ -144,11 +144,34 @@ export default function Features() {
             <TraceGraph />
           </motion.div>
 
+          {/* Zero Configuration */}
+          <motion.div
+            variants={fadeInUp}
+            className="rounded-2xl border border-white/[0.08] bg-surface-950 p-8"
+          >
+            <h3 className="text-xl font-bold text-white">Minimal Setup</h3>
+            <p className="text-gray-400 text-sm mt-2 leading-relaxed">
+              No dashboards, no tokens. One config file, one line of YAML, and FastCI does the rest.
+            </p>
+            <div className="mt-6 grid grid-cols-3 gap-3">
+              {[
+                { value: '1', label: 'line to install' },
+                { value: '1', label: 'config file' },
+                { value: '5m', label: 'setup time' },
+              ].map((stat) => (
+                <div key={stat.label} className="text-center p-3 rounded-lg bg-white/[0.02] border border-white/[0.05]">
+                  <p className="text-2xl font-bold text-white">{stat.value}</p>
+                  <p className="text-[10px] text-gray-500 mt-1">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
 
           {/* Any Language, Any Framework */}
           <motion.div
             variants={fadeInUp}
-            className="md:col-span-3 rounded-2xl border border-white/[0.08] bg-surface-950 p-8"
+            className="md:col-span-2 rounded-2xl border border-white/[0.08] bg-surface-950 p-8"
           >
             <h3 className="text-xl font-bold text-white">Any Language, Any Framework</h3>
             <p className="text-gray-400 text-sm mt-2 leading-relaxed">

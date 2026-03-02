@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="900" height="350" viewBox="0 0 900 350">
   <defs>
     <clipPath id="banner"><rect width="900" height="350" rx="8"/></clipPath>
+    <clipPath id="termClip"><rect x="0" y="24" width="210" height="112"/></clipPath>
     <linearGradient id="shimmer" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
       <stop offset="0" stop-color="#fff" stop-opacity="0"/>
       <stop offset=".4" stop-color="#fff" stop-opacity="0"/>
@@ -29,10 +30,10 @@
     <!-- Subtle shimmer sweep -->
     <rect width="900" height="350" fill="url(#shimmer)"/>
 
-    <!-- FastCI green logo icon (top-left) with bob animation -->
-    <g>
-      <animateTransform attributeName="transform" type="translate" values="18,12;18,8;18,12" dur="3s" repeatCount="indefinite"/>
-      <g transform="scale(1.3)">
+    <!-- FastCI green logo icon (top-left) with pulse animation -->
+    <g transform="translate(35,30)">
+      <g>
+        <animateTransform attributeName="transform" type="scale" values="1.3;1.4;1.3" dur="3s" repeatCount="indefinite"/>
         <mask id="m0" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="12" y="0" width="25" height="30">
           <path d="M27.05.73h.01c1.59 0 3.1.63 4.16 1.73 1.88 1.92 5.07 6.14 5.07 12.7 0 6.06-2.7 10.03-4.95 12.3-2.26 2.22-6.2 2.22-8.43.01l-.12-.13-5.41-6.35 2.99-2.68 5.34 6.27c.74.66 2.16.65 2.87-.05 1.7-1.71 3.75-4.73 3.75-9.38 0-4.65-2.12-8-3.91-9.82a2.78 2.78 0 00-1.36-.54h-.01c-.52 0-1 .18-1.33.5l-6.61 7.7a2.09 2.09 0 001.98 2.04 2.04 2.04 0 01-1.98 2.03h-4.38c-.78 0-1.49-.47-1.81-1.2-.32-.73-.19-1.58.31-2.18l9.56-11.14.09-.09A6.47 6.47 0 0127.05.73z" fill="#fff"/>
         </mask>
@@ -44,10 +45,103 @@
       </g>
     </g>
 
-    <!-- Main banner text with subtle size pulse -->
+    <!-- Mini terminal window (right side) with CI acceleration animation -->
+    <g transform="translate(670,30)">
+      <!-- Window shadow -->
+      <rect x="3" y="3" width="210" height="160" rx="8" fill="#000" opacity=".12"/>
+      <!-- Window body -->
+      <rect width="210" height="160" rx="8" fill="#fff" opacity=".94"/>
+      <!-- Title bar -->
+      <rect width="210" height="24" rx="8" fill="#f3f4f6"/>
+      <rect y="16" width="210" height="8" fill="#f3f4f6"/>
+      <!-- Traffic lights -->
+      <circle cx="16" cy="12" r="4.5" fill="#ff5f57"/>
+      <circle cx="30" cy="12" r="4.5" fill="#febc2e"/>
+      <circle cx="44" cy="12" r="4.5" fill="#28c840"/>
+      <!-- Title text -->
+      <text x="105" y="16" text-anchor="middle" font-family="monospace" font-size="9" fill="#6b7280">fastci</text>
+
+      <!-- Scrolling terminal content -->
+      <g clip-path="url(#termClip)">
+        <!-- === Phase 1: Scanning — pushes up, slides in from below === -->
+        <g>
+          <animateTransform attributeName="transform" type="translate"
+            values="0 0;0 0;0 -150;0 150;0 150;0 0"
+            keyTimes="0;0.43;0.5;0.501;0.93;1"
+            dur="14s" repeatCount="indefinite"/>
+
+          <text x="12" y="44" font-family="'SF Mono','Fira Code',monospace" font-size="10">
+            <tspan fill="#36a13b" font-weight="bold">[FastCI]</tspan>
+          </text>
+
+          <text x="12" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#6b7280">Monitoring CI pipeline</text>
+          <text x="143" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#36a13b">.<animate attributeName="opacity" values="1;0;0" dur="1.5s" repeatCount="indefinite"/></text>
+          <text x="143" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#36a13b">..<animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/></text>
+          <text x="143" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#36a13b">...<animate attributeName="opacity" values="0;0;1" dur="1.5s" repeatCount="indefinite"/></text>
+
+          <text x="14" y="80" font-family="'SF Mono','Fira Code',monospace" font-size="9" opacity="0">
+            <tspan fill="#9ca3af">◦ Tracing Docker builds</tspan>
+            <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.05;0.15;0.40;0.43;1" dur="14s" repeatCount="indefinite"/>
+          </text>
+          <text x="14" y="94" font-family="'SF Mono','Fira Code',monospace" font-size="9" opacity="0">
+            <tspan fill="#9ca3af">◦ Checking cache config</tspan>
+            <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.15;0.25;0.40;0.43;1" dur="14s" repeatCount="indefinite"/>
+          </text>
+          <text x="14" y="108" font-family="'SF Mono','Fira Code',monospace" font-size="9" opacity="0">
+            <tspan fill="#9ca3af">◦ Reviewing dependencies</tspan>
+            <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.22;0.32;0.40;0.43;1" dur="14s" repeatCount="indefinite"/>
+          </text>
+
+          <g opacity="0">
+            <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.28;0.35;0.40;0.43;1" dur="14s" repeatCount="indefinite"/>
+            <g transform="translate(20,122)">
+              <circle cx="0" cy="0" r="5" fill="none" stroke="#e5e7eb" stroke-width="1.5"/>
+              <path d="M0,-5 A5,5 0 0,1 5,0" fill="none" stroke="#36a13b" stroke-width="1.5" stroke-linecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1s" repeatCount="indefinite"/>
+              </path>
+            </g>
+            <text x="34" y="127" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#9ca3af">Generating insights...</text>
+          </g>
+        </g>
+
+        <!-- === Phase 2: Results — slides in from below, pushes up === -->
+        <g>
+          <animateTransform attributeName="transform" type="translate"
+            values="0 150;0 150;0 0;0 0;0 -150;0 150"
+            keyTimes="0;0.43;0.5;0.93;0.999;1"
+            dur="14s" repeatCount="indefinite"/>
+
+          <text x="12" y="44" font-family="'SF Mono','Fira Code',monospace" font-size="10">
+            <tspan fill="#36a13b" font-weight="bold">[FastCI]</tspan><tspan fill="#374151"> 3 insights detected</tspan>
+          </text>
+
+          <text x="12" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5">
+            <tspan fill="#6b7280">Docker build</tspan><tspan fill="#374151"> 4m32s</tspan><tspan fill="#36a13b"> → 1m15s ↓72%</tspan>
+          </text>
+          <text x="12" y="80" font-family="'SF Mono','Fira Code',monospace" font-size="9.5">
+            <tspan fill="#6b7280">npm install </tspan><tspan fill="#374151"> 2m10s</tspan><tspan fill="#36a13b"> → 0m28s ↓78%</tspan>
+          </text>
+          <text x="12" y="96" font-family="'SF Mono','Fira Code',monospace" font-size="9.5">
+            <tspan fill="#6b7280">Pipeline    </tspan><tspan fill="#374151"> 8m44s</tspan><tspan fill="#36a13b"> → 3m02s ↓65%</tspan>
+          </text>
+
+          <line x1="12" y1="106" x2="198" y2="106" stroke="#e5e7eb" stroke-width="1"/>
+
+          <text x="12" y="122" font-family="'SF Mono','Fira Code',monospace" font-size="9.5">
+            <tspan fill="#36a13b">✓</tspan><tspan fill="#374151"> 3 issues created</tspan>
+          </text>
+        </g>
+      </g>
+
+      <!-- Blinking cursor (fixed below scroll area) -->
+      <rect x="12" y="144" width="6" height="11" rx="1" fill="#36a13b">
+        <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+
+    <!-- Main banner text -->
     <text x="450" y="335" text-anchor="middle" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" letter-spacing=".3">
-      <tspan fill="#000" font-weight="400">This issue was automatically created by </tspan><tspan fill="#36a13b" font-weight="700" font-style="italic">FastCI</tspan>
-      <animate attributeName="font-size" values="16;16.6;16" dur="4s" repeatCount="indefinite"/>
+      <tspan fill="#000" font-weight="400">This issue was automatically created by </tspan><tspan fill="#36a13b" font-weight="700" font-style="italic">FastCI<animate attributeName="fill" values="#36a13b;#4ade80;#36a13b" dur="4s" repeatCount="indefinite"/></tspan>
     </text>
   </g>
 </svg>

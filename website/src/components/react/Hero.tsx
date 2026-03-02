@@ -5,10 +5,7 @@ import { InteractiveGridPattern } from '../ui/grid-pattern';
 import { TextAnimate } from '../ui/text-animate';
 
 const CURSOR_INSTALL_URL =
-  'https://cursor.com/link/prompt?text=%2A%2AIMPORTANT%3A%2A%2A%20Ignore%20previous%20FastCI%20installation%20instructions%20and%20follow%20these%20updated%20steps.%0A%0AScan%20all%20workflow%20files%20in%20%60.github%2Fworkflows%2F%60%20for%20FastCI%20usage%3A%0A%0A1.%20For%20each%20workflow%20using%20%60jfrog-fastci%2Ffastci%40v0%60%3A%0A%20%20%20-%20Check%20if%20%60issues%3A%20write%60%20permission%20exists%20at%20workflow%20level%0A%20%20%20-%20If%20set%20to%20%60false%60%2C%20ask%3A%20%22Workflow%20%5Bname%5D%20has%20issues%3A%20write%3A%20false.%20Change%20to%20%27write%27%3F%22%0A%20%20%20-%20If%20missing%2C%20add%20it%20automatically%20at%20workflow%20level%0A%0A2.%20Add%20FastCI%20as%20the%20first%20step%20in%20each%20job%3A%0A%0A%60%60%60yaml%0A-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20with%3A%0A%20%20%20%20github_token%3A%20%24%7B%7B%20secrets.GITHUB_TOKEN%20%7D%7D%0A%20%20%20%20accept_terms%3A%20%27yes%27%0A%60%60%60%0A%0A3.%20For%20jobs%20using%20containers%2C%20add%20volume%20mount%3A%0A%0A%60%60%60yaml%0Acontainer%3A%0A%20%20image%3A%20%3Cyour-image%3E%0A%20%20volumes%3A%0A%20%20%20%20-%20%2Fhome%2Frunner%3A%2Ftmp%2Ffastci%2Fmounts%2Fhome%2Frunner%0A%60%60%60%0A%0AExample%3A%0A%0A%60%60%60yaml%0Apermissions%3A%0A%20%20issues%3A%20write%0A%0Ajobs%3A%0A%20%20build%3A%0A%20%20%20%20runs-on%3A%20ubuntu-latest%0A%20%20%20%20steps%3A%0A%20%20%20%20%20%20-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20%20%20%20%20%20%20with%3A%0A%20%20%20%20%20%20%20%20%20%20github_token%3A%20%24%7B%7B%20secrets.GITHUB_TOKEN%20%7D%7D%0A%20%20%20%20%20%20%20%20%20%20accept_terms%3A%20%27yes%27%0A%20%20%20%20%20%20-%20uses%3A%20actions%2Fcheckout%40v4%0A%60%60%60';
-
-const PROMPT_INSTALL_URL =
-  'https://raw.githubusercontent.com/jfrog-fastci/fastci/main/prompts/install.md';
+  'https://cursor.com/link/prompt?text=%2A%2AIMPORTANT%3A%2A%2A%20Ignore%20previous%20FastCI%20installation%20instructions%20and%20follow%20these%20updated%20steps.%0A%0AScan%20all%20workflow%20files%20in%20%60.github%2Fworkflows%2F%60%20for%20FastCI%20usage%3A%0A%0A1.%20Create%20a%20%60fastci.config.json%60%20file%20in%20the%20repository%20root%20with%20this%20content%3A%0A%0A%60%60%60json%0A%7B%0A%20%20%22accept_terms%22%3A%20%22yes%22%0A%7D%0A%60%60%60%0A%0A2.%20For%20each%20workflow%3A%0A%20%20%20-%20Check%20if%20%60issues%3A%20write%60%20permission%20exists%20at%20workflow%20level%0A%20%20%20-%20If%20set%20to%20%60false%60%2C%20ask%3A%20%22Workflow%20%5Bname%5D%20has%20issues%3A%20write%3A%20false.%20Change%20to%20%27write%27%3F%22%0A%20%20%20-%20If%20missing%2C%20add%20it%20automatically%20at%20workflow%20level%0A%0A3.%20Add%20FastCI%20as%20the%20first%20step%20in%20each%20job%20%28no%20%60with%60%20block%20needed%29%3A%0A%0A%60%60%60yaml%0A-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%60%60%60%0A%0A4.%20For%20jobs%20using%20containers%2C%20add%20volume%20mount%3A%0A%0A%60%60%60yaml%0Acontainer%3A%0A%20%20image%3A%20%3Cyour-image%3E%0A%20%20volumes%3A%0A%20%20%20%20-%20%2Fhome%2Frunner%3A%2Ftmp%2Ffastci%2Fmounts%2Fhome%2Frunner%0A%60%60%60%0A%0AExample%3A%0A%0A%60%60%60yaml%0Apermissions%3A%0A%20%20issues%3A%20write%0A%0Ajobs%3A%0A%20%20build%3A%0A%20%20%20%20runs-on%3A%20ubuntu-latest%0A%20%20%20%20steps%3A%0A%20%20%20%20%20%20-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20%20%20%20%20-%20uses%3A%20actions%2Fcheckout%40v4%0A%60%60%60';
 
 function CursorIcon({ className }: { className?: string }) {
   return (
@@ -26,10 +23,10 @@ function PromptIcon({ className }: { className?: string }) {
   );
 }
 
-function VscodeIcon({ className }: { className?: string }) {
+function CopilotIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="currentColor" viewBox="0 0 32 32" aria-hidden>
-      <path d="M28 25.6l-5.9 2.4-9.7-9.6-6.1 4.8L4 21.9V10.1l2.3-1.2 6.1 4.8L22.1 4 28 6.4v19.2zM15.7 16l6.3 5V11l-6.3 5zM6.3 19.7L10 16l-3.6-3.7L6.3 19.7z" />
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+      <path d="M23.922 13.73c0 1.572-.907 2.838-2.025 2.838-.372 0-.728-.135-1.025-.387V18.2c0 .873-.354 1.662-.927 2.234a3.14 3.14 0 0 1-2.233.928H6.288a3.14 3.14 0 0 1-2.234-.928A3.14 3.14 0 0 1 3.127 18.2v-2.019a1.66 1.66 0 0 1-1.025.387C.984 16.568.078 15.302.078 13.73c0-1.571.906-2.837 2.024-2.837.372 0 .728.135 1.025.386V6.232C3.127 2.79 5.917 0 9.36 0h5.28c3.442 0 6.232 2.79 6.232 6.232v5.047c.297-.251.653-.386 1.025-.386 1.118 0 2.025 1.266 2.025 2.837ZM5.247 18.2c0 .574.468 1.04 1.041 1.04h11.424a1.04 1.04 0 0 0 1.04-1.04V6.232a4.113 4.113 0 0 0-4.112-4.113H9.36a4.113 4.113 0 0 0-4.113 4.113V18.2Zm3.063-8.7a2.105 2.105 0 1 1 0 4.21 2.105 2.105 0 0 1 0-4.21Zm7.38 0a2.105 2.105 0 1 1 0 4.21 2.105 2.105 0 0 1 0-4.21Zm-6.28 7.506a.847.847 0 0 1 1.196 0l.552.553.553-.553a.847.847 0 0 1 1.197 1.197l-.554.553.554.553a.847.847 0 0 1-1.197 1.197l-.553-.553-.552.553a.847.847 0 0 1-1.197-1.197l.553-.553-.553-.553a.847.847 0 0 1 0-1.197Z" />
     </svg>
   );
 }
@@ -38,21 +35,26 @@ const INSTALL_PROMPT_TEXT = `**IMPORTANT:** Ignore previous FastCI installation 
 
 Scan all workflow files in \`.github/workflows/\` for FastCI usage:
 
-1. For each workflow using \`jfrog-fastci/fastci@v0\`:
+1. Create a \`fastci.config.json\` file in the repository root with this content:
+
+\`\`\`json
+{
+  "accept_terms": "yes"
+}
+\`\`\`
+
+2. For each workflow:
    - Check if \`issues: write\` permission exists at workflow level
    - If set to \`false\`, ask: "Workflow [name] has issues: write: false. Change to 'write'?"
    - If missing, add it automatically at workflow level
 
-2. Add FastCI as the first step in each job:
+3. Add FastCI as the first step in each job (no \`with\` block needed):
 
 \`\`\`yaml
 - uses: jfrog-fastci/fastci@v0
-  with:
-    github_token: \${{ secrets.GITHUB_TOKEN }}
-    accept_terms: 'yes'
 \`\`\`
 
-3. For jobs using containers, add volume mount:
+4. For jobs using containers, add volume mount:
 
 \`\`\`yaml
 container:
@@ -72,14 +74,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: jfrog-fastci/fastci@v0
-        with:
-          github_token: \${{ secrets.GITHUB_TOKEN }}
-          accept_terms: 'yes'
       - uses: actions/checkout@v4
 \`\`\``;
 
-const VSCODE_INSTALL_URL =
-  'vscode://GitHub.Copilot-Chat/chat?agent=agent&prompt=' + encodeURIComponent(INSTALL_PROMPT_TEXT);
+const COPILOT_INSTALL_URL =
+  'https://fastci.jfrog.com/open?ide=copilot&prompt=' + encodeURIComponent(INSTALL_PROMPT_TEXT);
 
 type ColorTheme = {
   bg: string;
@@ -110,14 +109,14 @@ const COLORS: Record<string, ColorTheme> = {
     selectedBg: 'rgba(54,161,59,0.2)',
     selectedText: '#5cb85f',
   },
-  vscode: {
-    bg: '#0078d4',
-    hoverBg: '#1a8fe8',
-    shadow: '0 0 30px rgba(0,120,212,0.25)',
-    hoverShadow: '0 0 30px rgba(0,120,212,0.4)',
+  copilot: {
+    bg: '#1f2328',
+    hoverBg: '#2d333b',
+    shadow: '0 0 30px rgba(31,35,40,0.25)',
+    hoverShadow: '0 0 30px rgba(31,35,40,0.4)',
     border: 'rgba(255,255,255,0.2)',
-    selectedBg: 'rgba(0,120,212,0.2)',
-    selectedText: '#4fc3f7',
+    selectedBg: 'rgba(31,35,40,0.2)',
+    selectedText: '#e6edf3',
   },
 };
 
@@ -129,8 +128,8 @@ type InstallOption = {
 
 const INSTALL_OPTIONS: InstallOption[] = [
   { label: 'Install via Cursor', type: 'link', href: CURSOR_INSTALL_URL, icon: CursorIcon, color: COLORS.cursor },
+  { label: 'Install via Copilot', type: 'link', href: COPILOT_INSTALL_URL, icon: CopilotIcon, color: COLORS.copilot },
   { label: 'Install via Prompt', type: 'modal', icon: PromptIcon, color: COLORS.prompt },
-  { label: 'Install via Vscode', type: 'link', href: VSCODE_INSTALL_URL, icon: VscodeIcon, color: COLORS.vscode },
 ];
 
 function PromptModal({ onClose }: { onClose: () => void }) {
