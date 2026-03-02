@@ -50,9 +50,9 @@ export default function TraceGraph() {
   const totalCriticalTime = criticalJobs.reduce((acc, j) => acc + (j.endMin - j.startMin), 0);
 
   return (
-    <div className="mt-5 overflow-x-auto">
-      <div className="min-w-[420px] rounded-lg bg-[#0d1117] border border-[#30363d] p-6 h-[320px] flex flex-col relative overflow-hidden">
-        <div className="flex justify-between items-center mb-6">
+    <div className="mt-5 overflow-x-auto -mx-2 sm:mx-0">
+      <div className="min-w-0 sm:min-w-[420px] flex flex-col relative">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
             <h3 className="text-xs font-semibold text-[#8b949e] uppercase tracking-wider">
                 {mode === 'waterfall' ? 'Full CI Trace' : 'Critical Path Optimization'}
             </h3>
@@ -73,20 +73,7 @@ export default function TraceGraph() {
                         transition={{ duration: 0.4 }}
                         className="space-y-2 relative h-full w-full"
                     >
-                        {/* Time grid lines */}
-                         <div className="absolute inset-0 pl-[120px] pointer-events-none h-full">
-                            {TICKS.map((t) => (
-                                <div
-                                    key={t}
-                                    className="absolute top-0 bottom-0 w-px bg-[#30363d]/40"
-                                    style={{ left: `${(t / TOTAL_MINUTES) * 100}%` }}
-                                >
-                                    <span className="absolute -bottom-5 -translate-x-1/2 text-[9px] text-[#8b949e] font-mono">
-                                        {t}m
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
+                        
 
                         <div className="relative z-10 space-y-2">
                         {JOBS.map((job) => {
@@ -99,7 +86,7 @@ export default function TraceGraph() {
                                     key={job.name}
                                     className="flex items-center gap-3 relative"
                                 >
-                                    <span className={`text-[10px] font-mono w-[120px] text-right shrink-0 truncate ${job.isCritical ? 'text-[#d29922]' : 'text-[#8b949e]'}`}>
+                                    <span className={`text-[10px] font-mono w-[90px] sm:w-[120px] text-right shrink-0 truncate ${job.isCritical ? 'text-[#d29922]' : 'text-[#8b949e]'}`}>
                                         {job.name}
                                     </span>
                                     <div className="flex-1 h-6 relative bg-[#161b22]/50 rounded">
@@ -130,23 +117,24 @@ export default function TraceGraph() {
                         transition={{ duration: 0.4 }}
                         className="h-full flex flex-col items-center justify-center w-full"
                     >
-                        <div className="w-full flex items-center justify-center gap-1 px-4">
+                        <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-1 px-2 sm:px-4">
                              {criticalJobs.map((job, index) => {
                                  const jobDuration = job.endMin - job.startMin;
                                  
                                  return (
                                      <div
                                         key={job.name}
-                                        className="relative group flex flex-col items-center flex-1"
+                                        className="relative group flex flex-col items-center w-full sm:flex-1 sm:max-w-[140px]"
                                      >
-                                        {/* Connector Line (except for last item) */}
+                                        {/* Connector: vertical on mobile, horizontal on desktop */}
                                         {index < criticalJobs.length - 1 && (
-                                            <div className="absolute -right-3 top-1/2 -translate-y-1/2 z-20 text-[#8b949e] bg-[#0d1117] px-1">
-                                                →
+                                            <div className="absolute sm:-right-3 sm:top-1/2 sm:-translate-y-1/2 bottom-[-14px] sm:bottom-auto left-1/2 sm:left-auto -translate-x-1/2 sm:translate-x-0 z-20 text-[#8b949e] bg-surface-950 px-1">
+                                                <span className="sm:hidden">↓</span>
+                                                <span className="hidden sm:inline">→</span>
                                             </div>
                                         )}
 
-                                        <div className="w-full h-12 bg-[#d29922]/10 border border-[#d29922]/40 rounded flex flex-col items-center justify-center relative hover:bg-[#d29922]/20 transition-colors cursor-default">
+                                        <div className="w-full min-w-0 h-12 bg-[#d29922]/10 border border-[#d29922]/40 rounded flex flex-col items-center justify-center relative hover:bg-[#d29922]/20 transition-colors cursor-default">
                                             <span className="text-[10px] font-semibold text-[#d29922] truncate w-full text-center px-2">
                                                 {job.name}
                                             </span>
@@ -154,19 +142,6 @@ export default function TraceGraph() {
                                                 {formatDuration(jobDuration)}
                                             </span>
                                         </div>
-                                        
-                                        {/* Improvement Badge */}
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 5 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: 0.2 + (index * 0.1) }}
-                                            className="mt-3"
-                                        >
-                                            <div className="text-[9px] text-[#8b949e] flex items-center gap-1.5 bg-[#161b22] px-2 py-1 rounded-full border border-[#30363d] shadow-sm whitespace-nowrap">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-[#d29922] animate-pulse" />
-                                                {job.improvementCount} fixes
-                                            </div>
-                                        </motion.div>
                                      </div>
                                  );
                              })}
@@ -176,7 +151,7 @@ export default function TraceGraph() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.8 }}
-                            className="mt-8 text-center"
+                            className="mt-6 sm:mt-8 text-center"
                         >
                             <p className="text-[10px] text-[#8b949e]">
                                 Total Critical Path: <span className="text-[#d29922] font-mono font-semibold">{formatDuration(totalCriticalTime)}</span>

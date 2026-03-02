@@ -9,6 +9,11 @@ import {
   SiNpm,
   SiGit,
   SiApachemaven,
+  SiRuby,
+  SiYarn,
+  SiBun,
+  SiPnpm,
+  SiDotnet,
 } from 'react-icons/si';
 
 interface IconProps {
@@ -53,6 +58,26 @@ export function NpmIcon({ className = 'w-4 h-4', fill = '#CB3837' }: IconProps) 
 
 export function GitIcon({ className = 'w-4 h-4', fill = '#F05032' }: IconProps) {
   return <SiGit className={className} color={fill} />;
+}
+
+export function RubyIcon({ className = 'w-4 h-4', fill = '#CC342D' }: IconProps) {
+  return <SiRuby className={className} color={fill} />;
+}
+
+export function YarnIcon({ className = 'w-4 h-4', fill = '#2C8EBB' }: IconProps) {
+  return <SiYarn className={className} color={fill} />;
+}
+
+export function PnpmIcon({ className = 'w-4 h-4', fill = '#F69220' }: IconProps) {
+  return <SiPnpm className={className} color={fill} />;
+}
+
+export function DotnetIcon({ className = 'w-4 h-4', fill = '#512BD4' }: IconProps) {
+  return <SiDotnet className={className} color={fill} />;
+}
+
+export function BunIcon({ className = 'w-4 h-4', fill = '#F69220' }: IconProps) {
+  return <SiBun className={className} color={fill} />;
 }
 
 export const techIconColors = {

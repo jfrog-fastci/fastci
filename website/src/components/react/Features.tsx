@@ -2,7 +2,22 @@ import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { fadeInUp, staggerContainer } from '../../lib/animations';
 import { Marquee } from '../ui/marquee';
-import { DockerIcon, NodeIcon, PythonIcon, GoIcon, GradleIcon, RustIcon, MavenIcon, GitHubActionsIcon } from '../../lib/techIcons';
+import {
+  DockerIcon,
+  NodeIcon,
+  PythonIcon,
+  GoIcon,
+  GradleIcon,
+  RustIcon,
+  MavenIcon,
+  GitHubActionsIcon,
+  NpmIcon,
+  RubyIcon,
+  YarnIcon,
+  PnpmIcon,
+  DotnetIcon,
+  BunIcon,
+} from '../../lib/techIcons';
 import TraceGraph from './TraceGraph';
 import { TextAnimate } from '../ui/text-animate';
 
@@ -38,17 +53,23 @@ function TracingVisual() {
 function LanguagePills() {
   const tools = [
     { name: 'Docker', icon: <DockerIcon /> },
-    { name: 'Maven', icon: <MavenIcon /> },
     { name: 'Node.js', icon: <NodeIcon /> },
     { name: 'Python', icon: <PythonIcon /> },
     { name: 'Go', icon: <GoIcon /> },
-    { name: 'Gradle', icon: <GradleIcon /> },
     { name: 'Rust', icon: <RustIcon /> },
+    { name: 'Ruby', icon: <RubyIcon /> },
+    { name: '.NET', icon: <DotnetIcon /> },
+    { name: 'Maven', icon: <MavenIcon /> },
+    { name: 'Gradle', icon: <GradleIcon /> },
+    { name: 'npm', icon: <NpmIcon /> },
+    { name: 'Yarn', icon: <YarnIcon /> },
+    { name: 'pnpm', icon: <PnpmIcon /> },
     { name: 'GitHub Actions', icon: <GitHubActionsIcon /> },
+    {name: 'Bun', icon: <BunIcon /> },
   ];
 
-  const firstRow = tools.slice(0, 4);
-  const secondRow = tools.slice(4);
+  const firstRow = tools.slice(0, 7);
+  const secondRow = tools.slice(7);
 
   return (
     <div className="mt-6 flex flex-col gap-4 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
@@ -114,7 +135,7 @@ export default function Features() {
           {/* CI Trace & Critical Path — full-width card */}
           <motion.div
             variants={fadeInUp}
-            className="md:col-span-3 rounded-2xl border border-white/[0.08] bg-surface-950 p-8"
+            className="md:col-span-3 rounded-2xl border border-white/[0.08] bg-surface-950 p-4 sm:p-6 md:p-8"
           >
             <h3 className="text-xl font-bold text-white">CI Trace &amp; Critical Path</h3>
             <p className="text-gray-400 text-sm mt-2 leading-relaxed">
@@ -149,7 +170,7 @@ export default function Features() {
           {/* Any Language, Any Framework */}
           <motion.div
             variants={fadeInUp}
-            className="rounded-2xl border border-white/[0.08] bg-surface-950 p-8"
+            className="md:col-span-2 rounded-2xl border border-white/[0.08] bg-surface-950 p-8"
           >
             <h3 className="text-xl font-bold text-white">Any Language, Any Framework</h3>
             <p className="text-gray-400 text-sm mt-2 leading-relaxed">
