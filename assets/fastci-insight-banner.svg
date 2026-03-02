@@ -4,6 +4,15 @@
       <stop offset="0%" stop-color="#1f8c3a"/>
       <stop offset="100%" stop-color="#2ea44f"/>
     </linearGradient>
+    <linearGradient id="shimmer" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".4" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#fff" stop-opacity=".07"/>
+      <stop offset=".6" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+      <animate attributeName="x1" from="-1" to="1" dur="4s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="x2" from="0" to="2" dur="4s" begin="2s" repeatCount="indefinite"/>
+    </linearGradient>
     <radialGradient id="ico_r" cx="0" cy="0" r="1" gradientTransform="matrix(4.39 4.94 -11.69 11.05 20.26 21.65)" gradientUnits="userSpaceOnUse">
       <stop stop-color="#fff" stop-opacity="0"/>
       <stop offset=".15" stop-color="#fff" stop-opacity=".15"/>
@@ -16,10 +25,15 @@
     </radialGradient>
   </defs>
 
+  <!-- Background -->
   <rect width="900" height="80" rx="6" fill="url(#bg)"/>
 
-  <!-- FastCI icon (scaled from 37x30 to fit ~44px height, centered vertically) -->
-  <g transform="translate(28, 18) scale(1.47)">
+  <!-- Shimmer sweep overlay -->
+  <rect width="900" height="80" rx="6" fill="url(#shimmer)"/>
+
+  <!-- FastCI icon with fade-in -->
+  <g transform="translate(28, 18) scale(1.47)" opacity="0">
+    <animate attributeName="opacity" from="0" to="1" dur="0.6s" begin="0.3s" fill="freeze"/>
     <mask id="m0" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="12" y="0" width="25" height="30">
       <path d="M27.05.73h.01c1.59 0 3.1.63 4.16 1.73 1.88 1.92 5.07 6.14 5.07 12.7 0 6.06-2.7 10.03-4.95 12.3-2.26 2.22-6.2 2.22-8.43.01l-.12-.13-5.41-6.35 2.99-2.68 5.34 6.27c.74.66 2.16.65 2.87-.05 1.7-1.71 3.75-4.73 3.75-9.38 0-4.65-2.12-8-3.91-9.82a2.78 2.78 0 00-1.36-.54h-.01c-.52 0-1 .18-1.33.5l-6.61 7.7a2.09 2.09 0 001.98 2.04 2.04 0 01-1.98 2.03h-4.38c-.78 0-1.49-.47-1.81-1.2-.32-.73-.19-1.58.31-2.18l9.56-11.14.09-.09A6.47 6.47 0 0127.05.73z" fill="#fff"/>
     </mask>
@@ -30,16 +44,19 @@
     <g mask="url(#m1)"><rect x="0" y="0" width="25.16" height="29.99" fill="url(#ico_l)"/></g>
   </g>
 
-  <!-- Main text -->
-  <text x="450" y="46" text-anchor="middle" fill="#ffffff" font-family="Open Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="19" font-weight="600" letter-spacing="0.3">
+  <!-- Main text with staggered fade-in -->
+  <text x="450" y="46" text-anchor="middle" fill="#ffffff" font-family="Open Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="19" font-weight="600" letter-spacing="0.3" opacity="0">
     This issue was automatically detected by FastCI
+    <animate attributeName="opacity" from="0" to="1" dur="0.6s" begin="0.6s" fill="freeze"/>
   </text>
 
-  <!-- FastCI wordmark right-aligned -->
-  <text x="860" y="35" text-anchor="end" fill="#ffffff" font-family="Open Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" letter-spacing="0.5" opacity="0.7">
+  <!-- FastCI wordmark with staggered fade-in -->
+  <text x="860" y="35" text-anchor="end" fill="#ffffff" font-family="Open Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" letter-spacing="0.5" opacity="0">
     powered by
+    <animate attributeName="opacity" from="0" to=".7" dur="0.6s" begin="0.9s" fill="freeze"/>
   </text>
-  <text x="860" y="55" text-anchor="end" fill="#ffffff" font-family="Open Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="0.5" opacity="0.95">
+  <text x="860" y="55" text-anchor="end" fill="#ffffff" font-family="Open Sans, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="0.5" opacity="0">
     FastCI
+    <animate attributeName="opacity" from="0" to=".95" dur="0.6s" begin="0.9s" fill="freeze"/>
   </text>
 </svg>
