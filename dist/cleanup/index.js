@@ -37902,10 +37902,39 @@ const constants_FASTCI_INSTALL_LOG_PATH = '/tmp/fastcli_install.log';
 const BETA_AGREEMENT_URL = 'https://github.com/jfrog-fastci/fastci/blob/main/BETA_AGREEMENT.md';
 const JFROG_ORG_NAME = 'jfrog';
 const MOONSHOT_TEMP = 'moonshot-space';
+// Organizations exempt from beta agreement and config file requirements
+const EXEMPT_ORGS = [JFROG_ORG_NAME, MOONSHOT_TEMP];
+// Repository configuration file
+const REPO_CONFIG_FILENAME = 'fastci.config.json';
 var CIProvider;
 (function (CIProvider) {
     CIProvider["GITHUB"] = "github";
 })(CIProvider || (CIProvider = {}));
+const OPTIMIZATION_TYPE = {
+    go_build_optimization: "observability",
+    go_test_junit_optimization: "observability",
+    docker_build_trace_optimization: "observability",
+    gradle_optimization: "observability",
+    python_package_manager_optimization: "observability",
+    npm_package_manager_optimization: "observability",
+    uv_package_manager_tracing: "observability",
+    cargo_build_optimization: "observability",
+    integration_test_optimization: "acceleration",
+    go_test_cache_optimization: "acceleration",
+};
+// docker is dual-purpose: observability (tracing) + acceleration (cache).
+// When the technology is excluded, only is_cache_opt_enabled is turned off.
+const DUAL_ACCELERATION_IDS = new Set(["docker_build_trace_optimization"]);
+// ---------------------------------------------------------------------------
+// Default values for fastci.config.json fields
+// Used when no config file is present (defaults_only source).
+// ---------------------------------------------------------------------------
+const DEFAULT_SECRET_PATTERNS = (/* unused pure expression or super */ null && ([
+    "*_TOKEN", "*_SECRET", "*_PASSWORD", "*_KEY", "*_API_KEY", "AWS_*", "SLACK_*",
+]));
+const DEFAULT_OTEL_ENDPOINT = "ingress.coralogix.us:443";
+const DEFAULT_OTEL_EXPORT_TIMEOUT = 1000;
+const DEFAULT_LOG_LEVEL = "error";
 
 ;// CONCATENATED MODULE: ./src/logger.ts
 
@@ -38863,14 +38892,27 @@ async function finalizeTraces() {
     }
 }
 /**
- * Gets the configuration for issue creation from action inputs
- * Returns undefined if configuration is invalid
+ * Gets the configuration for issue creation.
+ * Reads from the runtime config file (written by createFastcliConfig).
+ * Falls back to sensible defaults if the config cannot be read.
  */
 function getIssueCreationConfig() {
-    const enabled = lib_core.getBooleanInput('create_issues_from_insights', { required: false });
     const repository = process.env.GITHUB_REPOSITORY || '';
     const githubToken = lib_core.getInput('github_token', { required: false }) || process.env.GITHUB_TOKEN || '';
-    // Validate repository format early
+    let enabled = true;
+    try {
+        const configPath = process.env.FASTCI_CONFIG_PATH || '/tmp/fastci/config.json';
+        if (external_fs_.existsSync(configPath)) {
+            const raw = JSON.parse(external_fs_.readFileSync(configPath, 'utf-8'));
+            const repoConfig = raw?.config?.repository_config;
+            if (repoConfig?.insights?.create_issues === false) {
+                enabled = false;
+            }
+        }
+    }
+    catch (error) {
+        lib_core.debug(`Could not read config for insights settings: ${error}`);
+    }
     if (enabled && repository) {
         const repoInfo = utils_parseRepository(repository);
         if (!repoInfo) {
@@ -38878,16 +38920,11 @@ function getIssueCreationConfig() {
             return undefined;
         }
     }
-    // Parse custom labels if provided
-    const labelsInput = lib_core.getInput('insight_issue_labels', { required: false });
-    const labels = labelsInput
-        ? labelsInput.split(',').map(l => l.trim()).filter(l => l.length > 0)
-        : [];
     return {
         enabled,
         repository,
         githubToken,
-        labels,
+        labels: [],
         addTechnologyLabels: true,
     };
 }
