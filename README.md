@@ -57,7 +57,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: jfrog-fastci/fastci@v0
-      
       - uses: actions/checkout@v4
       # ... rest of your build steps
 ```
@@ -80,7 +79,6 @@ jobs:
         - /home/runner:/tmp/fastci/mounts/home/runner
     steps:
       - uses: jfrog-fastci/fastci@v0
-      
       - uses: actions/checkout@v4
       # ... rest of your build steps
 ```
