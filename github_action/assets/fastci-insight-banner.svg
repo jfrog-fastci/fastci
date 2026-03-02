@@ -47,7 +47,7 @@
 
     <!-- Main banner text with subtle size pulse -->
     <text x="450" y="335" text-anchor="middle" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" letter-spacing=".3" opacity="0">
-      <tspan fill="#000" font-weight="400">This issue was automatically detected by </tspan><tspan fill="#36a13b" font-weight="700" font-style="italic">FastCI</tspan>
+      <tspan fill="#000" font-weight="400">This issue was automatically created by </tspan><tspan fill="#36a13b" font-weight="700" font-style="italic">FastCI</tspan>
       <animate attributeName="opacity" from="0" to="1" dur=".6s" begin=".5s" fill="freeze"/>
       <animate attributeName="font-size" values="16;16.6;16" dur="4s" begin="2s" repeatCount="indefinite"/>
     </text>
