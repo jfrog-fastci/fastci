@@ -1,11 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="900" height="350" viewBox="0 0 900 350">
   <defs>
     <clipPath id="banner"><rect width="900" height="350" rx="8"/></clipPath>
-    <linearGradient id="bottomShade" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#000" stop-opacity="0"/>
-      <stop offset=".82" stop-color="#000" stop-opacity="0"/>
-      <stop offset="1" stop-color="#1a5e25" stop-opacity=".55"/>
-    </linearGradient>
     <linearGradient id="shimmer" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
       <stop offset="0" stop-color="#fff" stop-opacity="0"/>
       <stop offset=".4" stop-color="#fff" stop-opacity="0"/>
@@ -34,9 +29,6 @@
     <!-- Subtle shimmer sweep -->
     <rect width="900" height="350" fill="url(#shimmer)"/>
 
-    <!-- Bottom gradient for text legibility -->
-    <rect width="900" height="350" fill="url(#bottomShade)"/>
-
     <!-- FastCI green logo icon (top-left) with bob animation -->
     <g opacity="0">
       <animate attributeName="opacity" from="0" to="1" dur=".6s" begin=".4s" fill="freeze"/>
@@ -54,8 +46,8 @@
     </g>
 
     <!-- Main banner text with subtle size pulse -->
-    <text x="450" y="335" text-anchor="middle" fill="#fff" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" font-weight="600" letter-spacing=".3" opacity="0">
-      This issue was automatically detected by FastCI
+    <text x="450" y="335" text-anchor="middle" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" letter-spacing=".3" opacity="0">
+      <tspan fill="#000" font-weight="400">This issue was automatically detected by </tspan><tspan fill="#36a13b" font-weight="700" font-style="italic">FastCI</tspan>
       <animate attributeName="opacity" from="0" to="1" dur=".6s" begin=".5s" fill="freeze"/>
       <animate attributeName="font-size" values="16;16.6;16" dur="4s" begin="2s" repeatCount="indefinite"/>
     </text>
