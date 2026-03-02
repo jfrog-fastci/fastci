@@ -1,4 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 360">
+  <defs>
+    <clipPath id="tc">
+      <rect x="4" y="52" width="600" height="260"/>
+    </clipPath>
+  </defs>
+
   <!-- Window shadow -->
   <rect x="14" y="14" width="600" height="340" rx="16" fill="#000" opacity=".10"/>
   <!-- Window body -->
@@ -13,76 +19,80 @@
   <!-- Title text -->
   <text x="304" y="34" text-anchor="middle" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="13" fill="#9ca3af" letter-spacing=".5">fastci</text>
 
-  <!-- === Phase 1: Scanning (visible 0-6s, fades out 6-7s, hidden 7-13s, fades in 13-14s) === -->
-  <g>
-    <animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.43;0.5;0.93;1" dur="14s" repeatCount="indefinite"/>
+  <!-- Scrolling terminal content -->
+  <g clip-path="url(#tc)">
+    <!-- === Phase 1: Scanning — pushes up, slides in from below === -->
+    <g>
+      <animateTransform attributeName="transform" type="translate"
+        values="0 0;0 0;0 -300;0 300;0 300;0 0"
+        keyTimes="0;0.43;0.5;0.501;0.93;1"
+        dur="14s" repeatCount="indefinite"/>
 
-    <!-- Command -->
-    <text x="28" y="84" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="18">
-      <tspan fill="#36a13b">$</tspan><tspan fill="#374151"> fastci analyze</tspan>
-    </text>
+      <text x="28" y="84" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="18">
+        <tspan fill="#36a13b" font-weight="bold">[FastCI]</tspan>
+      </text>
 
-    <!-- Scanning text with animated dots -->
-    <text x="28" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16" fill="#6b7280">Scanning CI pipeline</text>
-    <text x="248" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16" fill="#36a13b">.<animate attributeName="opacity" values="1;0;0" dur="1.5s" repeatCount="indefinite"/></text>
-    <text x="248" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16" fill="#36a13b">..<animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/></text>
-    <text x="248" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16" fill="#36a13b">...<animate attributeName="opacity" values="0;0;1" dur="1.5s" repeatCount="indefinite"/></text>
+      <text x="28" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16" fill="#6b7280">Monitoring CI pipeline</text>
+      <text x="248" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16" fill="#36a13b">.<animate attributeName="opacity" values="1;0;0" dur="1.5s" repeatCount="indefinite"/></text>
+      <text x="248" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16" fill="#36a13b">..<animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/></text>
+      <text x="248" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16" fill="#36a13b">...<animate attributeName="opacity" values="0;0;1" dur="1.5s" repeatCount="indefinite"/></text>
 
-    <!-- Analysis steps appearing one by one -->
-    <text x="32" y="152" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="15" opacity="0">
-      <tspan fill="#9ca3af">&#x25E6; Analyzing Docker builds</tspan>
-      <animate attributeName="opacity" values="0;1;1;1" keyTimes="0;0.15;0.9;1" dur="14s" repeatCount="indefinite"/>
-    </text>
-    <text x="32" y="180" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="15" opacity="0">
-      <tspan fill="#9ca3af">&#x25E6; Checking cache config</tspan>
-      <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.18;0.25;1" dur="14s" repeatCount="indefinite"/>
-    </text>
-    <text x="32" y="208" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="15" opacity="0">
-      <tspan fill="#9ca3af">&#x25E6; Reviewing dependencies</tspan>
-      <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.25;0.32;1" dur="14s" repeatCount="indefinite"/>
-    </text>
+      <text x="32" y="152" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="15" opacity="0">
+        <tspan fill="#9ca3af">&#x25E6; Tracing Docker builds</tspan>
+        <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.05;0.15;0.40;0.43;1" dur="14s" repeatCount="indefinite"/>
+      </text>
+      <text x="32" y="180" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="15" opacity="0">
+        <tspan fill="#9ca3af">&#x25E6; Checking cache config</tspan>
+        <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.15;0.25;0.40;0.43;1" dur="14s" repeatCount="indefinite"/>
+      </text>
+      <text x="32" y="208" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="15" opacity="0">
+        <tspan fill="#9ca3af">&#x25E6; Reviewing dependencies</tspan>
+        <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.22;0.32;0.40;0.43;1" dur="14s" repeatCount="indefinite"/>
+      </text>
 
-    <!-- Rotating spinner -->
-    <g transform="translate(44,250)">
-      <circle cx="0" cy="0" r="8" fill="none" stroke="#e5e7eb" stroke-width="2"/>
-      <path d="M0,-8 A8,8 0 0,1 8,0" fill="none" stroke="#36a13b" stroke-width="2" stroke-linecap="round">
-        <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1s" repeatCount="indefinite"/>
-      </path>
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1;0;0" keyTimes="0;0.28;0.35;0.40;0.43;1" dur="14s" repeatCount="indefinite"/>
+        <g transform="translate(44,250)">
+          <circle cx="0" cy="0" r="8" fill="none" stroke="#e5e7eb" stroke-width="2"/>
+          <path d="M0,-8 A8,8 0 0,1 8,0" fill="none" stroke="#36a13b" stroke-width="2" stroke-linecap="round">
+            <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1s" repeatCount="indefinite"/>
+          </path>
+        </g>
+        <text x="64" y="256" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="15" fill="#9ca3af">Generating insights...</text>
+      </g>
     </g>
-    <text x="64" y="256" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="15" fill="#9ca3af">Optimizing...</text>
+
+    <!-- === Phase 2: Results — slides in from below, pushes up === -->
+    <g>
+      <animateTransform attributeName="transform" type="translate"
+        values="0 300;0 300;0 0;0 0;0 -300;0 300"
+        keyTimes="0;0.43;0.5;0.93;0.999;1"
+        dur="14s" repeatCount="indefinite"/>
+
+      <text x="28" y="84" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="18">
+        <tspan fill="#36a13b" font-weight="bold">[FastCI]</tspan><tspan fill="#374151"> 3 insights detected</tspan>
+      </text>
+
+      <text x="28" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16">
+        <tspan fill="#6b7280">Docker build</tspan><tspan fill="#374151">  4m32s</tspan><tspan fill="#36a13b"> &#x2192; 1m15s &#x2193;72%</tspan>
+      </text>
+      <text x="28" y="150" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16">
+        <tspan fill="#6b7280">npm install </tspan><tspan fill="#374151">  2m10s</tspan><tspan fill="#36a13b"> &#x2192; 0m28s &#x2193;78%</tspan>
+      </text>
+      <text x="28" y="182" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16">
+        <tspan fill="#6b7280">Pipeline    </tspan><tspan fill="#374151">  8m44s</tspan><tspan fill="#36a13b"> &#x2192; 3m02s &#x2193;65%</tspan>
+      </text>
+
+      <line x1="28" y1="198" x2="576" y2="198" stroke="#e5e7eb" stroke-width="1"/>
+
+      <text x="28" y="228" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16">
+        <tspan fill="#36a13b">&#x2713;</tspan><tspan fill="#374151"> 3 issues created</tspan>
+      </text>
+    </g>
   </g>
 
-  <!-- === Phase 2: Results (hidden 0-6s, fades in 6-7s, visible 7-13s, fades out 13-14s) === -->
-  <g opacity="0">
-    <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.43;0.5;0.93;1" dur="14s" repeatCount="indefinite"/>
-
-    <!-- Command -->
-    <text x="28" y="84" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="18">
-      <tspan fill="#36a13b">$</tspan><tspan fill="#374151"> fastci analyze</tspan>
-    </text>
-
-    <!-- Results -->
-    <text x="28" y="118" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16">
-      <tspan fill="#6b7280">Docker build</tspan><tspan fill="#374151">  4m32s</tspan><tspan fill="#36a13b"> &#x2192; 1m15s &#x2193;72%</tspan>
-    </text>
-    <text x="28" y="150" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16">
-      <tspan fill="#6b7280">npm install </tspan><tspan fill="#374151">  2m10s</tspan><tspan fill="#36a13b"> &#x2192; 0m28s &#x2193;78%</tspan>
-    </text>
-    <text x="28" y="182" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16">
-      <tspan fill="#6b7280">Pipeline    </tspan><tspan fill="#374151">  8m44s</tspan><tspan fill="#36a13b"> &#x2192; 3m02s &#x2193;65%</tspan>
-    </text>
-
-    <!-- Separator -->
-    <line x1="28" y1="198" x2="576" y2="198" stroke="#e5e7eb" stroke-width="1"/>
-
-    <!-- Summary -->
-    <text x="28" y="228" font-family="'SF Mono','Fira Code','Menlo',monospace" font-size="16">
-      <tspan fill="#36a13b">&#x2713;</tspan><tspan fill="#374151"> 3 optimizations applied</tspan>
-    </text>
-  </g>
-
-  <!-- Blinking cursor (always visible) -->
-  <rect x="28" y="280" width="10" height="18" rx="2" fill="#36a13b">
+  <!-- Blinking cursor (fixed below scroll area) -->
+  <rect x="28" y="320" width="10" height="18" rx="2" fill="#36a13b">
     <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
   </rect>
 </svg>
