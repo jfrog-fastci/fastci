@@ -44,7 +44,92 @@
       </g>
     </g>
 
-    <!-- Main banner text with subtle size pulse -->
+    <!-- Mini terminal window (right side) with CI acceleration animation -->
+    <g transform="translate(670,30)">
+      <!-- Window shadow -->
+      <rect x="3" y="3" width="210" height="160" rx="8" fill="#000" opacity=".12"/>
+      <!-- Window body -->
+      <rect width="210" height="160" rx="8" fill="#fff" opacity=".94"/>
+      <!-- Title bar -->
+      <rect width="210" height="24" rx="8" fill="#f3f4f6"/>
+      <rect y="16" width="210" height="8" fill="#f3f4f6"/>
+      <!-- Traffic lights -->
+      <circle cx="16" cy="12" r="4.5" fill="#ff5f57"/>
+      <circle cx="30" cy="12" r="4.5" fill="#febc2e"/>
+      <circle cx="44" cy="12" r="4.5" fill="#28c840"/>
+      <!-- Title text -->
+      <text x="105" y="16" text-anchor="middle" font-family="monospace" font-size="9" fill="#6b7280">fastci</text>
+
+      <!-- === Phase 1: Scanning (visible 0-6s, fades out 6-7s, hidden 7-13s, fades in 13-14s) === -->
+      <g>
+        <animate attributeName="opacity" values="1;1;0;0;1" keyTimes="0;0.43;0.5;0.93;1" dur="14s" repeatCount="indefinite"/>
+
+        <text x="12" y="44" font-family="'SF Mono','Fira Code',monospace" font-size="10">
+          <tspan fill="#36a13b">$</tspan><tspan fill="#374151"> fastci analyze</tspan>
+        </text>
+
+        <text x="12" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#6b7280">Scanning CI pipeline</text>
+        <text x="131" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#36a13b">.<animate attributeName="opacity" values="1;0;0" dur="1.5s" repeatCount="indefinite"/></text>
+        <text x="131" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#36a13b">..<animate attributeName="opacity" values="0;1;0" dur="1.5s" repeatCount="indefinite"/></text>
+        <text x="131" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5" fill="#36a13b">...<animate attributeName="opacity" values="0;0;1" dur="1.5s" repeatCount="indefinite"/></text>
+
+        <text x="14" y="80" font-family="'SF Mono','Fira Code',monospace" font-size="9" opacity="0">
+          <tspan fill="#9ca3af">◦ Analyzing Docker builds</tspan>
+          <animate attributeName="opacity" values="0;1;1;1" keyTimes="0;0.15;0.9;1" dur="14s" repeatCount="indefinite"/>
+        </text>
+        <text x="14" y="94" font-family="'SF Mono','Fira Code',monospace" font-size="9" opacity="0">
+          <tspan fill="#9ca3af">◦ Checking cache config</tspan>
+          <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.18;0.25;1" dur="14s" repeatCount="indefinite"/>
+        </text>
+        <text x="14" y="108" font-family="'SF Mono','Fira Code',monospace" font-size="9" opacity="0">
+          <tspan fill="#9ca3af">◦ Reviewing dependencies</tspan>
+          <animate attributeName="opacity" values="0;0;1;1" keyTimes="0;0.25;0.32;1" dur="14s" repeatCount="indefinite"/>
+        </text>
+
+        <!-- Rotating spinner -->
+        <g transform="translate(20,122)">
+          <circle cx="0" cy="0" r="5" fill="none" stroke="#e5e7eb" stroke-width="1.5"/>
+          <path d="M0,-5 A5,5 0 0,1 5,0" fill="none" stroke="#36a13b" stroke-width="1.5" stroke-linecap="round">
+            <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="1s" repeatCount="indefinite"/>
+          </path>
+        </g>
+        <text x="34" y="127" font-family="'SF Mono','Fira Code',monospace" font-size="9" fill="#9ca3af">Optimizing...</text>
+      </g>
+
+      <!-- === Phase 2: Results (hidden 0-6s, fades in 6-7s, visible 7-13s, fades out 13-14s) === -->
+      <g opacity="0">
+        <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.43;0.5;0.93;1" dur="14s" repeatCount="indefinite"/>
+
+        <text x="12" y="44" font-family="'SF Mono','Fira Code',monospace" font-size="10">
+          <tspan fill="#36a13b">$</tspan><tspan fill="#374151"> fastci analyze</tspan>
+        </text>
+
+        <text x="12" y="64" font-family="'SF Mono','Fira Code',monospace" font-size="9.5">
+          <tspan fill="#6b7280">Docker build</tspan><tspan fill="#374151"> 4m32s</tspan><tspan fill="#36a13b"> → 1m15s ↓72%</tspan>
+        </text>
+
+        <text x="12" y="80" font-family="'SF Mono','Fira Code',monospace" font-size="9.5">
+          <tspan fill="#6b7280">npm install </tspan><tspan fill="#374151"> 2m10s</tspan><tspan fill="#36a13b"> → 0m28s ↓78%</tspan>
+        </text>
+
+        <text x="12" y="96" font-family="'SF Mono','Fira Code',monospace" font-size="9.5">
+          <tspan fill="#6b7280">Pipeline    </tspan><tspan fill="#374151"> 8m44s</tspan><tspan fill="#36a13b"> → 3m02s ↓65%</tspan>
+        </text>
+
+        <line x1="12" y1="106" x2="198" y2="106" stroke="#e5e7eb" stroke-width="1"/>
+
+        <text x="12" y="122" font-family="'SF Mono','Fira Code',monospace" font-size="9.5">
+          <tspan fill="#36a13b">✓</tspan><tspan fill="#374151"> 3 optimizations applied</tspan>
+        </text>
+      </g>
+
+      <!-- Blinking cursor (always visible) -->
+      <rect x="12" y="138" width="6" height="11" rx="1" fill="#36a13b">
+        <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+
+    <!-- Main banner text -->
     <text x="450" y="335" text-anchor="middle" font-family="'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif" font-size="16" letter-spacing=".3">
       <tspan fill="#000" font-weight="400">This issue was automatically created by </tspan><tspan fill="#36a13b" font-weight="700" font-style="italic">FastCI<animate attributeName="fill" values="#36a13b;#4ade80;#36a13b" dur="4s" repeatCount="indefinite"/></tspan>
     </text>
