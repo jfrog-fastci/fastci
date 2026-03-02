@@ -42,13 +42,14 @@ inputs:
     default: ""
 
   github_token:
-    description: The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN
-    required: true
+    description: "The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN"
+    default: ${{ github.token }}
+    required: false
 
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.23.2"
+    default: "milestone-consolidate-insights-based-on-insight-id-877cc2b9-3193"
 
   job_name_for_tests_only:
     description: "Override job name for tests only (used in CI tests)"
@@ -128,7 +129,7 @@ inputs:
   create_issues_from_insights:
     description: "Create GitHub issues from detected CI insights (e.g., missing .dockerignore)"
     required: false
-    default: "false"
+    default: "true"
 
   insight_issue_labels:
     description: "Comma-separated list of additional labels to add to insight issues"

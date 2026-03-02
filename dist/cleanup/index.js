@@ -37306,12 +37306,16 @@ function extractCIContext(insight, allSpans) {
     }
     if (jobSpan) {
         const jobDurationMs = jobSpan.attributes['job.duration_ms'];
+        const jobResource = jobSpan.resource || {};
+        const jobId = String(resource['cicd.pipeline.job.id'] || jobResource['cicd.pipeline.job.id'] || jobSpan.attributes['cicd.pipeline.job.id'] || '');
         const jobDisplayName = String(jobSpan.attributes['job.display_name'] || '');
-        lib_core.debug(`extractCIContext: Job display_name=${jobDisplayName}, span.name=${jobSpan.name}`);
-        // Use job.display_name for display name, cicd.pipeline.job.id from resource for ID
+        lib_core.debug(`extractCIContext: Job id=${jobId}, display_name=${jobDisplayName}, span.name=${jobSpan.name}`);
+        // Prefer job ID over display name for determinism across matrix jobs.
+        // Display names include matrix parameters (e.g. "build (ubuntu-latest, 20)")
+        // while the job ID (e.g. "build") is stable across matrix combinations.
         ciContext.job = {
-            id: String(resource['cicd.pipeline.job.id'] || jobSpan.attributes['cicd.pipeline.job.id'] || ''),
-            name: jobDisplayName || jobSpan.name || '',
+            id: jobId,
+            name: jobId || jobDisplayName || jobSpan.name || '',
             durationMs: jobDurationMs ?? calculateDurationMs(jobSpan.start_time, jobSpan.end_time),
             stepCount: jobSpan.attributes['job.step_count'],
         };
@@ -37438,12 +37442,86 @@ function spanToInsight(span, allSpans) {
     };
 }
 /**
- * Extracts all insights from parsed trace spans
+ * Context keys that are dropped from consolidated insights (count > 1).
+ * These are per-invocation values that become misleading when merged
+ * across multiple package.json files.
+ */
+const DROP_ON_CONSOLIDATION = new Set([
+    'cache_hit_rate_percent',
+    'package_json_content_hash',
+]);
+/**
+ * Merges context attributes from a duplicate insight into an existing one.
+ * For each key, collects all unique values into a comma-separated string.
+ * Keys in DROP_ON_CONSOLIDATION are skipped — they'll be removed after merge.
+ */
+function mergeContextAttributes(target, source, valueSets) {
+    for (const [key, val] of Object.entries(source)) {
+        if (key === 'occurrence_count' || DROP_ON_CONSOLIDATION.has(key))
+            continue;
+        if (!valueSets.has(key)) {
+            const existing = target[key];
+            const set = new Set();
+            if (existing !== undefined)
+                set.add(existing);
+            valueSets.set(key, set);
+        }
+        const set = valueSets.get(key);
+        if (!set.has(val)) {
+            set.add(val);
+            target[key] = Array.from(set).join(', ');
+        }
+    }
+}
+/**
+ * Extracts all insights from parsed trace spans.
+ * Consolidates insights that share the same insight ID: context attributes from
+ * all occurrences are merged (unique values collected into comma-separated strings)
+ * so a single insight represents all affected locations within one job.
+ *
+ * For consolidated insights, per-invocation metrics like cache_hit_rate_percent
+ * are dropped since they become misleading when listed as a flat comma-separated
+ * string across many package.json files.
  */
 function extractInsights(spans) {
     const insightSpans = spans.filter(isInsightSpan);
     lib_core.debug(`Found ${insightSpans.length} insight spans`);
-    return insightSpans.map(span => spanToInsight(span, spans));
+    const insights = insightSpans.map(span => spanToInsight(span, spans));
+    const seen = new Map();
+    const counts = new Map();
+    const valueSets = new Map();
+    const order = [];
+    for (const insight of insights) {
+        const key = insight.id || `unknown-${seen.size}`;
+        const existing = seen.get(key);
+        if (existing) {
+            counts.set(key, (counts.get(key) || 1) + 1);
+            if (!valueSets.has(key)) {
+                valueSets.set(key, new Map());
+            }
+            mergeContextAttributes(existing.contextAttributes, insight.contextAttributes, valueSets.get(key));
+        }
+        else {
+            seen.set(key, insight);
+            order.push(key);
+        }
+    }
+    const result = [];
+    for (const key of order) {
+        const insight = seen.get(key);
+        const count = counts.get(key);
+        if (count && count > 1) {
+            insight.contextAttributes['occurrence_count'] = String(count);
+            for (const dropKey of DROP_ON_CONSOLIDATION) {
+                delete insight.contextAttributes[dropKey];
+            }
+        }
+        result.push(insight);
+    }
+    if (result.length < insights.length) {
+        lib_core.info(`Consolidated ${insights.length} insights to ${result.length} unique insights`);
+    }
+    return result;
 }
 /**
  * Main function to parse trace file and extract insights
@@ -37572,6 +37650,8 @@ const SPECIAL_CONTEXT_KEYS_AI = new Set([
     'path_to_dockerfile',
     'parent_operation',
     'bash_script_content',
+    'package_json_content_hash',
+    'occurrence_count',
 ]);
 /**
  * Formats a context attribute key for display (converts snake_case to Title Case)
@@ -37972,6 +38052,9 @@ const SPECIAL_CONTEXT_KEYS = new Set([
     'path_to_dockerfile',
     'parent_operation',
     'bash_script_content',
+    'package_json_path',
+    'package_json_content_hash',
+    'occurrence_count',
 ]);
 /**
  * Builds the overview section with title and description
@@ -38065,6 +38148,30 @@ function buildCommandSection(insight) {
     return lines;
 }
 /**
+ * Builds a collapsible section listing affected package.json paths
+ * when an insight was consolidated from multiple occurrences.
+ */
+function buildPackageDirectoriesSection(insight) {
+    const pathsRaw = insight.contextAttributes['package_json_path'];
+    if (!pathsRaw || !pathsRaw.includes(','))
+        return [];
+    const items = pathsRaw.split(',').map(s => s.trim()).filter(Boolean);
+    if (items.length === 0)
+        return [];
+    const count = insight.contextAttributes['occurrence_count'] || String(items.length);
+    const lines = [];
+    lines.push('<details>');
+    lines.push(`<summary><strong>Affected Packages (${count} occurrences)</strong></summary>`);
+    lines.push('');
+    for (const item of items) {
+        lines.push(`- \`${item}\``);
+    }
+    lines.push('');
+    lines.push('</details>');
+    lines.push('');
+    return lines;
+}
+/**
  * Builds the context attributes section (all non-special attributes)
  */
 function buildContextAttributesSection(insight) {
@@ -38150,6 +38257,7 @@ function formatIssueBody(insight, insightIssueId, workflowUrl) {
     lines.push(...buildFileLocationSection(insight));
     lines.push(...buildCIContextSection(insight));
     lines.push(...buildCommandSection(insight));
+    lines.push(...buildPackageDirectoriesSection(insight));
     lines.push(...buildContextAttributesSection(insight));
     lines.push(...buildHowToFixSection(insight));
     // Link to workflow run
@@ -38188,23 +38296,36 @@ function getIssueLabels(insight, config) {
     return [...new Set(labels)]; // Deduplicate
 }
 /**
- * Checks if an issue already exists for this insight
+ * Checks if an issue already exists for this insight.
+ * Uses the REST API (listForRepo) instead of the Search API to avoid indexing
+ * delays that cause duplicate issues when matrix jobs finish simultaneously.
  */
 async function findExistingIssue(octokit, repository, insightIssueId) {
+    const repoInfo = utils_parseRepository(repository);
+    if (!repoInfo) {
+        lib_core.warning(`Invalid repository format for issue search: ${repository}`);
+        return { exists: false };
+    }
+    const { owner, repo } = repoInfo;
     try {
-        const searchQuery = generateIssueSearchQuery(repository, insightIssueId);
-        lib_core.debug(`Searching for existing issue with query: ${searchQuery}`);
-        const { data: searchResults } = await octokit.rest.search.issuesAndPullRequests({
-            q: searchQuery,
-            per_page: 1,
+        lib_core.debug(`Listing issues with fastci-insight label to find: ${insightIssueId}`);
+        const { data: issues } = await octokit.rest.issues.listForRepo({
+            owner,
+            repo,
+            labels: 'fastci-insight',
+            state: 'all',
+            per_page: 100,
+            sort: 'created',
+            direction: 'desc',
         });
-        if (searchResults.total_count > 0) {
-            const existingIssue = searchResults.items[0];
-            return {
-                exists: true,
-                issueNumber: existingIssue.number,
-                issueUrl: existingIssue.html_url,
-            };
+        for (const issue of issues) {
+            if (issue.body?.includes(insightIssueId)) {
+                return {
+                    exists: true,
+                    issueNumber: issue.number,
+                    issueUrl: issue.html_url,
+                };
+            }
         }
         return { exists: false };
     }
