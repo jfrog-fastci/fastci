@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="80" viewBox="0 0 900 80">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1a7f37"/>
+      <stop offset="100%" style="stop-color:#2ea44f"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="900" height="80" rx="6" fill="url(#bg)"/>
+
+  <!-- Lightning bolt icon (FastCI speed symbol) -->
+  <g transform="translate(30, 14)">
+    <polygon points="26,0 10,28 22,28 16,52 36,20 24,20 30,0" fill="#ffffff" opacity="0.95"/>
+  </g>
+
+  <!-- Main text -->
+  <text x="450" y="46" text-anchor="middle" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="20" font-weight="600">
+    This issue was automatically detected by FastCI
+  </text>
+
+  <!-- FastCI wordmark on the right -->
+  <text x="850" y="46" text-anchor="end" fill="#ffffff" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" opacity="0.9">
+    FastCI
+  </text>
+</svg>
