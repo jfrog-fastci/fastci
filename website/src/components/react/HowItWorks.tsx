@@ -26,8 +26,16 @@ export default function HowItWorks() {
             stagger={0.05}
             once
           >
-            {"Three steps: instrument, detect, propose. FastCI handles the analysis and fix generation\u2014you stay in control with reviewable PRs at every step."}
+            Install FastCI by adding one line to any GitHub Actions workflow:
           </TextAnimate>
+          <motion.code
+            initial={{ opacity: 0, y: 8 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-4 inline-block px-4 py-2 rounded-lg bg-white/5 border border-white/10 font-mono text-sm text-brand-400"
+          >
+            uses: jfrog-fastci/fastci@v0
+          </motion.code>
         </motion.div>
 
         <motion.div

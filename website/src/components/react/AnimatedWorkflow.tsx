@@ -255,7 +255,7 @@ export default function AnimatedWorkflow() {
 
         <div
           className="p-3 sm:p-5 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto overflow-y-hidden"
-          style={{ height: '560px' }}
+          style={{ height: '510px' }}
         >
           {/* name */}
           <Line visible={lineIndex > 0}>
