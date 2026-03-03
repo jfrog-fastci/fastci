@@ -26,7 +26,7 @@ export default function HowItWorks() {
             stagger={0.05}
             once
           >
-            Install FastCI by adding one line to any GitHub Actions workflow:
+            Install FastCI by adding one line to any GitHub Actions job:
           </TextAnimate>
           <motion.code
             initial={{ opacity: 0, y: 8 }}
