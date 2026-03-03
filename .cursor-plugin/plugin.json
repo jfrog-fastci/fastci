@@ -1,0 +1,12 @@
+{
+  "name": "fastci",
+  "version": "0.0.1",
+  "description": "Install and operate FastCI in GitHub Actions workflows.",
+  "author": {
+    "name": "JFrog Inc."
+  },
+  "homepage": "https://fastci.jfrog.com",
+  "repository": "https://github.com/jfrog-fastci/fastci",
+  "keywords": ["fastci", "github-actions", "ci", "automation"],
+  "commands": "commands"
+}
