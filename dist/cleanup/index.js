@@ -37739,6 +37739,150 @@ function utils_generateAIPrompt(insight) {
     lines.push('4. Test the changes if possible');
     return lines.join('\n');
 }
+/** Max URL length for Cursor deeplinks before falling back to collapsible code block */
+const DEEPLINK_URL_MAX_LENGTH = 8000;
+const FASTCI_ICON_B64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzNyAzMCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yNy4wNS43M2guMDFjMS42IDAgMy4xMi42MyA0LjE4IDEuNzMgMS44OCAxLjkyIDUuMSA2LjE0IDUuMSAxMi43IDAgNi4wNi0yLjcgMTAuMDMtNC45NSAxMi4zLTIuMTcgMi4xMy01LjkzIDIuMjUtOC4xOC4xM2wtLjIzLS4yMi01LjI0LTYuMTUgMi45OS0yLjY4IDUuMyA2LjI3Yy43My42NiAyLjE0LjY1IDIuODctLjA1IDEuNTYtMS41NiAzLjY1LTQuNSAzLjY1LTkuNiAwLTQuNjUtMi4xMy03Ljg0LTMuOTEtOS42Mi0uMzQtLjM1LS44NC0uNTQtMS4zNy0uNTRoLS4wMWMtLjUzIDAtMS4wMS4xOC0xLjMzLjVsLTYuNzkgNy43YzEuMSAwIDEuOTguOTEgMS45OCAyLjA0IDAgMS4xMi0uODkgMi4wMy0xLjk4IDIuMDNoLTQuMzhjLS43OCAwLTEuNDktLjQ3LTEuODEtMS4yLS4zMi0uNzMtLjE5LTEuNTguMzEtMi4xOGw5LjU2LTExLjE0LjA5LS4wOUMyNC40MyAxLjM3IDI1Ljk1LjczIDI3LjA1LjczeiIvPjxwYXRoIGQ9Ik05Ljk1IDI5LjI3aC0uMDFjLTEuNiAwLTMuMTItLjYzLTQuMTgtMS43M0MzLjg4IDI1LjYyLjcxIDIxLjQuNzEgMTQuODQuNzEgOC43OSAzLjQgNC44MSA1LjY2IDIuNTVjMi4xNy0yLjEzIDUuOTMtMi4yNSA4LjE4LS4xM2wuMjMuMjIgNS4yNCA2LjE1LTIuOTkgMi42OC01LjMtNi4yN2MtLjczLS42Ni0yLjE0LS42NS0yLjg3LjA1LTEuNTYgMS41Ni0zLjY1IDQuNS0zLjY1IDkuNiAwIDQuNjUgMi4xMyA3Ljg0IDMuOTEgOS42Mi4zNC4zNS44NC41NCAxLjM3LjU0aC4wMWMuNTMgMCAxLjAxLS4xOCAxLjMzLS41bDYuNzktNy43Yy0xLjEgMC0xLjk4LS45MS0xLjk4LTIuMDQgMC0xLjEyLjg5LTIuMDMgMS45OC0yLjAzaDQuMzhjLjc4IDAgMS40OS40NyAxLjgxIDEuMi4zMi43My4xOSAxLjU4LS4zMSAyLjE4bC05LjU2IDExLjE0LS4wOS4wOWMtMS4wNyAxLjEtMi41OSAxLjczLTMuNjkgMS43M3oiLz48L3N2Zz4=';
+const FASTCI_BADGE_URL = `https://img.shields.io/badge/FastCI-2ea44f?style=flat&logo=data:image/svg%2bxml;base64,${FASTCI_ICON_B64}&logoColor=white`;
+const SCANNED_BADGE_URL = `https://img.shields.io/badge/Scanned_with-FastCI-2ea44f?style=flat&logo=data:image/svg%2bxml;base64,${FASTCI_ICON_B64}&logoColor=white`;
+const CURSOR_ICON_B64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjxwYXRoIGQ9Ik0yMi4xMDYgNS42OEwxMi41LjEzNWEuOTk4Ljk5OCAwIDAwLS45OTggMEwxLjg5MyA1LjY4YS44NC44NCAwIDAwLS40MTkuNzI2djExLjE4NmMwIC4zLjE2LjU3Ny40Mi43MjdsOS42MDcgNS41NDdhLjk5OS45OTkgMCAwMC45OTggMGw5LjYwOC01LjU0N2EuODQuODQgMCAwMC40Mi0uNzI3VjYuNDA3YS44NC44NCAwIDAwLS40Mi0uNzI2em0tLjYwMyAxLjE3NkwxMi4yMjggMjIuOTJjLS4wNjMuMTA4LS4yMjguMDY0LS4yMjgtLjA2MVYxMi4zNGEuNTkuNTkgMCAwMC0uMjk1LS41MWwtOS4xMS01LjI2Yy0uMTA3LS4wNjItLjA2My0uMjI4LjA2Mi0uMjI4aDE4LjU1Yy4yNjQgMCAuNDI4LjI4Ni4yOTYuNTE0eiIvPjwvc3ZnPg==';
+const CURSOR_BADGE_URL = `https://img.shields.io/badge/Open_in-Cursor-3c3c3c?style=flat&logo=data:image/svg%2bxml;base64,${CURSOR_ICON_B64}&logoColor=white`;
+const COPILOT_BADGE_URL = 'https://img.shields.io/badge/Open_in-GitHub_Copilot-0078d4?style=flat&logo=githubcopilot&logoColor=white';
+/**
+ * Per-insight short descriptions for the human-readable issue body.
+ * Placeholders like {file}, {images}, {size}, etc. are replaced at render time
+ * using the insight's contextAttributes.
+ */
+const INSIGHT_DESCRIPTIONS = {
+    'dockerignore': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `Your Docker build at \`${file}\` sends all files to the daemon. A \`.dockerignore\` reduces context size, speeds up builds, and prevents sensitive files from leaking into images.`;
+    },
+    'unpinned-base-image': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        const images = i.contextAttributes['unpinned_images'] || 'unspecified';
+        return `Your Dockerfile at \`${file}\` uses unpinned base images (\`${images}\`). Pin versions for reproducible, secure builds.`;
+    },
+    'large-build-context': (i) => {
+        const size = i.contextAttributes['context_size'] || 'unknown size';
+        return `Your Docker build context is ${size}, slowing down the context transfer step. Review which files are included or add a \`.dockerignore\`.`;
+    },
+    'apt-get-caching': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `Your Dockerfile at \`${file}\` has \`apt-get update\` and \`install\` in separate RUN statements, causing stale package lists and cache invalidation.`;
+    },
+    'pull-rate-limit-reached': (i) => {
+        const images = i.contextAttributes['affected_images'] || '';
+        return `Docker Hub rate-limited your image pulls${images ? ` for \`${images}\`` : ''}. Authenticate or use a registry proxy to avoid build failures.`;
+    },
+    'arg-before-dependency-layer': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `An \`ARG\` instruction before dependency installation in \`${file}\` invalidates Docker layer cache every time the argument changes.`;
+    },
+    'inefficient-layer-ordering': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        const copy = i.contextAttributes['blocking_copy'] || 'COPY';
+        const run = i.contextAttributes['slow_uncached_run'] || 'RUN';
+        return `A broad \`${copy}\` before \`${run}\` in \`${file}\` forces slow dependency steps to re-run on every file change.`;
+    },
+    'build-push-separate': () => {
+        return `Separate \`docker build\` and \`docker push\` steps waste time. Use \`--push\` with \`docker buildx build\` to combine them.`;
+    },
+    'no-remote-cache': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `No remote cache is configured for your Docker build at \`${file}\`. Without it, every CI run builds from scratch.`;
+    },
+    'apt-get-upgrade-used': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `\`apt-get upgrade\` in \`${file}\` adds time and non-determinism. Remove it to get faster, more reproducible builds.`;
+    },
+    'apk-upgrade-used': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `Unnecessary \`apk upgrade\` detected in \`${file}\`. Remove it to reduce build time and improve reproducibility.`;
+    },
+    'apt-get-no-install-recommends': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `\`apt-get install\` without \`--no-install-recommends\` in \`${file}\` downloads extra packages, increasing image size and build time.`;
+    },
+    'npm-install-not-ci': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `Using \`npm install\` instead of \`npm ci\` in \`${file}\`. Switch to \`npm ci\` for faster, deterministic dependency installs.`;
+    },
+    'go-mod-separate-download': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `Go dependencies download as part of the build step in \`${file}\`. Separating \`go mod download\` into its own layer improves cache hits.`;
+    },
+    'pip-no-cache-dir': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `\`pip install\` without \`--no-cache-dir\` in \`${file}\` stores unnecessary cache in your Docker image, increasing its size.`;
+    },
+    'multi-platform-emulated-build': (i) => {
+        const factor = i.contextAttributes['emulation_slowdown_factor'] || '';
+        return `Multi-platform build using slow QEMU emulation${factor ? ` (${factor}x slower)` : ''}. Native cross-compilation or dedicated runners are significantly faster.`;
+    },
+    'copy-with-chmod': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `A separate \`chmod\` after \`COPY\` in \`${file}\` creates an extra Docker layer. Use \`COPY --chmod\` to combine them and reduce image size.`;
+    },
+    'missing-multi-stage-build': (i) => {
+        const file = i.contextAttributes['path_to_dockerfile'] || 'Dockerfile';
+        return `Single-stage build with build tools detected in \`${file}\`. Multi-stage builds produce smaller, more secure production images.`;
+    },
+    'npm-ci': (i) => {
+        const dir = i.contextAttributes['package_json_path'] || '.';
+        return `Your CI runs \`npm install\` in \`${dir}\`, which resolves dependency versions every time. \`npm ci\` is faster and produces deterministic builds.`;
+    },
+    'npm-committed-node-modules': (i) => {
+        const dir = i.contextAttributes['package_json_path'] || '.';
+        const count = i.contextAttributes['node_modules_entry_count'] || '';
+        return `\`node_modules\` at \`${dir}\` is not gitignored${count ? ` (${count} packages)` : ''} and may be committed to version control, bloating your repository.`;
+    },
+    'npm-wrong-dependency-type': (i) => {
+        const count = i.contextAttributes['misplaced_count'] || 'some';
+        return `${count} dev-only package(s) found in production dependencies, increasing install time and bundle size in production.`;
+    },
+    'force-rebuild': (i) => {
+        const flag = i.contextAttributes['flag_detected'] || '-a';
+        return `The \`${flag}\` flag in your Go build defeats the build cache, forcing all packages to recompile on every run.`;
+    },
+};
+/**
+ * Returns the short human-readable description for an insight.
+ * Falls back to the insight title if no custom description is defined.
+ */
+function getInsightDescription(insight) {
+    const descFn = INSIGHT_DESCRIPTIONS[insight.name];
+    if (descFn) {
+        return descFn(insight);
+    }
+    return insight.title;
+}
+/**
+ * Generates a Cursor IDE deeplink URL for the AI prompt.
+ * Returns the URL if it's within the safe length threshold, or undefined if too long.
+ */
+function generateCursorDeeplink(insight) {
+    const prompt = utils_generateAIPrompt(insight);
+    const encodedPrompt = encodeURIComponent(prompt);
+    const url = `https://cursor.com/link/prompt?text=${encodedPrompt}`;
+    if (url.length > DEEPLINK_URL_MAX_LENGTH) {
+        return undefined;
+    }
+    return url;
+}
+/**
+ * Generates a GitHub Copilot Chat deeplink URL.
+ * Routes through fastci.jfrog.com/open which redirects to vscode:// protocol,
+ * because GitHub's markdown sanitizer strips non-HTTPS protocol links.
+ */
+function generateCopilotDeeplink(insight) {
+    const prompt = utils_generateAIPrompt(insight);
+    const encodedPrompt = encodeURIComponent(prompt);
+    const url = `https://fastci.jfrog.com/open?ide=copilot&prompt=${encodedPrompt}`;
+    if (url.length > DEEPLINK_URL_MAX_LENGTH) {
+        return undefined;
+    }
+    return url;
+}
 /**
  * Formats an error for logging with full context
  */
@@ -38074,126 +38218,93 @@ const TECHNOLOGY_CONFIG = {
     cargo: { label: 'technology: rust' },
 };
 /**
- * Known context attribute keys that are handled specially (not shown in generic context section)
+ * URL for the FastCI insight banner SVG.
+ * To update: upload github_action/assets/fastci-insight-banner.svg as a GitHub
+ * user-attachment and paste the resulting URL here.
  */
-const SPECIAL_CONTEXT_KEYS = new Set([
-    'cache_hit_rate_percent',
-    'path_to_dockerfile',
-    'parent_operation',
-    'bash_script_content',
-    'package_json_path',
-    'package_json_content_hash',
-    'occurrence_count',
-]);
+const FASTCI_BANNER_URL = 'https://raw.githubusercontent.com/jfrog-fastci/fastci/main/assets/fastci-insight-banner.svg';
 /**
- * Builds the overview section with title and description
+ * Builds the branded header: banner image + "Scanned with FastCI" badge.
  */
-function buildOverviewSection(insight) {
+function buildHeaderSection(workflowUrl) {
     const lines = [];
-    lines.push('## Overview');
+    lines.push(`<p align="center">`);
+    lines.push(`  <img src="${FASTCI_BANNER_URL}" alt="FastCI Insight" width="100%" />`);
+    lines.push(`</p>`);
     lines.push('');
-    lines.push(`**${insight.title}**`);
-    lines.push('');
-    lines.push('This insight was automatically detected by FastCI during your CI pipeline execution. Addressing this issue can help improve your build performance, security, or reliability.');
+    const badgeUrl = SCANNED_BADGE_URL;
+    if (workflowUrl) {
+        lines.push(`<p align="center">`);
+        lines.push(`  <a href="${workflowUrl}"><img src="${badgeUrl}" alt="Scanned with FastCI" /></a>`);
+        lines.push(`</p>`);
+    }
+    else {
+        lines.push(`<p align="center">`);
+        lines.push(`  <img src="${badgeUrl}" alt="Scanned with FastCI" />`);
+        lines.push(`</p>`);
+    }
     lines.push('');
     return lines;
 }
 /**
- * Builds the quick stats table
+ * Builds the insight description, AI fix badges, collapsible prompt, and
+ * collapsible runtime details -- all as one cohesive section.
  */
-function buildStatsTable(insight) {
+function buildInsightSection(insight) {
     const lines = [];
+    const bestPracticesLink = utils_getBestPracticesLink(insight);
+    lines.push(`## ${insight.title}`);
+    lines.push('');
+    lines.push(getInsightDescription(insight));
+    lines.push('');
+    lines.push(`[View Best Practices](${bestPracticesLink})`);
+    lines.push('');
+    // AI fix badges inline
+    const cursorLink = generateCursorDeeplink(insight);
+    const copilotLink = generateCopilotDeeplink(insight);
+    const hasDeeplinks = cursorLink || copilotLink;
+    if (hasDeeplinks) {
+        const badges = [];
+        if (cursorLink) {
+            badges.push(`<a href="${cursorLink}"><img src="${CURSOR_BADGE_URL}" alt="Open in Cursor" /></a>`);
+        }
+        if (copilotLink) {
+            badges.push(`<a href="${copilotLink}"><img src="${COPILOT_BADGE_URL}" alt="Open in GitHub Copilot" /></a>`);
+        }
+        lines.push(`<p>${badges.join('&nbsp;&nbsp;')}</p>`);
+        lines.push('');
+    }
+    lines.push('<details>');
+    lines.push(`<summary>${hasDeeplinks ? 'Or copy the prompt manually' : 'Copy this prompt to your AI coding assistant'}</summary>`);
+    lines.push('');
+    lines.push('````');
+    lines.push(utils_generateAIPrompt(insight));
+    lines.push('````');
+    lines.push('');
+    lines.push('</details>');
+    lines.push('');
+    // Runtime details in a collapsible section
+    lines.push('<details>');
+    lines.push('<summary>Runtime Details</summary>');
+    lines.push('');
     lines.push('| | |');
     lines.push('|---|---|');
     lines.push(`| **Technology** | ${insight.technology} |`);
-    // Add cache rate if available
-    const cacheRate = insight.contextAttributes['cache_hit_rate_percent'];
-    if (cacheRate !== undefined) {
-        lines.push(`| **Cache Hit Rate** | ${cacheRate}% |`);
+    const filePath = insight.contextAttributes['path_to_dockerfile'] ||
+        insight.contextAttributes['package_json_path'] ||
+        insight.contextAttributes['package_path'];
+    if (filePath) {
+        lines.push(`| **File** | \`${filePath}\` |`);
     }
-    // Add job duration if available
+    if (insight.ciContext?.step?.name) {
+        lines.push(`| **Step** | ${insight.ciContext.step.name} |`);
+    }
     if (insight.ciContext?.job?.durationMs) {
         lines.push(`| **Job Duration** | ${utils_formatDuration(insight.ciContext.job.durationMs)} |`);
     }
-    // Add step duration if available
-    if (insight.ciContext?.step?.durationSeconds) {
-        lines.push(`| **Step Duration** | ${utils_formatDuration(insight.ciContext.step.durationSeconds * 1000)} |`);
-    }
-    lines.push('');
-    return lines;
-}
-/**
- * Builds the file location section
- */
-function buildFileLocationSection(insight) {
-    const lines = [];
-    const dockerfilePath = insight.contextAttributes['path_to_dockerfile'];
-    if (dockerfilePath) {
-        lines.push(`**File:** \`${dockerfilePath}\``);
-        lines.push('');
-    }
-    return lines;
-}
-/**
- * Builds the CI context section
- */
-function buildCIContextSection(insight) {
-    const lines = [];
-    if (insight.ciContext?.workflow?.name ||
-        insight.ciContext?.job?.name ||
-        insight.ciContext?.step?.name) {
-        lines.push('**CI Context:**');
-        if (insight.ciContext.workflow?.name) {
-            lines.push(`- Workflow: **${insight.ciContext.workflow.name}**`);
-        }
-        if (insight.ciContext.job?.name) {
-            lines.push(`- Job: **${insight.ciContext.job.name}**`);
-        }
-        if (insight.ciContext.step?.name) {
-            lines.push(`- Step: **${insight.ciContext.step.name}**`);
-        }
-        lines.push('');
-    }
-    return lines;
-}
-/**
- * Builds the command/action section
- */
-function buildCommandSection(insight) {
-    const lines = [];
-    const commandInfo = getCommandInfo(insight);
-    if (commandInfo) {
-        if (commandInfo.type === 'action') {
-            lines.push(`**Action:** \`${commandInfo.content}\``);
-        }
-        else {
-            lines.push('**Command:**');
-            lines.push('```bash');
-            lines.push(commandInfo.content);
-            lines.push('```');
-        }
-        lines.push('');
-    }
-    return lines;
-}
-/**
- * Builds a collapsible section listing affected package.json paths
- * when an insight was consolidated from multiple occurrences.
- */
-function buildPackageDirectoriesSection(insight) {
-    const pathsRaw = insight.contextAttributes['package_json_path'];
-    if (!pathsRaw || !pathsRaw.includes(','))
-        return [];
-    const items = pathsRaw.split(',').map(s => s.trim()).filter(Boolean);
-    if (items.length === 0)
-        return [];
-    const count = insight.contextAttributes['occurrence_count'] || String(items.length);
-    const lines = [];
-    lines.push('<details>');
-    lines.push(`<summary><strong>Affected Packages (${count} occurrences)</strong></summary>`);
-    lines.push('');
-    for (const item of items) {
-        lines.push(`- \`${item}\``);
+    const cacheRate = insight.contextAttributes['cache_hit_rate_percent'];
+    if (cacheRate !== undefined) {
+        lines.push(`| **Cache Hit Rate** | ${cacheRate}% |`);
     }
     lines.push('');
     lines.push('</details>');
@@ -38201,103 +38312,38 @@ function buildPackageDirectoriesSection(insight) {
     return lines;
 }
 /**
- * Builds the context attributes section (all non-special attributes)
+ * Builds a progress checklist for tracking remediation.
  */
-function buildContextAttributesSection(insight) {
+function buildChecklistSection() {
     const lines = [];
-    // Get all context attributes that are not specially handled
-    const genericAttributes = Object.entries(insight.contextAttributes)
-        .filter(([key, value]) => !SPECIAL_CONTEXT_KEYS.has(key) && value)
-        .sort(([a], [b]) => a.localeCompare(b));
-    if (genericAttributes.length > 0) {
-        lines.push('**Insight Details:**');
-        for (const [key, value] of genericAttributes) {
-            const displayKey = formatContextKey(key);
-            // For long values or multi-item values, format them nicely
-            if (value.includes(',')) {
-                const items = value.split(',').map(s => s.trim());
-                lines.push(`- ${displayKey}:`);
-                for (const item of items) {
-                    lines.push(`  - \`${item}\``);
-                }
-            }
-            else {
-                lines.push(`- ${displayKey}: \`${value}\``);
-            }
-        }
-        lines.push('');
-    }
-    return lines;
-}
-/**
- * Builds the "How to Fix" section
- */
-function buildHowToFixSection(insight) {
-    const lines = [];
-    const bestPracticesLink = utils_getBestPracticesLink(insight);
-    lines.push('## How to Fix');
-    lines.push('');
-    lines.push(`**[View Best Practices Guide](${bestPracticesLink})**`);
-    lines.push('');
-    if (insight.remediationPrompt) {
-        // Show a brief summary for humans
-        const promptLines = insight.remediationPrompt.split('\n');
-        if (promptLines.length > 0) {
-            lines.push(promptLines[0]);
-        }
-        lines.push('');
-        lines.push('*(See AI prompt below for complete instructions)*');
-    }
+    lines.push('### Next Steps');
+    lines.push('- [ ] Review this insight');
+    lines.push('- [ ] Apply the fix');
+    lines.push('- [ ] Verify in next CI run');
     lines.push('');
     return lines;
 }
 /**
- * Builds the AI agent section
- * Uses 4 backticks for the outer code fence to properly contain inner 3-backtick code blocks
- * that may appear in the remediation prompt (e.g., Dockerfile examples)
+ * Builds the footer with FastCI branding.
  */
-function buildAIAgentSection(insight) {
+function buildFooterSection() {
     const lines = [];
-    lines.push('---');
-    lines.push('');
-    lines.push('## For AI Agents');
-    lines.push('');
-    lines.push('Copy this prompt to your AI coding assistant to fix this issue:');
-    lines.push('');
-    lines.push('````');
-    lines.push(utils_generateAIPrompt(insight));
-    lines.push('````');
+    lines.push('<sub><a href="https://github.com/jfrog-fastci/fastci">FastCI</a></sub>');
     return lines;
 }
 /**
- * Generates the issue body with clear separation between human and AI sections
+ * Generates the redesigned issue body with branded header, compact insight
+ * description, and a "Fix in Cursor" deeplink button.
  */
 function formatIssueBody(insight, insightIssueId, workflowUrl) {
     const marker = generateIssueMarker(insightIssueId);
     const lines = [];
-    // Hidden marker for duplicate detection
     lines.push(marker);
     lines.push('');
-    // ============================================================
-    // HUMAN-READABLE SECTION
-    // ============================================================
-    lines.push(...buildOverviewSection(insight));
-    lines.push(...buildStatsTable(insight));
-    lines.push(...buildFileLocationSection(insight));
-    lines.push(...buildCIContextSection(insight));
-    lines.push(...buildCommandSection(insight));
-    lines.push(...buildPackageDirectoriesSection(insight));
-    lines.push(...buildContextAttributesSection(insight));
-    lines.push(...buildHowToFixSection(insight));
-    // Link to workflow run
-    if (workflowUrl) {
-        lines.push(`[View Workflow Run](${workflowUrl})`);
-        lines.push('');
-    }
-    // ============================================================
-    // AI AGENT SECTION
-    // ============================================================
-    lines.push(...buildAIAgentSection(insight));
+    lines.push(...buildHeaderSection(workflowUrl));
+    lines.push(...buildInsightSection(insight));
+    lines.push(...buildChecklistSection());
+    lines.push(...buildFooterSection());
     return lines.join('\n');
 }
 /**
