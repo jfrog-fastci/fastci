@@ -320,8 +320,10 @@ export default function Hero() {
             variants={fadeInUp}
             className="text-4xl sm:text-5xl lg:text-7xl font-medium leading-[1.1] tracking-tight mb-6"
           >
-            Free CI Expert{' '}
-            <span className="gradient-text">For Everyone</span>
+            Everyone Deserves a Free CI Expert.
+            <br />
+            Everyone Deserves{' '}
+            <span className="gradient-text">Faster CI.</span>
           </motion.h1>
 
           <motion.div variants={fadeInUp}>
