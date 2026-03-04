@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - v0
+          - v1
       release_tag:
         description: "The full tag version (e.g. v1.2.3)."
         required: true
