@@ -320,7 +320,7 @@ export default function Hero() {
             variants={fadeInUp}
             className="text-4xl sm:text-5xl lg:text-7xl font-medium leading-[1.1] tracking-tight mb-6"
           >
-            Free CI Expert{' '}
+            Free CI Acceleration Expert{' '}
             <span className="gradient-text">For Everyone</span>
           </motion.h1>
 

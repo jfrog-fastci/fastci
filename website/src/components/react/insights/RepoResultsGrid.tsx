@@ -14,7 +14,11 @@ const languageColors: Record<string, string> = {
   Go: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
 };
 
+const HIDDEN = true; // TODO: set to false to show Performance Results
+
 export default function RepoResultsGrid({ repoStats }: Props) {
+  if (HIDDEN) return null;
+
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-60px' });
 
