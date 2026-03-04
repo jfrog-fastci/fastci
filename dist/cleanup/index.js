@@ -39027,8 +39027,8 @@ function getIssueCreationConfig() {
         if (external_fs_.existsSync(configPath)) {
             const raw = JSON.parse(external_fs_.readFileSync(configPath, 'utf-8'));
             const repoConfig = raw?.config?.repository_config;
-            if (repoConfig?.insights?.create_issues === false) {
-                enabled = false;
+            if (repoConfig?.insights?.create_issues === true) {
+                enabled = true;
             }
         }
     }
