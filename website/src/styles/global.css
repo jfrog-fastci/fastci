@@ -43,6 +43,21 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-brand-300 to-emerald-300;
   }
 
+  .gradient-text-animated {
+    @apply bg-clip-text text-transparent font-bold;
+    background-image: linear-gradient(
+      90deg,
+      theme('colors.brand.400'),
+      theme('colors.brand.300'),
+      theme('colors.emerald.300'),
+      theme('colors.brand.400'),
+      theme('colors.brand.300'),
+      theme('colors.emerald.300')
+    );
+    background-size: 200% 100%;
+    animation: gradient-shift 8s ease infinite;
+  }
+
   .section-padding {
     @apply py-24 md:py-32 px-4 sm:px-6 lg:px-8;
   }
