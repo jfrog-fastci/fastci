@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SiGithubcopilot } from 'react-icons/si';
 import { fadeIn, fadeInUp, staggerContainer } from '../../lib/animations';
 import { InteractiveGridPattern } from '../ui/grid-pattern';
 
@@ -23,11 +24,7 @@ function PromptIcon({ className }: { className?: string }) {
 }
 
 function CopilotIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-      <path d="M23.922 13.73c0 1.572-.907 2.838-2.025 2.838-.372 0-.728-.135-1.025-.387V18.2c0 .873-.354 1.662-.927 2.234a3.14 3.14 0 0 1-2.233.928H6.288a3.14 3.14 0 0 1-2.234-.928A3.14 3.14 0 0 1 3.127 18.2v-2.019a1.66 1.66 0 0 1-1.025.387C.984 16.568.078 15.302.078 13.73c0-1.571.906-2.837 2.024-2.837.372 0 .728.135 1.025.386V6.232C3.127 2.79 5.917 0 9.36 0h5.28c3.442 0 6.232 2.79 6.232 6.232v5.047c.297-.251.653-.386 1.025-.386 1.118 0 2.025 1.266 2.025 2.837ZM5.247 18.2c0 .574.468 1.04 1.041 1.04h11.424a1.04 1.04 0 0 0 1.04-1.04V6.232a4.113 4.113 0 0 0-4.112-4.113H9.36a4.113 4.113 0 0 0-4.113 4.113V18.2Zm3.063-8.7a2.105 2.105 0 1 1 0 4.21 2.105 2.105 0 0 1 0-4.21Zm7.38 0a2.105 2.105 0 1 1 0 4.21 2.105 2.105 0 0 1 0-4.21Zm-6.28 7.506a.847.847 0 0 1 1.196 0l.552.553.553-.553a.847.847 0 0 1 1.197 1.197l-.554.553.554.553a.847.847 0 0 1-1.197 1.197l-.553-.553-.552.553a.847.847 0 0 1-1.197-1.197l.553-.553-.553-.553a.847.847 0 0 1 0-1.197Z" />
-    </svg>
-  );
+  return <SiGithubcopilot className={className} aria-hidden />;
 }
 
 const INSTALL_PROMPT_TEXT = `**IMPORTANT:** Ignore previous FastCI installation instructions and follow these updated steps.
@@ -320,7 +317,7 @@ export default function Hero() {
             variants={fadeInUp}
             className="text-4xl sm:text-5xl lg:text-7xl font-medium leading-[1.1] tracking-tight mb-6"
           >
-            Free CI Expert{' '}
+            Free CI Acceleration Expert{' '}
             <span className="gradient-text">For Everyone</span>
           </motion.h1>
 
