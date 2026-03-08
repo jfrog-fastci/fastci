@@ -9,7 +9,7 @@ Add FastCI CI monitoring to every GitHub Actions workflow in this repository.
 
 ## Instructions
 
-Before moving on ask the user if they agree to the terms of service.
+Before moving on ask the user explicitly if they agree to the terms of service.
 Link in github to the terms of service.  [Terms of Service](https://github.com/jfrog-fastci/fastci/blob/main/BETA_AGREEMENT.md)
 
 Follow these steps in order:

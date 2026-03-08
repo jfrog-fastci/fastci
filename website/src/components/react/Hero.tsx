@@ -4,9 +4,6 @@ import { SiGithubcopilot } from 'react-icons/si';
 import { fadeIn, fadeInUp, staggerContainer } from '../../lib/animations';
 import { InteractiveGridPattern } from '../ui/grid-pattern';
 
-const CURSOR_INSTALL_URL =
-  'https://cursor.com/link/prompt?text=%2A%2AIMPORTANT%3A%2A%2A%20Ignore%20previous%20FastCI%20installation%20instructions%20and%20follow%20these%20updated%20steps.%0A%0AScan%20all%20workflow%20files%20in%20%60.github%2Fworkflows%2F%60%20for%20FastCI%20usage%3A%0A%0A1.%20Create%20a%20%60fastci.config.json%60%20file%20in%20the%20repository%20root%20with%20this%20content%3A%0A%0A%60%60%60json%0A%7B%0A%20%20%22accept_terms%22%3A%20%22yes%22%0A%7D%0A%60%60%60%0A%0A2.%20For%20each%20workflow%3A%0A%20%20%20-%20Check%20if%20%60issues%3A%20write%60%20permission%20exists%20at%20workflow%20level%0A%20%20%20-%20If%20set%20to%20%60false%60%2C%20ask%3A%20%22Workflow%20%5Bname%5D%20has%20issues%3A%20write%3A%20false.%20Change%20to%20%27write%27%3F%22%0A%20%20%20-%20If%20missing%2C%20add%20it%20automatically%20at%20workflow%20level%0A%0A3.%20Add%20FastCI%20as%20the%20first%20step%20in%20each%20job%20%28no%20%60with%60%20block%20needed%29%3A%0A%0A%60%60%60yaml%0A-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%60%60%60%0A%0A4.%20For%20jobs%20using%20containers%2C%20add%20volume%20mount%3A%0A%0A%60%60%60yaml%0Acontainer%3A%0A%20%20image%3A%20%3Cyour-image%3E%0A%20%20volumes%3A%0A%20%20%20%20-%20%2Fhome%2Frunner%3A%2Ftmp%2Ffastci%2Fmounts%2Fhome%2Frunner%0A%60%60%60%0A%0AExample%3A%0A%0A%60%60%60yaml%0Apermissions%3A%0A%20%20issues%3A%20write%0A%0Ajobs%3A%0A%20%20build%3A%0A%20%20%20%20runs-on%3A%20ubuntu-latest%0A%20%20%20%20steps%3A%0A%20%20%20%20%20%20-%20uses%3A%20jfrog-fastci%2Ffastci%40v0%0A%20%20%20%20%20%20-%20uses%3A%20actions%2Fcheckout%40v4%0A%60%60%60';
-
 function CursorIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" fillRule="evenodd" viewBox="0 0 24 24" aria-hidden>
@@ -31,26 +28,23 @@ const INSTALL_PROMPT_TEXT = `**IMPORTANT:** Ignore previous FastCI installation 
 
 Scan all workflow files in \`.github/workflows/\` for FastCI usage:
 
-1. Create a \`fastci.config.json\` file in the repository root with this content:
+1. If a 'fastci.config.json' file does not exist in the repository root, create one with the following content:
 
-\`\`\`json
+example for fastci.config.json:
+
+\`\`\`json 
 {
   "accept_terms": "yes"
 }
 \`\`\`
 
-2. For each workflow:
-   - Check if \`issues: write\` permission exists at workflow level
-   - If set to \`false\`, ask: "Workflow [name] has issues: write: false. Change to 'write'?"
-   - If missing, add it automatically at workflow level
-
-3. Add FastCI as the first step in each job (no \`with\` block needed):
+2. Add FastCI as the first step in each job (no \`with\` block needed):
 
 \`\`\`yaml
 - uses: jfrog-fastci/fastci@v0
 \`\`\`
 
-4. For jobs using containers, add volume mount:
+3. For jobs using containers, add volume mount:
 
 \`\`\`yaml
 container:
@@ -63,7 +57,7 @@ Example:
 
 \`\`\`yaml
 permissions:
-  issues: write
+  contents: read
 
 jobs:
   build:
@@ -72,6 +66,9 @@ jobs:
       - uses: jfrog-fastci/fastci@v0
       - uses: actions/checkout@v4
 \`\`\``;
+
+const CURSOR_INSTALL_URL =
+  'https://cursor.com/link/prompt?text=' + encodeURIComponent(INSTALL_PROMPT_TEXT);
 
 const COPILOT_INSTALL_URL =
   'https://fastci.jfrog.com/open?ide=copilot&prompt=' + encodeURIComponent(INSTALL_PROMPT_TEXT);
