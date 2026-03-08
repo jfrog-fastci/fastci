@@ -4,7 +4,7 @@ import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   site: 'https://fastci.jfrog.com',
-  base: '/',
+  base: '/fastci/',
   integrations: [react(), tailwind()],
   output: 'static',
 });
