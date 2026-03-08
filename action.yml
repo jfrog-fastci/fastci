@@ -30,7 +30,7 @@ inputs:
   version:
     description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
     required: false
-    default: "v0.23.16"
+    default: "v0.23.17"
 
   full_repo_name:
     description: "Full repository name"
