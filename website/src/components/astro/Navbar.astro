@@ -6,7 +6,9 @@ import LabsIcon from '../icons/LabsIcon.astro';
 <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-16 md:h-20">
-      <a href={baseUrl} class="flex items-center group">
+      <a href={baseUrl} class="flex items-center gap-3 group">
+        <img src={basePath('jfrog.svg')} alt="JFrog" class="h-7 w-auto" />
+        <span class="w-px h-5 bg-white/20"></span>
         <img src={basePath('fastci_logo.svg')} alt="FastCI" class="h-7 w-auto" />
       </a>
 
