@@ -331,33 +331,45 @@ export default function Hero() {
             className="text-4xl sm:text-5xl lg:text-7xl font-medium leading-[1.1] tracking-tight mb-6"
           >
             Free{' '}
-            <span className="inline-flex items-baseline gap-[0.15em]">
-              <span className="inline-block overflow-hidden align-baseline">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={`icon-${selectedIndex}`}
-                    initial={{ y: '100%', opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: '-100%', opacity: 0 }}
-                    transition={{ duration: 0.35, ease: [0.25, 0.4, 0.25, 1] }}
-                    className="inline-block text-brand-400"
-                  >
-                    <current.icon className="w-[0.75em] h-[0.75em]" />
-                  </motion.span>
-                </AnimatePresence>
+            <span className="inline-grid [grid-template-areas:'stack'] items-baseline">
+              {INSTALL_OPTIONS.map((opt) => (
+                <span
+                  key={opt.name}
+                  className="[grid-area:stack] invisible inline-flex items-baseline gap-[0.15em]"
+                  aria-hidden="true"
+                >
+                  <opt.icon className="w-[0.75em] h-[0.75em]" />
+                  <span>{opt.name}</span>
+                </span>
+              ))}
+              <span className="[grid-area:stack] inline-flex items-baseline gap-[0.15em]">
+                <span className="inline-block overflow-hidden align-baseline">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={`icon-${selectedIndex}`}
+                      initial={{ y: '100%', opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: '-100%', opacity: 0 }}
+                      transition={{ duration: 0.35, ease: [0.25, 0.4, 0.25, 1] }}
+                      className="inline-block text-brand-400"
+                    >
+                      <current.icon className="w-[0.75em] h-[0.75em]" />
+                    </motion.span>
+                  </AnimatePresence>
+                </span>
+                <TextAnimate
+                  key={selectedIndex}
+                  as="span"
+                  animation="slideUp"
+                  by="word"
+                  startOnView={false}
+                  duration={0.35}
+                  stagger={0.08}
+                  segmentClassName="gradient-text"
+                >
+                  {current.name}
+                </TextAnimate>
               </span>
-              <TextAnimate
-                key={selectedIndex}
-                as="span"
-                animation="slideUp"
-                by="word"
-                startOnView={false}
-                duration={0.35}
-                stagger={0.08}
-                segmentClassName="gradient-text"
-              >
-                {current.name}
-              </TextAnimate>
             </span>
             <br />
             Accelerator{' '}
@@ -366,8 +378,8 @@ export default function Hero() {
 
           <motion.div variants={fadeInUp}>
             <p className="text-lg md:text-xl text-gray-400 leading-relaxed mb-10 max-w-2xl">
-              Accelerate your integration processes everywhere.{' '}
-              <span className="gradient-text-animated">Agentic Sandboxes</span>, CI, and IDE — for free.
+            <span className="gradient-text-animated">Accelerate </span> your terminal commands locally and in your CI pipelines.{' '}
+              
             </p>
           </motion.div>
 
