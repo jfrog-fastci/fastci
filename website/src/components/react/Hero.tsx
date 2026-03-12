@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SiGithubcopilot } from 'react-icons/si';
+import { SiGithubcopilot, SiGithubactions } from 'react-icons/si';
 import { fadeIn, fadeInUp, staggerContainer } from '../../lib/animations';
 import { InteractiveGridPattern } from '../ui/grid-pattern';
+import { TextAnimate } from '../ui/text-animate';
 
 function CursorIcon({ className }: { className?: string }) {
   return (
@@ -12,16 +13,20 @@ function CursorIcon({ className }: { className?: string }) {
   );
 }
 
-function PromptIcon({ className }: { className?: string }) {
+function ClaudeIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M13.827 3.52h3.603L24 20.48h-3.603l-6.57-16.96zm-7.258 0L0 20.48h3.602l1.585-4.33h7.065l1.585 4.33h3.603L10.872 3.52H6.57zm2.152 4.49l2.31 6.31H6.41l2.31-6.31z" />
     </svg>
   );
 }
 
 function CopilotIcon({ className }: { className?: string }) {
   return <SiGithubcopilot className={className} aria-hidden />;
+}
+
+function GitHubActionsIcon({ className }: { className?: string }) {
+  return <SiGithubactions className={className} aria-hidden />;
 }
 
 const INSTALL_PROMPT_TEXT = `**IMPORTANT:** Ignore previous FastCI installation instructions and follow these updated steps.
@@ -93,14 +98,14 @@ const COLORS: Record<string, ColorTheme> = {
     selectedBg: 'rgba(180,180,180,0.15)',
     selectedText: '#d4d4d4',
   },
-  prompt: {
-    bg: '#36a13b',
-    hoverBg: '#5cb85f',
-    shadow: '0 0 30px rgba(54,161,59,0.2)',
-    hoverShadow: '0 0 30px rgba(54,161,59,0.35)',
+  claude: {
+    bg: '#CC785C',
+    hoverBg: '#D98B70',
+    shadow: '0 0 30px rgba(204,120,92,0.2)',
+    hoverShadow: '0 0 30px rgba(204,120,92,0.35)',
     border: 'rgba(255,255,255,0.2)',
-    selectedBg: 'rgba(54,161,59,0.2)',
-    selectedText: '#5cb85f',
+    selectedBg: 'rgba(204,120,92,0.2)',
+    selectedText: '#D98B70',
   },
   copilot: {
     bg: '#1f2328',
@@ -111,18 +116,29 @@ const COLORS: Record<string, ColorTheme> = {
     selectedBg: 'rgba(31,35,40,0.2)',
     selectedText: '#e6edf3',
   },
+  githubactions: {
+    bg: '#2088FF',
+    hoverBg: '#4DA3FF',
+    shadow: '0 0 30px rgba(32,136,255,0.2)',
+    hoverShadow: '0 0 30px rgba(32,136,255,0.35)',
+    border: 'rgba(255,255,255,0.2)',
+    selectedBg: 'rgba(32,136,255,0.2)',
+    selectedText: '#4DA3FF',
+  },
 };
 
 type InstallOption = {
+  name: string;
   label: string;
   icon: (props: { className?: string }) => ReactNode;
   color: ColorTheme;
 } & ({ type: 'link'; href: string } | { type: 'modal' });
 
 const INSTALL_OPTIONS: InstallOption[] = [
-  { label: 'Install via Cursor', type: 'link', href: CURSOR_INSTALL_URL, icon: CursorIcon, color: COLORS.cursor },
-  { label: 'Install via Copilot', type: 'link', href: COPILOT_INSTALL_URL, icon: CopilotIcon, color: COLORS.copilot },
-  { label: 'Install via Prompt', type: 'modal', icon: PromptIcon, color: COLORS.prompt },
+  { name: 'Cursor', label: 'Install via Cursor', type: 'link', href: CURSOR_INSTALL_URL, icon: CursorIcon, color: COLORS.cursor },
+  { name: 'Claude Code', label: 'Install via Claude Code', type: 'modal', icon: ClaudeIcon, color: COLORS.claude },
+  { name: 'Copilot', label: 'Install via Copilot', type: 'link', href: COPILOT_INSTALL_URL, icon: CopilotIcon, color: COLORS.copilot },
+  { name: 'GitHub Actions', label: 'Install via GitHub Actions', type: 'modal', icon: GitHubActionsIcon, color: COLORS.githubactions },
 ];
 
 function PromptModal({ onClose }: { onClose: () => void }) {
@@ -314,15 +330,44 @@ export default function Hero() {
             variants={fadeInUp}
             className="text-4xl sm:text-5xl lg:text-7xl font-medium leading-[1.1] tracking-tight mb-6"
           >
-            Free CI Acceleration Expert{' '}
+            Free{' '}
+            <span className="inline-flex items-baseline gap-[0.15em]">
+              <span className="inline-block overflow-hidden align-baseline">
+                <AnimatePresence mode="wait">
+                  <motion.span
+                    key={`icon-${selectedIndex}`}
+                    initial={{ y: '100%', opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: '-100%', opacity: 0 }}
+                    transition={{ duration: 0.35, ease: [0.25, 0.4, 0.25, 1] }}
+                    className="inline-block text-brand-400"
+                  >
+                    <current.icon className="w-[0.75em] h-[0.75em]" />
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+              <TextAnimate
+                key={selectedIndex}
+                as="span"
+                animation="slideUp"
+                by="word"
+                startOnView={false}
+                duration={0.35}
+                stagger={0.08}
+                segmentClassName="gradient-text"
+              >
+                {current.name}
+              </TextAnimate>
+            </span>
+            <br />
+            Accelerator{' '}
             <span className="gradient-text">For Everyone</span>
           </motion.h1>
 
           <motion.div variants={fadeInUp}>
             <p className="text-lg md:text-xl text-gray-400 leading-relaxed mb-10 max-w-2xl">
-              <span className="gradient-text-animated">Faster CI</span>
-              {' '}
-              with ongoing expert level CI maintenance for free.
+              Accelerate your integration processes everywhere.{' '}
+              <span className="gradient-text-animated">Agentic Sandboxes</span>, CI, and IDE — for free.
             </p>
           </motion.div>
 
