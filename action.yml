@@ -1,80 +1,81 @@
-name: "FastCI Action"
-description: A drop-in action for GitHub Actions that automatically identifies CI bottlenecks and generates fixes for you
+name: "FastCI Action (DEPRECATED)"
+description: "DEPRECATED — jfrog-fastci/fastci is no longer supported. Replace with jfrog/boost@v0."
 author: FastCI Team @ JFrog
 
+# All inputs from previous versions are kept (and ignored) so existing
+# `with:` blocks in caller workflows do not produce warnings while users
+# migrate to jfrog/boost@v0.
 inputs:
-  # --- Secrets / credentials ---
-
   fastci_otel_endpoint:
-    description: "Telemetry endpoint. Override with 'file:///tmp/traces.otel' for local trace files."
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
     required: false
-    default: "ingress.coralogix.us:443"
-
+    default: ""
   fastci_otel_token:
-    description: "OpenTelemetry token (secret)."
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
     required: false
     default: ""
-
   log_level:
-    description: "Log level (trace, debug, info, warn, error, fatal, panic). Overridden by log_level in fastci.config.json if present."
-    required: false
-    default: "error"
-
-  github_token:
-    description: "The repository token with Workflow permissions. i.e. secrets.GITHUB_TOKEN"
-    default: ${{ github.token }}
-    required: false
-
-  # --- Operational inputs ---
-
-  version:
-    description: "Version of the fastcli binary to use. If 'local', the binary will be used from the path of /tmp/fastci/tools/fastcli-{ARCH}}"
-    required: false
-    default: "v0.23.22"
-
-  full_repo_name:
-    description: "Full repository name"
-    required: false
-    default: "jfrog-fastci/fastci"
-
-  install_fastcli:
-    description: "Install fastcli"
-    required: false
-    default: "true"
-
-  fail_on_error:
-    description: "Fail the CI if an error is detected"
-    required: false
-    default: "false"
-
-  setup_timeout_seconds:
-    description: "Timeout for the setup phase in seconds"
-    required: false
-    default: "30"
-
-  create_log_artifact_on_error:
-    description: "Create log artifact upon fastci installation error"
-    required: false
-    default: "false"
-
-  default_ci_branch:
-    description: "Defines the default branch in CI"
-    default: ${{ github.event.repository.default_branch }}
-    required: false
-
-  configuration:
-    description: "Inline fastci.config.json content (JSON string). Used as fallback when no config file exists in the repo. Useful for reusable workflows."
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
     required: false
     default: ""
-
-  # --- Testing only ---
-
+  github_token:
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
+    required: false
+    default: ""
+  version:
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
+    required: false
+    default: ""
+  full_repo_name:
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
+    required: false
+    default: ""
+  install_fastcli:
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
+    required: false
+    default: ""
+  fail_on_error:
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
+    required: false
+    default: ""
+  setup_timeout_seconds:
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
+    required: false
+    default: ""
+  create_log_artifact_on_error:
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
+    required: false
+    default: ""
+  default_ci_branch:
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
+    required: false
+    default: ""
+  configuration:
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
+    required: false
+    default: ""
   job_name_for_tests_only:
-    description: "Override job name for tests only (used in CI tests)"
+    description: "DEPRECATED — ignored. Use jfrog/boost@v0 instead."
     required: false
     default: ""
 
 runs:
-  using: "node24"
-  main: "dist/index.js"
-  post: "dist/cleanup/index.js"
+  using: "composite"
+  steps:
+    - name: FastCI deprecation notice
+      shell: bash
+      run: |
+        echo "::warning title=jfrog-fastci/fastci is deprecated::jfrog-fastci/fastci is no longer supported. Please replace it with jfrog/boost@v0."
+        echo ""
+        echo "================================================================"
+        echo " jfrog-fastci/fastci is no longer supported."
+        echo ""
+        echo " Please replace:"
+        echo "     - uses: jfrog-fastci/fastci@v0"
+        echo " with:"
+        echo "     - uses: jfrog/boost@v0"
+        echo ""
+        echo " See https://github.com/jfrog/boost for installation."
+        echo ""
+        echo " This action is now a no-op and will not fail your workflow."
+        echo "================================================================"
